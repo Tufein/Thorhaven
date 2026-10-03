@@ -1,0 +1,21 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+ <uses-permission android:name="android.permission.WRITE_SETTINGS"/>
+ <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS"/>
+ <uses-permission android:name="moe.shizuku.manager.permission.API_V23"/>
+ <queries><intent><action android:name="android.intent.action.MAIN"/><category android:name="android.intent.category.LAUNCHER"/></intent></queries>
+ <application android:name=".ThorApp" android:theme="@style/AppTheme" android:label="Thorhaven" android:icon="@drawable/icon" android:allowBackup="false" android:supportsRtl="true">
+  <provider android:name="rikka.shizuku.ShizukuProvider" android:authorities="${applicationId}.shizuku" android:multiprocess="false" android:exported="true" android:permission="android.permission.INTERACT_ACROSS_USERS_FULL"/>
+  <activity android:name=".MainActivity" android:exported="true" android:resizeableActivity="true">
+   <intent-filter><action android:name="android.intent.action.MAIN"/><category android:name="android.intent.category.LAUNCHER"/></intent-filter>
+  </activity>
+  <activity android:name=".GuideActivity" android:exported="false" android:resizeableActivity="true"/>
+  <service android:name=".ThorService" android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE" android:exported="true" android:label="Thorhaven · controller &amp; snelpaneel">
+   <intent-filter><action android:name="android.accessibilityservice.AccessibilityService"/></intent-filter>
+   <meta-data android:name="android.accessibilityservice" android:resource="@xml/accessibility"/>
+  </service>
+  <service android:name=".ThorKeyboard" android:permission="android.permission.BIND_INPUT_METHOD" android:exported="true" android:label="Thorhaven Controller Keyboard">
+   <intent-filter><action android:name="android.view.InputMethod"/></intent-filter>
+   <meta-data android:name="android.view.im" android:resource="@xml/keyboard"/>
+  </service>
+ </application>
+</manifest>

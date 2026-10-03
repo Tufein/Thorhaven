@@ -1,0 +1,6 @@
+<resources><style name="AppTheme" parent="android:style/Theme.Material.NoActionBar">
+ <item name="android:fontFamily">sans</item><item name="android:colorAccent">#62E5C0</item>
+ <item name="android:windowLightStatusBar">false</item><item name="android:statusBarColor">#0B111A</item>
+ <item name="android:navigationBarColor">#0B111A</item><item name="android:windowActionModeOverlay">true</item>
+ <item name="android:windowBackground">#0B111A</item>
+ </style><string name="accessibility_description">Optionele controllercombinaties, app-herkenning en een snelpaneel op het tweede scherm. Thorhaven ontvangt de naam van de voorgrond-app en controllerknoppen. Lokale accu- en app-tijdmetingen gebruiken scherm- en accugebeurtenissen. Het leest geen schermtekst, slaat geen toetsgeschiedenis op en verstuurt niets. Select-combinaties worden alleen onderschept als je ze inschakelt.</string></resources>

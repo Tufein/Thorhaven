@@ -1,0 +1,1 @@
+<input-method xmlns:android="http://schemas.android.com/apk/res/android" android:settingsActivity="nl.thorhaven.app.MainActivity" android:supportsSwitchingToNextInputMethod="true"><subtype android:label="Thorhaven" android:imeSubtypeLocale="nl_NL" android:imeSubtypeMode="keyboard"/></input-method>

@@ -1,0 +1,14 @@
+THORHAVEN — EXAMPLE OFFLINE GUIDE
+
+Import your own PDF, UTF-8 text or Markdown for each app.
+From the quick panel, open the last active app’s offline guide.
+Touch-only mode keeps controller focus with the game.
+Close the reader to reveal the underlying screen.
+
+Controller presets: Xbox/default, Nintendo, PC menu and WASD.
+Saving a preset does not automatically activate remapping.
+
+Black bottom-screen curtain: double-tap or touch with three fingers to restore.
+This overlay does not physically power off the display.
+
+This example does not contain game walkthrough content.

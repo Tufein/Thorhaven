@@ -1,0 +1,3 @@
+plugins { id 'com.android.application' version '9.1.0' apply false }
+
+allprojects { if (System.getenv('THORHAVEN_BUILD_ROOT')) layout.buildDirectory.set(file(System.getenv('THORHAVEN_BUILD_ROOT') + '/' + project.name)) }

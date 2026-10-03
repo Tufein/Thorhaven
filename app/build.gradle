@@ -1,0 +1,16 @@
+plugins { id 'com.android.application' }
+android {
+ namespace 'nl.thorhaven.app'
+ compileSdk 36
+ buildFeatures { aidl true }
+ defaultConfig { applicationId 'nl.thorhaven.app'; minSdk 30; targetSdk 33; versionCode 3; versionName '0.3.0-preview'; testInstrumentationRunner 'nl.thorhaven.app.SmokeInstrumentation' }
+ compileOptions { sourceCompatibility JavaVersion.VERSION_11; targetCompatibility JavaVersion.VERSION_11 }
+ signingConfigs {
+  if (System.getenv('THORHAVEN_KEYSTORE')) {
+   create('personal') { storeFile file(System.getenv('THORHAVEN_KEYSTORE')); storePassword System.getenv('THORHAVEN_KEYSTORE_PASSWORD'); keyAlias 'thorhaven'; keyPassword System.getenv('THORHAVEN_KEYSTORE_PASSWORD') }
+  }
+ }
+ buildTypes { release { minifyEnabled false; signingConfig (signingConfigs.findByName('personal') ?: signingConfigs.debug) } }
+}
+
+dependencies { implementation 'dev.rikka.shizuku:api:13.1.5'; implementation 'dev.rikka.shizuku:provider:13.1.5' }
