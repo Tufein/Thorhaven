@@ -144,7 +144,8 @@ final class Store {
   }
 
   static boolean validKey(String k) {
-    return k.equals("language")
+    return ExtraFeatures.key(k)
+        || k.equals("language")
         || k.equals("shortcuts")
         || k.equals("keyboardSize")
         || k.equals("guideNotes")
@@ -183,7 +184,10 @@ final class Store {
       String k = it.next();
       Object v = data.get(k);
       if (!validKey(k)) throw new Exception("Onbekende instelling");
-      if (k.equals("language")) {
+      if (ExtraFeatures.key(k)) {
+        ExtraFeatures.validate(k, v);
+        ed.putString(k, (String) v);
+      } else if (k.equals("language")) {
         if (!(v instanceof String) || (!v.equals("nl") && !v.equals("en")))
           throw new Exception("Invalid language");
         ed.putString(k, (String) v);

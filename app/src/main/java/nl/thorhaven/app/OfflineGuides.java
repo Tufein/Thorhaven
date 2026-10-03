@@ -88,6 +88,18 @@ final class OfflineGuides {
           if (pages < 1 || pages > 3000)
             throw new IOException("PDF bevat geen bruikbaar aantal pagina's");
         }
+      } else if (isImage(header)) {
+        android.graphics.BitmapFactory.Options options =
+            new android.graphics.BitmapFactory.Options();
+        options.inJustDecodeBounds = true;
+        android.graphics.BitmapFactory.decodeFile(temp.getAbsolutePath(), options);
+        if (options.outWidth < 1
+            || options.outHeight < 1
+            || options.outWidth > 16000
+            || options.outHeight > 16000
+            || (long) options.outWidth * options.outHeight > 64000000)
+          throw new IOException("Image dimensions exceed 64 megapixels or 16,000 pixels");
+        kind = "image";
       } else {
         kind = "text";
         if (total > 2 * 1024 * 1024) throw new IOException("Tekstgids maximaal 2 MB");
@@ -152,6 +164,7 @@ final class OfflineGuides {
   }
 
   static void importUri(MainActivity a, String pkg, Uri uri) {
+    final String owner = a.guideImportOwner;
     worker.execute(
         () -> {
           String message;
@@ -165,6 +178,12 @@ final class OfflineGuides {
             try (InputStream in = a.getContentResolver().openInputStream(uri)) {
               if (in == null) throw new IOException("Bestand niet leesbaar");
               message = "Offline opgeslagen: " + importStream(a, pkg, name, in);
+
+              if (owner != null && !owner.isEmpty() && !owner.equals(pkg)) {
+                JSONObject m = meta(a, pkg).put("owner", owner);
+                prefs(a).edit().putString(pkg, m.toString()).commit();
+                Store.prefs(a).edit().putString("guideActive:" + owner, pkg).commit();
+              }
             }
           } catch (Exception e) {
             message = "Gids niet opgeslagen: " + e.getMessage();
@@ -189,7 +208,24 @@ final class OfflineGuides {
     }
   }
 
+  static boolean isImage(byte[] h) {
+    return h.length >= 3
+        && ((h[0] == (byte) 137 && h[1] == 80 && h[2] == 78)
+            || (h[0] == (byte) 255 && h[1] == (byte) 216 && h[2] == (byte) 255));
+  }
+
+  static String owner(Context c, String id) {
+    return meta(c, id).optString("owner", id);
+  }
+
+  static String active(Context c, String pkg) {
+    if (meta(c, pkg).has("owner")) return pkg;
+    String id = Store.prefs(c).getString("guideActive:" + pkg, pkg);
+    return exists(c, id) && owner(c, id).equals(pkg) ? id : pkg;
+  }
+
   static void open(Context c, String pkg) {
+    pkg = active(c, pkg);
     if (!exists(c, pkg)) {
       Ui.toast(c, "Importeer eerst een PDF- of tekstgids via Gidsen.");
       return;

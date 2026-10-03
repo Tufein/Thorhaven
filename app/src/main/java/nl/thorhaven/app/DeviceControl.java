@@ -31,6 +31,9 @@ final class DeviceControl {
       String vendor = runner.run("getprop ro.vendor.retro.name").trim();
       if (!((model + " " + vendor).toLowerCase(Locale.ROOT).contains("thor")))
         throw new IOException("Deze systeemregelaars zijn alleen beschikbaar op een AYN Thor.");
+      if (op.equals("key")) {
+        return sendKey(runner, q).toString();
+      }
       if (op.equals("status")) return status(runner, model).toString();
       if (op.equals("capture")) return capture(runner, q.getJSONObject("values")).toString();
       if (op.equals("apply")) return apply(runner, q.getJSONObject("values")).toString();
@@ -40,6 +43,16 @@ final class DeviceControl {
       return Controls.error(e.getMessage() == null ? e.getClass().getSimpleName() : e.getMessage())
           .toString();
     }
+  }
+
+  static JSONObject sendKey(Runner runner, JSONObject q) throws Exception {
+    int code = q.getInt("code"), display = q.getInt("display");
+    boolean allowed = false;
+    for (int k : TouchControls.CODES) if (k == code) allowed = true;
+    if (!allowed || display < 0 || display > 1000) throw new IOException("Invalid key action");
+    String source = code >= 96 && code <= 110 ? "gamepad" : "keyboard";
+    runner.run("input " + source + " -d " + display + " keyevent " + code);
+    return new JSONObject().put("message", "Key sent");
   }
 
   static Runner root() throws Exception {

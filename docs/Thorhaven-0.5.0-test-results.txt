@@ -1,0 +1,198 @@
+Thorhaven 0.5.0 Preview — Verification report
+
+Environment: dedicated Android 15 ARM64 emulator with two logical displays
+(top 1920×1080, bottom 1240×1080), root Shizuku and a test-only Linux uinput source.
+
+Results:
+- 102 existing Android integration/regression checks passed against the signed release APK.
+- 43 new feature checks passed using the matching debug build with a debug-only local
+  document provider. Production feature code is shared; the provider is excluded from release.
+- 10 native helper self-tests passed. The native helper is unchanged from 0.4.
+- Forward installation from signed 0.4 to signed 0.5 preserved Unicode notes, language,
+  app settings and an existing guide file/metadata.
+- Signed release assembly and Android release lint passed.
+- Release signature verified; signing certificate matches previous previews.
+
+Scope: new tests cover multiple documents, image import/zoom, normalized map markers,
+text search and Unicode offsets, named PDF bookmark bounds, named game profiles,
+checklists, panel order, complete ZIP round trips, daily backup-job constraints,
+verified automatic archives, seven-archive retention, and failure preservation.
+Hardware automation switching/restore/error handling uses a fake asynchronous transport.
+Touch-action command validation is tested; physical emulator/game acceptance of these
+injected keys is not established by the test.
+
+Limits: no physical AYN Thor was connected. Fan/CPU/RGB responses use fixtures;
+physical cooling, firmware compatibility and real game acceptance need on-device checks.
+No claim is made about held touch input, analog sticks, ROM detection or panel power-off.
+Android controls scheduled-job timing; this run verifies scheduling and backup execution,
+not a 24-hour real-time scheduling soak.
+
+Completed automated reports follow.
+
+
+qa-v5-regression.txt
+PASS Stack parser excludes the home task
+PASS Bridge rejects malformed package names before execution
+PASS Two public displays discovered
+PASS Independent display IDs selected
+PASS Installed launchable apps discovered
+PASS Backup round-trip preserves Unicode notes
+PASS Backup round-trip preserves profile values
+PASS Malformed import is rejected atomically
+PASS Unknown backup schema is rejected
+PASS Unassigned secondary display stays disabled
+PASS Quick panel builds in secondary-display context
+PASS Dashboard starts successfully
+PASS All ten pages render without exception
+PASS Shizuku user service connects with authorized shell privileges
+PASS An existing settings task moves live to the secondary display: App live verplaatst naar scherm 2.
+PASS Two existing app tasks swap displays with Shizuku: Apps op beide schermen gewisseld.
+PASS Repeated move to the same screen is a safe no-op
+PASS Current app-pair capture reflects both real screen tasks
+PASS Hardware transaction applies and reads back multiple settings
+PASS Hardware snapshot restores original settings
+PASS Partial hardware failure rolls back earlier writes
+PASS High performance with quiet fan is rejected before writes
+PASS Restore preserves settings changed outside Thorhaven
+PASS CPU cap selects a published frequency
+PASS CPU cap restores previous frequency
+PASS Unavailable CPU frequencies rejected before writes
+PASS Unknown hardware command is rejected
+PASS Backup preserves validated mapping profiles
+PASS Invalid mapping import is rejected atomically
+PASS Hardware controls refuse non-Thor hardware
+PASS Native helper starts through root Shizuku with verified hash
+PASS Real Linux uinput fixture discovered as gamepad
+PASS Authenticated app connects and grabs a real gamepad: {"message":"Remapping actief. Select + Start drie seconden vasthouden is de noodstop."}
+PASS A maps to B and shared target stays held until both sources release
+PASS Shared target releases without stuck button
+PASS Native stick inversion transforms actual kernel events
+PASS Hat D-pad mapping emits keyboard Enter and releases it
+PASS Raw Select plus Start emergency stop releases original device
+PASS Remapping can be restarted after emergency stop
+PASS Foreground app selects its own mapping profile
+PASS Per-app identity mapping produces its own kernel events
+PASS Connection loss watchdog releases the physical gamepad without app assistance
+PASS Authentication test helper launches
+PASS Incorrect session token is rejected before device access
+PASS Missing heartbeat closes the session and destroys the virtual controller
+PASS RGB color, enable and brightness round-trip through typed backend
+PASS RGB snapshot restores the original values
+PASS All supported system controls render with fixture capabilities
+PASS Nintendo preset swaps both face-button pairs
+PASS PC-menu preset uses arrows and Enter
+PASS WASD preset uses Linux keyboard targets
+PASS Drift recommendation includes a three-point rest margin
+PASS Moving or invalid sticks do not produce a calibration recommendation
+PASS Recent list is bounded and moves repeated apps to the front
+PASS Recent apps round-trip through backup without launching them
+PASS Touch-only panel explicitly leaves controller focus to the game
+PASS Controller panel can take focus when requested
+PASS Uncharged four-hour screen-off session records measured battery loss
+PASS Standby average uses elapsed time and percentage-point loss
+PASS Short sleep sessions do not distort the long-session average
+PASS A charger connected during screen-off excludes the whole measurement
+PASS A reboot invalidates an unfinished elapsed-time sleep measurement
+PASS Active app-time pauses while Thorhaven is foreground
+PASS UTF-8 guide is copied into private local storage
+PASS Rejected binary import preserves the earlier offline guide
+PASS Guide identifiers cannot traverse storage paths
+PASS Oversized text import preserves existing guide metadata
+PASS Real PDF is parsed and counted before local installation
+PASS PDF page bookmark survives reader creation
+PASS Local text reader loads without network access
+PASS PDF reader renders the bookmarked second page
+PASS L1 wraps from first page to the final page
+PASS R1 wraps through the full ten-page navigation
+PASS Real accessibility service binds for second-display overlays
+PASS Black OLED curtain attaches only to the assigned bottom display
+PASS Black curtain restores the underlying screen without power commands
+PASS Real touch-only quick panel keeps its window non-focusable
+PASS PDF guide attaches as an accessibility overlay over the second display
+PASS Real guide overlay renders its PDF page
+PASS PDF page dialog opens above a real accessibility overlay
+PASS Closing guide overlay releases the reader and window
+PASS Controller B closes a focusable panel even with combos disabled
+PASS Removing a guide clears only its private copy
+PASS English catalog translates navigation and guide actions
+PASS Dynamic status labels use the selected language
+PASS User guide content is not translated
+PASS Custom shortcuts and language survive settings backup
+PASS Shortcut editor cannot intercept Home or arbitrary keys
+PASS Shortcut package targets are validated before execution
+PASS Custom Select+A binding opens the real quick panel instead of the default guide action
+PASS Executed custom shortcuts consume the matching key release
+PASS A disabled custom action passes its second button through to the game
+PASS Complete ZIP backup restores guide bytes and reading position
+PASS Complete ZIP backup restores notes and typed app-time values
+PASS Completed restore excludes unfinished sleep state and clears its recovery journal
+PASS A late transaction failure restores prior guide files and preference values
+PASS Unsafe ZIP paths are rejected without replacing existing guides
+PASS Imported battery averages cannot include charging sessions
+PASS Side-by-side guide editor saves notes for the correct app
+PASS Symbol keyboard includes angle brackets and currency characters
+PASS Keyboard commits symbols and sends paired cursor key events
+PASS Keyboard size preference and every-row navigation stay within bounds
+
+102 checks passed
+
+
+
+qa-v5-new.txt
+PASS Multiple guides preserve original document and selected guide
+PASS PNG import validates dimensions and recognizes map
+PASS Map marker outside normalized coordinates rejected
+PASS Named PDF bookmark rejects page outside document
+PASS Named game profile applies stored app settings
+PASS Reject malformed gameProfiles:qa.game
+PASS Reject malformed hardwareProfile:qa.game
+PASS Reject malformed guideActive:qa.game
+PASS Reject malformed touchTiles
+PASS Reject malformed panelOrder
+PASS Touch action uses fixed gamepad command and target display
+PASS Touch command rejects Home before privileged execution
+PASS Reject malformed hardwareProfile:qa.game
+PASS Hardware automation serializes rapid foreground changes
+PASS Hardware automation restores prior profile before switching
+PASS Hardware automation applies latest requested profile after restore
+PASS Disabling automation requests original hardware restoration
+PASS Unsupported firmware disables automation without retry loop
+PASS Text search locates first match
+PASS Find next advances within guide
+PASS Unicode search keeps source offsets valid
+PASS Map reader decodes image asynchronously
+PASS Map zoom resizes image with aspect ratio
+PASS Quick panel honors reordered card list
+PASS Session timer saves bounded battery history
+PASS Settings backup preserves checklists and Unicode
+PASS Complete ZIP restores multiple guides and map markers
+PASS Complete backup preserves named PDF bookmarks
+PASS Android accepts persisted automatic backup job
+PASS Backup job requires charging, idle state and daily period
+PASS Automatic backup archive 1 is validated: Backup completed · 2026-10-03 05:07
+PASS Automatic backup archive 2 is validated: Backup completed · 2026-10-03 05:07
+PASS Automatic backup archive 3 is validated: Backup completed · 2026-10-03 05:07
+PASS Automatic backup archive 4 is validated: Backup completed · 2026-10-03 05:07
+PASS Automatic backup archive 5 is validated: Backup completed · 2026-10-03 05:07
+PASS Automatic backup archive 6 is validated: Backup completed · 2026-10-03 05:07
+PASS Automatic backup archive 7 is validated: Backup completed · 2026-10-03 05:07
+PASS Automatic backup archive 8 is validated: Backup completed · 2026-10-03 05:07
+PASS Automatic backup archive 9 is validated: Backup completed · 2026-10-03 05:07
+PASS Automatic backup retention keeps seven archives
+PASS Invalid generated backup is rejected before retention pruning
+PASS Failed backup removes partial archive and preserves previous seven
+PASS All pages and expanded guide tools render
+
+43 checks passed
+
+
+
+native-v5-result.txt
+PASS 10 native checks
+
+
+qa-v5-update.txt
+PASS Signed 0.4 → 0.5 installation succeeds
+PASS Unicode notes, English language and app settings preserved
+PASS Existing 0.4 guide file and metadata preserved
+

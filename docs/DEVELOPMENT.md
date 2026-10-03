@@ -64,7 +64,7 @@ For the extended suite, use a dedicated root-enabled ARM64 emulator and start th
 
 The suite exercises stack filtering and argument validation, display enumeration, app discovery, Unicode backup round trips, atomic invalid-import rejection, unknown schema handling, disabled screen assignment, secondary-context panel creation, all ten UI pages, Shizuku connection, live moves, two-app swaps and repeated-move behavior. It restores its preference changes after success. Accessibility service may need toggling after instrumentation force-stops the target process.
 
-See [the English guide](Thorhaven-0.4.0-guide.md) for installation and limitations. Third-party licenses are in `THIRD_PARTY_NOTICES.txt` and bundled in `app/src/main/assets/licenses.txt`.
+See [the English guide](Thorhaven-0.5.0-guide.md) for installation and limitations. Third-party licenses are in `THIRD_PARTY_NOTICES.txt` and bundled in `app/src/main/assets/licenses.txt`.
 
 ## 0.3 validation
 
@@ -77,3 +77,19 @@ Offline guides and measurements are not part of the JSON settings backup; copy t
 `V4FeatureChecks` covers UI language, unchanged user text, validated custom bindings, actual custom shortcut execution and release consumption, complete guide/settings/usage backup round trips, rejection of unsafe ZIP paths and invalid charging-session eligibility, rollback after a late transaction failure, side-by-side note saving, symbol input, paired cursor events and keyboard row/size bounds. The extended suite remains in `SmokeInstrumentation`; test fixtures are not packaged into the APK.
 
 Complete ZIP backups include guide files and usage history, unlike the legacy settings-only JSON export. Both formats include the new language, shortcut and keyboard preferences. ZIP imports merge matching guide/settings entries and replace usage history. Limits: 64 guides, 128 MB guide data and 1 MB metadata. No Internet permission or new third-party dependency was added.
+
+## 0.5 architecture and validation
+
+`ExtraFeatures` validates portable tool preferences and document metadata. `SessionStats` uses elapsed time and boot identity, samples a bounded battery history without wake locks and transfers completed sessions only. `TouchControls` attaches a non-focusable lower-display overlay; its fixed key/display command is validated by `DeviceControl.sendKey`. Input is tap-only and privileged.
+
+`HardwareAutomation` serializes apply/restore transitions, coalesces pending foreground changes, preserves manual recovery state and opts in per process session. The existing verified hardware transaction is reused. Its transition tests use an asynchronous fake transport; actual firmware behavior remains untested.
+
+`AutoBackup` and `BackupJob` use Android's persisted daily idle/charging job and a document-tree grant. Every archive is prepared/validated before retention removes previously recorded app-owned archives. Folder grants and retention records are local. A debug-only document provider supports integration tests; neither that provider nor instrumentation is packaged in the release APK.
+
+Run the new feature checks with a matching debug app and test APK, two displays and Android Settings installed:
+
+```
+adb shell am instrument -w -e v5 true nl.thorhaven.app.test/nl.thorhaven.app.SmokeInstrumentation
+```
+
+This suite exercises Unicode search, PNG decoding, named PDF bookmark bounds, complete multi-document/map backup, named profiles, checklists, panel order, restricted touch commands, hardware state transitions, daily job constraints, seven-archive retention and preservation after a failed backup. Use a dedicated emulator: tests modify temporary preferences and launch apps. The regular instrumentation mode runs the existing 0.1–0.4 regression suite.

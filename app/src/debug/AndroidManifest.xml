@@ -1,0 +1,1 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"><application><provider android:name="nl.thorhaven.app.BackupTestProvider" android:authorities="nl.thorhaven.backup.test" android:exported="true" android:grantUriPermissions="true" android:permission="android.permission.MANAGE_DOCUMENTS"/></application></manifest>

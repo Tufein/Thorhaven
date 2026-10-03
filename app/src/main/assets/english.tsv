@@ -507,3 +507,80 @@ Slaap	Sleep
 Sneltoetsen bewerken	Edit shortcuts
 L3	L3
 R3	R3
+Gamechecklist	Game checklist
+Taken en verzamelobjecten worden lokaal voor deze app opgeslagen.	Tasks and collectibles are stored locally for this app.
+Taak toevoegen	Add task
+Taak of verzamelobject	Task or collectible
+Opslaan	Save
+Annuleren	Cancel
+Verwijderen	Delete
+Gameprofiel verwijderen?	Delete game profile?
+Gameprofielen met naam	Named game profiles
+Bewaar het volume, de helderheid, het scherm en de controllerinstellingen van deze app. Kies handmatig een profiel wanneer je in een emulator van game wisselt.	Save this app's current volume, brightness, display and controller settings. Select a profile manually when changing games in an emulator.
+Huidige instellingen als gameprofiel bewaren	Save current settings as game profile
+Naam van de game	Game name
+Huidige appinstellingen bewaren	Save current app settings
+Sla eerst de appinstellingen op voordat je een gameprofiel met naam maakt.	Save the app settings first before creating a named profile.
+Automatisch ventilator- / prestatieprofiel	Automatic fan / performance profile
+Automatisch hardwareprofiel	Automatic hardware profile
+Vereist de toegankelijkheidsservice en Thor-firmware met root-Shizuku of AYN PServer. Wordt toegepast wanneer deze app actief is en hersteld bij wisselen naar een andere app. Niet-ondersteunde firmware geeft een fout. Na herstart moet je dit opnieuw inschakelen.	Requires the accessibility service and Thor firmware with root Shizuku or AYN PServer. Applied when this app gains focus; restored when leaving it. Changes are verified, unsupported firmware reports an error. Disabled after restart until you enable it again.
+Verwijderen	Remove
+Standaard	Standard
+Prestaties	Performance
+Hoge prestaties	High performance
+Uit	Off
+Stil	Quiet
+Smart	Balanced
+Volgorde van paneelkaarten	Panel card order
+Verplaats een kaart naar voren in het snelpaneel. Belangrijke systeemregelaars blijven bovenaan.	Move a card earlier in the quick panel. Important system controls stay at the top.
+Aanraakknoppen	Touch control tiles
+Zes instelbare tikknoppen op het onderste scherm. Vereist systeemtoegang. Geen vasthouden, analoge sticks of macro's.	Six configurable tap buttons on the lower screen. Requires privileged system access. No hold, analog sticks or macros.
+Aanraakknoppen openen	Open touch controls
+Automatische hardwareprofielen	Automatic hardware profiles
+Stel een profiel in via Apps → Profiel of Gidsen. Roottoegang en geschikte Thor-firmware zijn nodig.	Configure a profile under Apps → Profile or Guides. Root access and compatible Thor firmware are required.
+Voor deze sessie inschakelen	Enable for this session
+Oorspronkelijke hardwareinstellingen herstellen	Restore original hardware settings
+Automatische lokale back-ups	Automatic local backups
+Android maakt dagelijks een back-up als het apparaat niet wordt gebruikt en oplaadt. De laatste 7 volledige back-ups blijven bewaard. Het tijdstip kan variëren; geen cloud- of netwerktoegang.	Android runs a daily backup when the device is idle and charging. Keep the latest 7 completed backups. Timing is approximate; no cloud or network access.
+Back-upmap kiezen	Choose backup folder
+Nu een back-up maken	Back up now
+Automatische back-ups uitschakelen	Disable automatic backups
+Speelsessies & batterijgrafiek	Play sessions & battery graph
+Start een timer voor je speelsessie. De verstreken tijd telt pauzes en tijd met uitgeschakeld scherm mee. Metingen worden opgeslagen wanneer de service actief is; ontbrekende metingen worden niet ingevuld.	Start a timer for your play session. Elapsed time includes breaks and screen-off time. Samples are recorded while Thorhaven's service is running; no readings are invented across gaps.
+Sessie stoppen en bewaren	Stop and save session
+Sessie starten	Start session
+Opgeslagen sessies wissen	Clear saved sessions
+Sessiegeschiedenis wissen?	Clear session history?
+Wissen	Clear
+Aanraakknoppen	Touch controls
+Tikacties voor de app op het bovenste scherm.	Tap actions for the app on the upper display.
+Tikactie kiezen	Choose tap action
+Sluiten	Close
+Aanraakknoppen · tikacties	Touch controls · tap actions
+Root-Shizuku / AYN PServer nodig. Kies de doelapp op het bovenste scherm. Ondersteuning verschilt per emulator. De knoppen geven een korte druk, geen vastgehouden gamepadknop.	Root Shizuku / AYN PServer required. Select the target app on the top display. Emulator key handling varies. These tiles send a short press, not a held gamepad button.
+PDF / tekst / afbeelding toevoegen	Add PDF / text / image
+Lokaal document verwijderen?	Delete local document?
+Bladwijzer toevoegen	Add bookmark
+Naam van de bladwijzer	Bookmark name
+Deze pagina een naam geven	Name this page
+Bladwijzers	Bookmarks
+Bladwijzers wissen	Clear bookmarks
+Markeringen wissen	Clear markers
+Alle kaartmarkeringen wissen?	Clear all map markers?
+Zoeken in deze gids	Search in this guide
+Volgende zoeken	Find next
+Kaartmarkering	Map marker
+Naam van de markering	Marker name
+
+Extra hulpmiddelen	Extra tools
+Paneelvolgorde, aanraakknoppen, automatische back-ups en hardwareprofielen.	Panel order, touch controls, automatic backups and hardware profiles.
+Opties sluiten	Close options
+Extra opties openen	Open extra options
+kaart / afbeelding	map / image
+
+Je eigen gidsen en kaarten op het onderste scherm, ook bovenop een game voor beide schermen.	Your own guides and maps on the bottom screen, including overlays above a dual-screen game.
+PDF / afbeelding maximaal 16 MB; UTF-8 tekst of Markdown maximaal 2 MB. Bladwijzers en leespositie worden lokaal onthouden.	PDF / image up to 16 MB; UTF-8 text or Markdown up to 2 MB. Bookmarks and reading positions stay local.
+
+Thorhaven 0.5.0 · eigen implementatie, geïnspireerd op Wayfinder.	Thorhaven 0.5.0 · independent implementation, inspired by Wayfinder.
+Nieuw: gidsbibliotheken, zoeken, bladwijzers, kaarten, checklists, gameprofielen, paneelvolgorde, batterijgrafieken en automatische lokale back-ups.	New: guide libraries, search, bookmarks, maps, checklists, game profiles, panel order, battery graphs and automatic local backups.
+Experimenteel nieuw: aanraakknoppen en automatische hardwareprofielen.	New experimental tools: touch controls and automatic hardware profiles.

@@ -219,6 +219,7 @@ final class CompleteBackup {
         try (InputStream in = new FileInputStream(new File(dir, entry))) {
           OfflineGuides.importStream(staged, pkg, meta.getString("name"), in);
         }
+        ExtraFeatures.validateGuide(meta);
         JSONObject actual = OfflineGuides.meta(staged, pkg);
         if (!actual.getString("kind").equals(meta.getString("kind"))
             || actual.getInt("pages") != meta.getInt("pages")

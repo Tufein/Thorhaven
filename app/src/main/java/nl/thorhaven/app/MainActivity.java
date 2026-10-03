@@ -22,7 +22,9 @@ public class MainActivity extends Activity implements DisplayManager.DisplayList
   TextView testText;
   ControllerView controller;
   long lastControllerMotion;
+  android.app.AlertDialog profileDialog;
   int backupMode;
+  String guideImportOwner = "";
   String guideImportPackage = "";
   static final String[] PAGES = {
     "Overzicht",
@@ -47,6 +49,7 @@ public class MainActivity extends Activity implements DisplayManager.DisplayList
       page = b.getString("page", "Overzicht");
       query = b.getString("query", "");
       guideImportPackage = b.getString("guideImportPackage", "");
+      guideImportOwner = b.getString("guideImportOwner", "");
     }
     getSystemService(DisplayManager.class).registerDisplayListener(this, handler);
     if ("notes".equals(getIntent().getStringExtra("page"))) page = "Notities";
@@ -63,6 +66,7 @@ public class MainActivity extends Activity implements DisplayManager.DisplayList
     b.putString("page", page);
     b.putString("query", query);
     b.putString("guideImportPackage", guideImportPackage);
+    b.putString("guideImportOwner", guideImportOwner);
   }
 
   @Override
@@ -432,29 +436,33 @@ public class MainActivity extends Activity implements DisplayManager.DisplayList
     EditText guide = Ui.input(this, "Optionele gidslink (https://…)");
     guide.setText(Store.prefs(this).getString("guide:" + a.pkg, ""));
     l.addView(guide);
+    ExtraFeatures.profile(this, l, a.pkg);
     ScrollView sc = new ScrollView(this);
     sc.addView(l);
-    new Ui.Dialog(this)
-        .setTitle(a.name)
-        .setView(sc)
-        .setPositiveButton(
-            "Opslaan",
-            (d, w) -> {
-              Store.prefs(this)
-                  .edit()
-                  .putBoolean("favorite:" + a.pkg, favorite.isChecked())
-                  .putInt(
-                      "screen:" + a.pkg,
-                      displays.get(spinner.getSelectedItemPosition()).getDisplayId())
-                  .putInt("volume:" + a.pkg, vol.isChecked() ? Math.max(0, values[0]) : -1)
-                  .putInt("brightness:" + a.pkg, bright.isChecked() ? Math.max(0, values[1]) : -1)
-                  .putString("guide:" + a.pkg, guide.getText().toString())
-                  .apply();
-              render();
-            })
-        .setNeutralButton("Notities", (d, w) -> notes(a.pkg))
-        .setNegativeButton("Annuleren", null)
-        .show();
+    profileDialog =
+        new Ui.Dialog(this)
+            .setTitle(a.name)
+            .setView(sc)
+            .setPositiveButton(
+                "Opslaan",
+                (d, w) -> {
+                  Store.prefs(this)
+                      .edit()
+                      .putBoolean("favorite:" + a.pkg, favorite.isChecked())
+                      .putInt(
+                          "screen:" + a.pkg,
+                          displays.get(spinner.getSelectedItemPosition()).getDisplayId())
+                      .putInt("volume:" + a.pkg, vol.isChecked() ? Math.max(0, values[0]) : -1)
+                      .putInt(
+                          "brightness:" + a.pkg, bright.isChecked() ? Math.max(0, values[1]) : -1)
+                      .putString("guide:" + a.pkg, guide.getText().toString())
+                      .apply();
+                  render();
+                })
+            .setNeutralButton("Notities", (d, w) -> notes(a.pkg))
+            .setNegativeButton("Annuleren", null)
+            .create();
+    profileDialog.show();
   }
 
   void pairsPage() {
@@ -547,12 +555,15 @@ public class MainActivity extends Activity implements DisplayManager.DisplayList
 
   void importGuide(String pkg) {
     guideImportPackage = pkg;
+    guideImportOwner = GuidePages.selected;
     startActivityForResult(
         new Intent(Intent.ACTION_OPEN_DOCUMENT)
             .setType("*/*")
             .putExtra(
                 Intent.EXTRA_MIME_TYPES,
-                new String[] {"application/pdf", "text/plain", "text/markdown"})
+                new String[] {
+                  "application/pdf", "text/plain", "text/markdown", "image/png", "image/jpeg"
+                })
             .addCategory(Intent.CATEGORY_OPENABLE),
         43);
   }
@@ -654,6 +665,7 @@ public class MainActivity extends Activity implements DisplayManager.DisplayList
     KeyboardSettings.page(this, content);
     Shortcuts.page(this, content);
     CompleteBackup.page(this, content);
+    ExtraFeatures.settings(this);
     settingSwitch(content, "Notities naast gids", "guideNotes", false);
     LinearLayout panelSettings =
         card(
@@ -803,15 +815,16 @@ public class MainActivity extends Activity implements DisplayManager.DisplayList
     c =
         card(
             "Over deze preview",
-            "Thorhaven 0.4.0 · eigen implementatie, geïnspireerd op Wayfinder.");
+            "Thorhaven 0.5.0 · eigen implementatie, geïnspireerd op Wayfinder.");
     c.addView(
         Ui.text(
             this,
             "Beschikbaar: schermkeuze, app-profielen, app-paren, favorieten, gidsen, notities,"
                 + " snelpaneel, systeemvolume/helderheid, controller-test, combinaties en"
                 + " toetsenbord.\n\n"
-                + "Nieuw: taalkeuze, eigen sneltoetsen, volledige back-up, uitgebreid toetsenbord"
-                + " en gids/notities naast elkaar.\n"
+                + "Nieuw: gidsbibliotheken, zoeken, bladwijzers, kaarten, checklists, gameprofielen,"
+                + " paneelvolgorde, batterijgrafieken en automatische lokale back-ups.\n"
+                + "Experimenteel nieuw: aanraakknoppen en automatische hardwareprofielen.\n"
                 + "Experimenteel: live schermwissels, root-remapping en fan/CPU/RGB-bediening.\n"
                 + "Nog niet beschikbaar: macro's, muis/gyro, schermuitschakeling en opname. Deze"
                 + " functies vragen aanvullende systeemintegratie en testen op een echte Thor.\n\n"
@@ -953,6 +966,10 @@ public class MainActivity extends Activity implements DisplayManager.DisplayList
     super.onActivityResult(req, result, data);
     if (result != RESULT_OK || data == null || data.getData() == null) return;
     Uri uri = data.getData();
+    if (req == 46) {
+      AutoBackup.choose(this, uri, data.getFlags());
+      return;
+    }
     if (req == 44) {
       CompleteBackup.exportUri(this, uri);
     } else if (req == 45) {

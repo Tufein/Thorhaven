@@ -130,7 +130,7 @@ final class QuickPanel {
                 if (close != null) close.run();
                 Store.guide(c, active);
               }));
-      if (OfflineGuides.exists(c, active))
+      if (OfflineGuides.exists(c, OfflineGuides.active(c, active)))
         now.addView(
             Ui.button(
                 c,
@@ -241,6 +241,28 @@ final class QuickPanel {
         }
       }
     }
+    LinearLayout touch =
+        Ui.card(c, l, "Aanraakknoppen", "Tikacties voor de app op het bovenste scherm.");
+    touch.addView(
+        Ui.button(
+            c,
+            "Aanraakknoppen openen",
+            () -> {
+              if (close != null) close.run();
+              TouchControls.show(c);
+            }));
+    for (int i = 0; i < l.getChildCount(); i++) {
+      View child = l.getChildAt(i);
+      if (child instanceof LinearLayout) {
+        LinearLayout box = (LinearLayout) child;
+        if (box.getChildCount() > 0 && box.getChildAt(0) instanceof TextView) {
+          String title = ((TextView) box.getChildAt(0)).getText().toString();
+          for (String key : ExtraFeatures.CARDS)
+            if (title.equals(Language.text(c, key))) box.setTag(key);
+        }
+      }
+    }
+    ExtraFeatures.reorder(c, l);
     return l;
   }
 }

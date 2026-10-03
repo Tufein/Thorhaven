@@ -25,6 +25,7 @@ final class PlayStats {
       new Runnable() {
         public void run() {
           flush();
+          SessionStats.sample(context);
           if (started) handler.postDelayed(this, 15000);
         }
       };
@@ -190,6 +191,7 @@ final class PlayStats {
   }
 
   static void page(MainActivity a) {
+    SessionStats.page(a);
     a.heading(
         "Accu & speeltijd",
         "Lokale metingen tijdens de toegankelijkheidsservice. Scherm uit is geen bewijs van diepe"

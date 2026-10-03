@@ -2,16 +2,24 @@ package nl.thorhaven.app;
 
 import android.app.*;
 import android.content.*;
+import android.graphics.*;
+import android.net.Uri;
 import android.os.*;
+import android.provider.DocumentsContract;
+import android.widget.*;
+import java.io.*;
+import java.nio.charset.StandardCharsets;
 import org.json.*;
 
 public class SmokeInstrumentation extends Instrumentation {
+  boolean v5Only;
   int passed;
   StringBuilder report = new StringBuilder();
 
   @Override
   public void onCreate(Bundle args) {
     super.onCreate(args);
+    v5Only = args != null && "true".equals(args.getString("v5"));
     start();
   }
 
@@ -23,10 +31,15 @@ public class SmokeInstrumentation extends Instrumentation {
 
   @Override
   public void onStart() {
+    if (v5Only) {
+      v5();
+      return;
+    }
     Bundle result = new Bundle();
     Context c = getTargetContext();
     try {
       JSONObject before = Store.backup(c);
+      Store.prefs(c).edit().putString("language", "nl").commit();
       check(
           SystemBridge.parse(
                       "RootTask id=7 bounds=[0,0][1920,1080] displayId=0 userId=0\n"
@@ -469,5 +482,410 @@ public class SmokeInstrumentation extends Instrumentation {
     Controls.stop(c);
     Thread.sleep(300);
     ThorService.instance = oldService;
+  }
+
+  void rejects(String key, String value) throws Exception {
+    boolean no = false;
+    try {
+      ExtraFeatures.validate(key, value);
+    } catch (Exception e) {
+      no = true;
+    }
+    check(no, "Reject malformed " + key);
+  }
+
+  void v5() {
+    Bundle result = new Bundle();
+    Context c = getTargetContext();
+    try {
+      AutoBackup.prefs(c).edit().clear().commit();
+      File[] priorArchives = new File(c.getFilesDir(), "backup-provider").listFiles();
+      if (priorArchives != null) for (File f : priorArchives) f.delete();
+      String old = Store.backup(c).toString();
+      Store.prefs(c).edit().putString("language", "en").commit();
+      MainActivity a =
+          (MainActivity)
+              startActivitySync(
+                  new Intent(c, MainActivity.class).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
+      String pkg = "qa.game", id = pkg + ".doc1", imageId = pkg + ".doc2", pdfId = pkg + ".doc3";
+      OfflineGuides.importStream(
+          c,
+          pkg,
+          "Original.txt",
+          new ByteArrayInputStream("Original guide".getBytes(StandardCharsets.UTF_8)));
+      OfflineGuides.importStream(
+          c,
+          id,
+          "Walkthrough.md",
+          new ByteArrayInputStream(
+              "Één apple\nSecond apple\nİ dotted unicode".getBytes(StandardCharsets.UTF_8)));
+      JSONObject meta = OfflineGuides.meta(c, id).put("owner", pkg);
+      OfflineGuides.prefs(c).edit().putString(id, meta.toString()).commit();
+      Store.prefs(c).edit().putString("guideActive:" + pkg, id).commit();
+      check(
+          OfflineGuides.active(c, pkg).equals(id) && OfflineGuides.exists(c, pkg),
+          "Multiple guides preserve original document and selected guide");
+      Bitmap b = Bitmap.createBitmap(80, 50, Bitmap.Config.ARGB_8888);
+      b.eraseColor(Color.CYAN);
+      ByteArrayOutputStream png = new ByteArrayOutputStream();
+      b.compress(Bitmap.CompressFormat.PNG, 100, png);
+      b.recycle();
+      OfflineGuides.importStream(
+          c, imageId, "Map.png", new ByteArrayInputStream(png.toByteArray()));
+      JSONObject imageMeta =
+          OfflineGuides.meta(c, imageId)
+              .put("owner", pkg)
+              .put(
+                  "markers",
+                  new JSONArray()
+                      .put(new JSONObject().put("name", "Treasure").put("x", 0.3).put("y", 0.7)));
+      ExtraFeatures.validateGuide(imageMeta);
+      OfflineGuides.prefs(c).edit().putString(imageId, imageMeta.toString()).commit();
+      check(
+          OfflineGuides.meta(c, imageId).getString("kind").equals("image"),
+          "PNG import validates dimensions and recognizes map");
+      boolean bad = false;
+      try {
+        ExtraFeatures.validateGuide(
+            new JSONObject()
+                .put(
+                    "markers",
+                    new JSONArray()
+                        .put(new JSONObject().put("name", "bad").put("x", 2).put("y", 0))));
+      } catch (Exception e) {
+        bad = true;
+      }
+      check(bad, "Map marker outside normalized coordinates rejected");
+      ByteArrayOutputStream pdfOut = new ByteArrayOutputStream();
+      android.graphics.pdf.PdfDocument pdf = new android.graphics.pdf.PdfDocument();
+      try {
+        for (int page = 0; page < 2; page++) {
+          android.graphics.pdf.PdfDocument.Page pp =
+              pdf.startPage(
+                  new android.graphics.pdf.PdfDocument.PageInfo.Builder(300, 400, page + 1)
+                      .create());
+          pp.getCanvas().drawColor(Color.WHITE);
+          pdf.finishPage(pp);
+        }
+        pdf.writeTo(pdfOut);
+      } finally {
+        pdf.close();
+      }
+      OfflineGuides.importStream(
+          c, pdfId, "PDF chapters", new ByteArrayInputStream(pdfOut.toByteArray()));
+      JSONObject pdfMeta =
+          OfflineGuides.meta(c, pdfId)
+              .put("owner", pkg)
+              .put(
+                  "bookmarks",
+                  new JSONArray().put(new JSONObject().put("name", "Chapter two").put("page", 1)));
+      ExtraFeatures.validateGuide(pdfMeta);
+      OfflineGuides.prefs(c).edit().putString(pdfId, pdfMeta.toString()).commit();
+      bad = false;
+      try {
+        ExtraFeatures.validateGuide(
+            new JSONObject()
+                .put("pages", 2)
+                .put(
+                    "bookmarks",
+                    new JSONArray().put(new JSONObject().put("name", "Missing").put("page", 2))));
+      } catch (Exception e) {
+        bad = true;
+      }
+      check(bad, "Named PDF bookmark rejects page outside document");
+      JSONArray tasks =
+          new JSONArray().put(new JSONObject().put("text", "Collect € 日本語").put("done", true));
+      ExtraFeatures.save(c, "checklist:" + pkg, tasks.toString());
+      JSONArray profiles =
+          new JSONArray()
+              .put(
+                  new JSONObject()
+                      .put("name", "Adventure")
+                      .put(
+                          "data",
+                          new JSONObject()
+                              .put("volume", 23)
+                              .put("brightness", -1)
+                              .put("screen", Store.screen(c, false))));
+      ExtraFeatures.validate("gameProfiles:" + pkg, profiles.toString());
+      ExtraFeatures.save(c, "gameProfiles:" + pkg, profiles.toString());
+      runOnMainSync(() -> ExtraFeatures.applyProfile(c, pkg, profiles.optJSONObject(0)));
+      check(
+          Store.prefs(c).getInt("volume:" + pkg, -1) == 23,
+          "Named game profile applies stored app settings");
+      rejects("gameProfiles:" + pkg, "[{\"name\":\"bad\",\"data\":{\"shell\":\"id\"}}]");
+      rejects("hardwareProfile:" + pkg, "{\"performance_mode\":\"99\",\"fan_mode\":\"4\"}");
+      rejects("guideActive:" + pkg, "../../escape");
+      rejects("touchTiles", "[{\"code\":3,\"label\":\"Home\"}]");
+      rejects("panelOrder", "[\"Favorieten\"]");
+      final String[] sent = {""};
+      DeviceControl.sendKey(
+          command -> {
+            sent[0] = command;
+            return "";
+          },
+          new JSONObject().put("code", 96).put("display", 0));
+      check(
+          sent[0].equals("input gamepad -d 0 keyevent 96"),
+          "Touch action uses fixed gamepad command and target display");
+      bad = false;
+      try {
+        DeviceControl.sendKey(
+            command -> {
+              throw new AssertionError("Should not execute");
+            },
+            new JSONObject().put("code", 3).put("display", 0));
+      } catch (Exception e) {
+        bad = true;
+      }
+      check(bad, "Touch command rejects Home before privileged execution");
+      rejects("hardwareProfile:" + pkg, "{\"performance_mode\":\"2\",\"fan_mode\":\"1\"}");
+      runOnMainSync(
+          () -> {
+            try {
+              checkHardwareAutomation(c);
+            } catch (Exception e) {
+              throw new RuntimeException(e);
+            }
+          });
+      ExtraFeatures.save(c, "touchTiles", TouchControls.defaults().toString());
+      JSONArray order = new JSONArray();
+      for (int i = ExtraFeatures.CARDS.length - 1; i >= 0; i--) order.put(ExtraFeatures.CARDS[i]);
+      ExtraFeatures.save(c, "panelOrder", order.toString());
+      final GuidePane[] text = {null}, image = {null};
+      runOnMainSync(
+          () -> {
+            text[0] = new GuidePane(a, id, () -> {});
+            a.content.addView(text[0], new LinearLayout.LayoutParams(-1, 600));
+          });
+      Thread.sleep(700);
+      runOnMainSync(
+          () -> {
+            text[0].find("apple");
+          });
+      check(text[0].searchAt > 0, "Text search locates first match");
+      int first = text[0].searchAt;
+      runOnMainSync(
+          () -> {
+            text[0].find("apple");
+          });
+      check(text[0].searchAt > first, "Find next advances within guide");
+      runOnMainSync(() -> text[0].find("İ"));
+      check(true, "Unicode search keeps source offsets valid");
+      runOnMainSync(
+          () -> {
+            text[0].close();
+            a.content.removeView(text[0]);
+            image[0] = new GuidePane(a, imageId, () -> {});
+            a.content.addView(image[0], new LinearLayout.LayoutParams(-1, 600));
+          });
+      Thread.sleep(700);
+      check(image[0].bitmap != null, "Map reader decodes image asynchronously");
+      runOnMainSync(
+          () -> {
+            image[0].zoom = 2;
+            image[0].sizeImage();
+          });
+      check(image[0].image.getLayoutParams().width > 0, "Map zoom resizes image with aspect ratio");
+      runOnMainSync(
+          () -> {
+            image[0].close();
+            a.content.removeView(image[0]);
+          });
+      runOnMainSync(
+          () -> {
+            LinearLayout panel = QuickPanel.build(a, null);
+            int previous = -1;
+            for (int i = 0; i < order.length(); i++) {
+              for (int j = 0; j < panel.getChildCount(); j++)
+                if (order.optString(i).equals(panel.getChildAt(j).getTag())) {
+                  if (j < previous) throw new AssertionError("Card order");
+                  previous = j;
+                }
+            }
+          });
+      check(true, "Quick panel honors reordered card list");
+      SessionStats.start(c);
+      pendingBackdate(c);
+      SessionStats.sample(c);
+      SessionStats.stop(c);
+      check(
+          ExtraFeatures.array(c, "sessions").length() > 0,
+          "Session timer saves bounded battery history");
+      String backup = Store.backup(c).toString();
+      Store.prefs(c).edit().remove("checklist:" + pkg).remove("sessions").commit();
+      Store.restore(c, backup);
+      check(
+          ExtraFeatures.array(c, "checklist:" + pkg)
+              .getJSONObject(0)
+              .getString("text")
+              .equals("Collect € 日本語"),
+          "Settings backup preserves checklists and Unicode");
+      ByteArrayOutputStream zip = new ByteArrayOutputStream();
+      CompleteBackup.write(c, zip);
+      OfflineGuides.remove(c, imageId);
+      try (CompleteBackup.Prepared prepared =
+          CompleteBackup.prepare(c, new ByteArrayInputStream(zip.toByteArray()))) {
+        CompleteBackup.restore(c, prepared);
+      }
+      check(
+          OfflineGuides.meta(c, imageId)
+              .getJSONArray("markers")
+              .getJSONObject(0)
+              .getString("name")
+              .equals("Treasure"),
+          "Complete ZIP restores multiple guides and map markers");
+      check(
+          OfflineGuides.meta(c, pdfId)
+              .getJSONArray("bookmarks")
+              .getJSONObject(0)
+              .getString("name")
+              .equals("Chapter two"),
+          "Complete backup preserves named PDF bookmarks");
+      check(
+          AutoBackup.schedule(c) == android.app.job.JobScheduler.RESULT_SUCCESS,
+          "Android accepts persisted automatic backup job");
+      android.app.job.JobInfo job =
+          c.getSystemService(android.app.job.JobScheduler.class).getPendingJob(AutoBackup.JOB);
+      check(
+          job != null
+              && job.isRequireCharging()
+              && job.isRequireDeviceIdle()
+              && job.isPersisted()
+              && job.getIntervalMillis() == 24L * 3600 * 1000,
+          "Backup job requires charging, idle state and daily period");
+      c.getSystemService(android.app.job.JobScheduler.class).cancel(AutoBackup.JOB);
+      Uri tree = DocumentsContract.buildTreeDocumentUri("nl.thorhaven.backup.test", "root");
+      AutoBackup.prefs(c).edit().putString("folder", tree.toString()).commit();
+      for (int i = 0; i < 9; i++) {
+        String msg = AutoBackup.run(c);
+        check(
+            msg.startsWith("Backup completed"),
+            "Automatic backup archive " + (i + 1) + " is validated: " + msg);
+        Thread.sleep(5);
+      }
+      Uri children = DocumentsContract.buildChildDocumentsUriUsingTree(tree, "root");
+      int count;
+      try (android.database.Cursor cursor =
+          c.getContentResolver()
+              .query(
+                  children,
+                  new String[] {
+                    DocumentsContract.Document.COLUMN_DOCUMENT_ID,
+                    DocumentsContract.Document.COLUMN_DISPLAY_NAME
+                  },
+                  null,
+                  null,
+                  null)) {
+        count = cursor.getCount();
+      }
+      check(count == 7, "Automatic backup retention keeps seven archives");
+      String savedOrder = Store.prefs(c).getString("panelOrder", "");
+      Store.prefs(c).edit().putString("panelOrder", "[\"bad\"]").commit();
+      String failed = AutoBackup.run(c);
+      Store.prefs(c).edit().putString("panelOrder", savedOrder).commit();
+      check(
+          failed.startsWith("Backup failed"),
+          "Invalid generated backup is rejected before retention pruning");
+      try (android.database.Cursor cursor =
+          c.getContentResolver()
+              .query(
+                  children,
+                  new String[] {
+                    DocumentsContract.Document.COLUMN_DOCUMENT_ID,
+                    DocumentsContract.Document.COLUMN_DISPLAY_NAME
+                  },
+                  null,
+                  null,
+                  null)) {
+        check(
+            cursor.getCount() == 7,
+            "Failed backup removes partial archive and preserves previous seven");
+      }
+      runOnMainSync(
+          () -> {
+            for (String page : MainActivity.PAGES) a.go(page);
+            a.go("Gidsen");
+            GuidePages.selected = pkg;
+            a.render();
+          });
+      check(true, "All pages and expanded guide tools render");
+      OfflineGuides.remove(c, pkg);
+      OfflineGuides.remove(c, id);
+      OfflineGuides.remove(c, imageId);
+      OfflineGuides.remove(c, pdfId);
+      Store.prefs(c).edit().clear().commit();
+      Store.restore(c, old);
+      AutoBackup.prefs(c).edit().clear().commit();
+      result.putString("stream", report + "\n" + passed + " checks passed\n");
+      finish(Activity.RESULT_OK, result);
+    } catch (Throwable e) {
+      result.putString("stream", report + "\nFAILED: " + e);
+      finish(Activity.RESULT_CANCELED, result);
+    }
+  }
+
+  void checkHardwareAutomation(Context c) throws Exception {
+    HardwareAutomation.Actions original = HardwareAutomation.actions;
+    final java.util.List<String> calls = new java.util.ArrayList<>();
+    final java.util.List<java.util.function.Consumer<JSONObject>> callbacks =
+        new java.util.ArrayList<>();
+    Store.prefs(c)
+        .edit()
+        .remove("hw:snapshot")
+        .putString("hardwareProfile:qa.game", "{\"performance_mode\":\"1\",\"fan_mode\":\"4\"}")
+        .putString("hardwareProfile:qa.other", "{\"performance_mode\":\"2\",\"fan_mode\":\"5\"}")
+        .commit();
+    HardwareAutomation.actions =
+        new HardwareAutomation.Actions() {
+          public void apply(
+              Context context, JSONObject patch, java.util.function.Consumer<JSONObject> cb) {
+            calls.add("apply:" + patch.optString("performance_mode"));
+            callbacks.add(cb);
+          }
+
+          public void restore(Context context, java.util.function.Consumer<JSONObject> cb) {
+            calls.add("restore");
+            callbacks.add(cb);
+          }
+        };
+    try {
+      HardwareAutomation.enabled = true;
+      HardwareAutomation.focus(c, "qa.game");
+      HardwareAutomation.focus(c, "qa.other");
+      check(calls.size() == 1, "Hardware automation serializes rapid foreground changes");
+      callbacks.remove(0).accept(new JSONObject());
+      check(
+          calls.get(1).equals("restore"),
+          "Hardware automation restores prior profile before switching");
+      callbacks.remove(0).accept(new JSONObject());
+      check(
+          calls.get(2).equals("apply:2"),
+          "Hardware automation applies latest requested profile after restore");
+      callbacks.remove(0).accept(new JSONObject());
+      HardwareAutomation.enabled = false;
+      HardwareAutomation.focus(c, "");
+      check(
+          calls.get(3).equals("restore"),
+          "Disabling automation requests original hardware restoration");
+      callbacks.remove(0).accept(new JSONObject());
+      HardwareAutomation.enabled = true;
+      HardwareAutomation.focus(c, "qa.game");
+      callbacks.remove(0).accept(Controls.error("Unsupported firmware"));
+      check(
+          !HardwareAutomation.enabled && !HardwareAutomation.owned,
+          "Unsupported firmware disables automation without retry loop");
+    } finally {
+      HardwareAutomation.actions = original;
+      HardwareAutomation.enabled = false;
+      HardwareAutomation.owned = false;
+      HardwareAutomation.busy = false;
+      HardwareAutomation.desired = "";
+      HardwareAutomation.applied = "";
+    }
+  }
+
+  void pendingBackdate(Context c) {
+    SessionStats.pending(c).edit().putLong("start", SystemClock.elapsedRealtime() - 65000).commit();
   }
 }

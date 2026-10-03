@@ -3,7 +3,7 @@ android {
  namespace 'nl.thorhaven.app'
  compileSdk 36
  buildFeatures { aidl true }
- defaultConfig { applicationId 'nl.thorhaven.app'; minSdk 30; targetSdk 33; versionCode 4; versionName '0.4.0-preview'; testInstrumentationRunner 'nl.thorhaven.app.SmokeInstrumentation' }
+ defaultConfig { applicationId 'nl.thorhaven.app'; minSdk 30; targetSdk 33; versionCode 5; versionName '0.5.0-preview'; testInstrumentationRunner 'nl.thorhaven.app.SmokeInstrumentation' }
  compileOptions { sourceCompatibility JavaVersion.VERSION_11; targetCompatibility JavaVersion.VERSION_11 }
  signingConfigs {
   if (System.getenv('THORHAVEN_KEYSTORE')) {

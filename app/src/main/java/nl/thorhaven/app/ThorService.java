@@ -47,6 +47,7 @@ public class ThorService extends AccessibilityService {
       foreground = p;
       Store.recordRecent(this, p);
       Controls.foreground(this, p);
+      HardwareAutomation.focus(this, p);
       if (Store.prefs(this).getBoolean("autoProfiles", false)) Store.apply(this, p);
     }
   }
@@ -61,6 +62,9 @@ public class ThorService extends AccessibilityService {
   @Override
   public void onDestroy() {
     hidePanel();
+    TouchControls.hide();
+    HardwareAutomation.enabled = false;
+    HardwareAutomation.focus(this, "");
     if (cover != null) cover.hide();
     if (stats != null) stats.stop();
     Controls.stop(this);
@@ -131,6 +135,7 @@ public class ThorService extends AccessibilityService {
               (int) (m.heightPixels * .94),
               WindowManager.LayoutParams.TYPE_ACCESSIBILITY_OVERLAY,
               Store.prefs(c).getBoolean("guideNotes", false)
+                      || OfflineGuides.meta(c, pkg).optString("kind").equals("text")
                   ? WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL
                   : panelFlags(c),
               android.graphics.PixelFormat.TRANSLUCENT);
