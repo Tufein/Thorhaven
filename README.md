@@ -6,9 +6,9 @@ Thorhaven helps you launch apps on either screen, keep a game guide or your note
 
 **Android 11 or newer · Dutch and English · Free and open source**
 
-[**Download the APK**](https://github.com/Tufein/Thorhaven/releases/download/v0.7.0-preview/Thorhaven-0.7.0-preview.apk) · [Release notes](https://github.com/Tufein/Thorhaven/releases/tag/v0.7.0-preview) · [User guide](docs/Thorhaven-0.7.0-guide.md)
+[**Download the APK**](https://github.com/Tufein/Thorhaven/releases/download/v0.8.0-preview/Thorhaven-0.8.0-preview.apk) · [Release notes](https://github.com/Tufein/Thorhaven/releases/tag/v0.8.0-preview) · [User guide](docs/Thorhaven-0.8.0-guide.md)
 
-> Version 0.7 is an early preview. Some features depend on your Thor's firmware and the apps you use. Start with the basic features before enabling advanced controller or hardware settings.
+> Version 0.8 is an early preview. Some features depend on your Thor's firmware and the apps you use. Start with the basic features before enabling advanced controller or hardware settings.
 
 ## What can it do?
 
@@ -27,20 +27,20 @@ Thorhaven helps you launch apps on either screen, keep a game guide or your note
 | **Experimental input tools** | Configure touch buttons, short key macros, bounded turbo and an absolute touch/mouse pad with supported root access. |
 | **Experimental Screen Lab** | Mirror the main screen below, choose a crop, save screenshots and record short silent MP4 clips. |
 | **Media and reports** | Control an active music session, export completed session samples to CSV or save a diagnostic report. |
-| **RGB Studio** | Set different colors and effects for each joystick, save your own styles and switch them per app. |
+| **RGB Studio** | Edit and share your own lighting styles, switch them per app and test individual light zones. |
 | **Optional hardware profiles** | Apply supported per-app fan/performance settings with session opt-in and recovery. |
 
 Advanced options can also move running apps between screens and adjust supported performance, fan and joystick-light settings. These need extra setup; see **Optional setup** below.
 
 ## Install in a few steps
 
-1. [Download the APK](https://github.com/Tufein/Thorhaven/releases/download/v0.7.0-preview/Thorhaven-0.7.0-preview.apk) on your Thor.
+1. [Download the APK](https://github.com/Tufein/Thorhaven/releases/download/v0.8.0-preview/Thorhaven-0.8.0-preview.apk) on your Thor.
 2. Open it in Android **Files**. If Android asks, allow that app to install the APK.
 3. Open **Thorhaven**. In **Instellen / Settings**, choose **Nederlands** or **English**.
 4. In **Settings → Displays**, check which screen is assigned as top and bottom.
 5. Open **Apps**, choose an app and launch it on the screen you want.
 
-**Already using Thorhaven?** Install the new APK over the existing version to keep your data. Do not uninstall first. The published 0.1–0.7 APKs use the same signing certificate.
+**Already using Thorhaven?** Install the new APK over the existing version to keep your data. Do not uninstall first. The published 0.1–0.8 APKs use the same signing certificate.
 
 ## Try these first
 
@@ -66,28 +66,27 @@ Basic app launching, saved pairs, notes and settings do not require root. Enable
 | Moving or swapping running apps | [Shizuku](https://shizuku.rikka.app/download/), then connect it in Thorhaven. |
 | Input Lab, advanced controller remapping and supported hardware controls | The supported AYN root service, or **Shizuku running with root access**. |
 
-Shizuku provides additional Android system access. Starting it through wireless debugging can support live app moves, but normally does not provide the root access needed for advanced input or hardware controls. The [user guide](docs/Thorhaven-0.7.0-guide.md) explains the setup and default shortcuts.
+Shizuku provides additional Android system access. Starting it through wireless debugging can support live app moves, but normally does not provide the root access needed for advanced input or hardware controls. The [user guide](docs/Thorhaven-0.8.0-guide.md) explains the setup and default shortcuts.
 
 **Controller emergency stop:** while advanced remapping is active, hold the original **Select + Start for three seconds** to stop it. You can also stop remapping from the app or quick panel.
 
-## What is new in 0.7?
+## What is new in 0.8?
 
-- **RGB Studio:** independent left/right colors, brightness and effects, with a preview, copy and swap controls.
-- **Seven effects and nine quick styles:** solid, breathing, rainbow, color cycle, soft pulse, battery level and charging indicator.
-- **Your own styles:** save up to 20 named presets and assign them to up to 64 Android apps. Unassigned apps use your global profile.
-- **Session controls:** choose 2, 5 or 10 updates per second with direct access, plus screen-off pause, brightness following, low-battery dimming and an optional stop timer. Root/AYN bridge updates are capped at 2 per second.
-- **Stop and recovery:** a foreground notification offers Stop & restore. Interrupted sessions keep a separate recovery record.
+- **Edit saved RGB styles directly:** adjust a preset without loading it over your global profile. Duplicate a style to create a separate variant.
+- **Easier app profiles:** search by app name or package, preview an assigned style and edit it from the app's row. Shared styles show how many apps use them.
+- **Share RGB styles:** export your saved styles to a small JSON file, or add styles from another Thorhaven installation. Existing styles and assignments stay intact.
+- **Experimental light-zone tests:** briefly light one zone, walk through all four zones or check red, green and blue channels. Tests stop automatically and restore AYN lighting.
 
-Open **RGB Studio**, choose a quick style and select **Check RGB access**. Select **Start RGB** when you want the hardware session to begin. Presets and the on-screen preview work without compatible lighting hardware. The [user guide](docs/Thorhaven-0.7.0-guide.md) explains setup and recovery.
+Open **RGB Studio** to find the new tools. Editing and previews work without lighting hardware. Hardware tests need the same compatible Thor access as normal RGB sessions. Stop an active session before starting a zone test.
 
-[Read the full change details](docs/Thorhaven-0.7.0-release-notes.md). All features introduced in 0.6 remain available; its [release notes](docs/Thorhaven-0.6.0-release-notes.md) describe Screen Lab, Input Lab and document tools.
+[Read the full change details](docs/Thorhaven-0.8.0-release-notes.md). The previous colors, effects and session controls are described in the [0.7 release notes](docs/Thorhaven-0.7.0-release-notes.md).
 
 <details>
 <summary>See RGB Studio in English</summary>
 
-![Thorhaven RGB Studio with independent ring previews and copy/swap controls](docs/screenshots/Thorhaven-0.7.0-RGB-Studio.png)
+![Thorhaven RGB Studio with the experimental four-zone test chooser](docs/screenshots/Thorhaven-0.8.0-RGB-Studio.png)
 
-An emulator example of the editor. Physical light colors depend on your Thor.
+The zone-test chooser on an emulator. Check the physical light positions and colors on your own Thor.
 
 </details>
 
@@ -104,10 +103,10 @@ An emulator example of the editor. Physical light colors depend on your Thor.
 - Screen Lab retains six screenshots and three recordings locally. Export files you want to keep; captures are not included in complete settings backups.
 - RGB Studio supports the Thor's two joystick lights when its firmware allows access. The hardware color may differ from the on-screen preview. Stop other RGB controllers and AYN animated lighting before using it.
 - RGB Studio restores the actual AYN color, on/off and brightness settings, using current stock settings when they can be read. It cannot resume another app's previous animation. Recovery remains available after an interruption; new sessions wait until recovery succeeds.
-- RGB effects do not start automatically after process/device restart or backup import. Screen-color and audio-reactive RGB effects are not included in 0.7.
+- RGB effects do not start automatically after process/device restart or backup import. Normal profiles give both zones of each stick the same style. Zone tests are brief diagnostics, not persistent zone profiles. Screen-color and audio-reactive RGB effects are not included.
 - Gyro mapping, analog touch sticks, ROM detection and physical display power-off remain unavailable.
 
-The 0.7 release passed **317 automated checks**, including 75 new RGB checks, and a signed update from 0.6 that preserved the app's data. See the [verification report](docs/Thorhaven-0.7.0-test-results.txt) for the results. Physical AYN Thor validation is still needed for LED output, firmware behavior, input acceptance and capture performance. An emulator or simulated lighting backend cannot verify the physical colors or both lighting zones.
+The 0.8 release passed **389 automated checks**, including 72 new RGB tool checks, and a signed update from 0.7 that preserved the app's data. See the [verification report](docs/Thorhaven-0.8.0-test-results.txt) for the results. Physical AYN Thor validation is still needed for LED output, firmware behavior, input acceptance and capture performance. An emulator or simulated lighting backend cannot verify the physical colors or both lighting zones.
 
 ## Your data stays local
 
@@ -117,7 +116,7 @@ The optional accessibility service uses foreground app names and controller butt
 
 ## Help and feedback
 
-Check the [user guide](docs/Thorhaven-0.7.0-guide.md) for setup and troubleshooting. If something does not work, [open an issue](https://github.com/Tufein/Thorhaven/issues) and include your Thor model, Android/firmware version, Thorhaven version and the steps that caused the problem. Share logs only after checking them for personal information.
+Check the [user guide](docs/Thorhaven-0.8.0-guide.md) for setup and troubleshooting. If something does not work, [open an issue](https://github.com/Tufein/Thorhaven/issues) and include your Thor model, Android/firmware version, Thorhaven version and the steps that caused the problem. Share logs only after checking them for personal information.
 
 ## For developers
 

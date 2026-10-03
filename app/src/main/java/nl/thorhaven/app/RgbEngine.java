@@ -7,36 +7,61 @@ import org.json.*;
 final class RgbEngine {
   static final class Frame {
     final boolean leftEnabled, rightEnabled;
-    final int left, right;
+    final int left, left2, right, right2;
 
     Frame(boolean leftEnabled, int left, boolean rightEnabled, int right) {
-      if (left < 0 || left > 0xffffff || right < 0 || right > 0xffffff)
-        throw new IllegalArgumentException("Invalid RGB frame");
+      this(leftEnabled, left, left, rightEnabled, right, right);
+    }
+
+    /** Zone one keeps the legacy names; ordinary effects mirror the color into zone two. */
+    Frame(boolean leftEnabled, int left, int left2, boolean rightEnabled, int right, int right2) {
+      if (left < 0
+          || left > 0xffffff
+          || left2 < 0
+          || left2 > 0xffffff
+          || right < 0
+          || right > 0xffffff
+          || right2 < 0
+          || right2 > 0xffffff) throw new IllegalArgumentException("Invalid RGB frame");
       this.leftEnabled = leftEnabled;
       this.rightEnabled = rightEnabled;
       this.left = leftEnabled ? left : 0;
+      this.left2 = leftEnabled ? left2 : 0;
       this.right = rightEnabled ? right : 0;
+      this.right2 = rightEnabled ? right2 : 0;
     }
 
     JSONObject toJson() {
       try {
-        return new JSONObject()
-            .put("leftEnabled", leftEnabled)
-            .put("rightEnabled", rightEnabled)
-            .put("left", left)
-            .put("right", right);
+        JSONObject q =
+            new JSONObject()
+                .put("leftEnabled", leftEnabled)
+                .put("rightEnabled", rightEnabled)
+                .put("left", left)
+                .put("right", right);
+        if (left2 != left || right2 != right) q.put("left2", left2).put("right2", right2);
+        return q;
       } catch (JSONException impossible) {
         throw new IllegalStateException(impossible);
       }
     }
 
     static Frame fromJson(JSONObject q) throws Exception {
-      RgbSettings.keys(q, "leftEnabled", "rightEnabled", "left", "right");
+      boolean zones = q.has("left2") || q.has("right2");
+      if (zones)
+        RgbSettings.keys(q, "leftEnabled", "rightEnabled", "left", "right", "left2", "right2");
+      else RgbSettings.keys(q, "leftEnabled", "rightEnabled", "left", "right");
       return new Frame(
           RgbSettings.bool(q, "leftEnabled"),
           RgbSettings.integer(q, "left", 0, 0xffffff),
+          zones
+              ? RgbSettings.integer(q, "left2", 0, 0xffffff)
+              : RgbSettings.integer(q, "left", 0, 0xffffff),
           RgbSettings.bool(q, "rightEnabled"),
-          RgbSettings.integer(q, "right", 0, 0xffffff));
+          RgbSettings.integer(q, "right", 0, 0xffffff),
+          zones
+              ? RgbSettings.integer(q, "right2", 0, 0xffffff)
+              : RgbSettings.integer(q, "right", 0, 0xffffff));
     }
 
     @Override
@@ -46,12 +71,14 @@ final class RgbEngine {
       return leftEnabled == f.leftEnabled
           && rightEnabled == f.rightEnabled
           && left == f.left
-          && right == f.right;
+          && left2 == f.left2
+          && right == f.right
+          && right2 == f.right2;
     }
 
     @Override
     public int hashCode() {
-      return Objects.hash(leftEnabled, rightEnabled, left, right);
+      return Objects.hash(leftEnabled, rightEnabled, left, left2, right, right2);
     }
   }
 

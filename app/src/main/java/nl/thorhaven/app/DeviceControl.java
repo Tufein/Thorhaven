@@ -130,6 +130,13 @@ final class DeviceControl {
             + ":"
             + (frame.left & 255)
             + ":255";
+    String left2 =
+        (frame.left2 >>> 16 & 255)
+            + ":"
+            + (frame.left2 >>> 8 & 255)
+            + ":"
+            + (frame.left2 & 255)
+            + ":255";
     String right =
         (frame.right >>> 16 & 255)
             + ":"
@@ -137,13 +144,20 @@ final class DeviceControl {
             + ":"
             + (frame.right & 255)
             + ":255";
+    String right2 =
+        (frame.right2 >>> 16 & 255)
+            + ":"
+            + (frame.right2 >>> 8 & 255)
+            + ":"
+            + (frame.right2 & 255)
+            + ":255";
     return new String[] {
       frame.leftEnabled ? "1" : "0",
       "1-" + left,
-      "2-" + left,
+      "2-" + left2,
       frame.rightEnabled ? "1" : "0",
       "1-" + right,
-      "2-" + right
+      "2-" + right2
     };
   }
 

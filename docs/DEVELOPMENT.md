@@ -148,3 +148,16 @@ Run the RGB instrumentation entry point with `adb shell am instrument -w -e v7 t
 The final 0.7 validation passed 317 checks: 102 existing Android, 43 previous 0.5 features, 75 previous 0.6 features, 75 RGB, 12 real capture-runtime and 10 current native-helper self-tests. Existing Android and capture-runtime checks ran against the final signed release. The release build and `lintRelease` passed. A released signed 0.6 → final signed 0.7 install retained the app UID, English selection, an app volume setting, a displayed Unicode note and exact original guide bytes; both APKs actually rendered the seeded note and guide. Forward-install checks do not establish every reader-metadata field; complete ZIP metadata restoration is covered separately in the document suite. Full results are in [the 0.7 report](Thorhaven-0.7.0-test-results.txt).
 
 Physical Thor verification remains outstanding for colors, both zones, direct-node permissions, PServer firmware behavior, stock-effect conflicts and actual restoration. Source hashes, published-asset checksums and the public APK download are recorded separately in the release's verification JSON after publication.
+
+
+## 0.8 RGB tools
+
+`RgbPresetTools` edits and duplicates saved styles against a current settings snapshot; the global profile and existing preset IDs remain intact. `RgbSettings.update` serializes read/mutate/validate/commit, preventing an editor from saving an obsolete dialog snapshot over newer settings. App assignment search uses raw labels/packages, and user names remain outside translation replacement.
+
+`RgbPresetBundle` implements a styles-only format (`thorhaven-rgb-presets`, schema 1). Strict validation reuses the existing profile/name rules. Export excludes identifiers, app mappings and session data. Import validates all styles and capacity, assigns new unique IDs and commits the entire addition against current settings. SAF I/O runs off the UI thread; input bytes and UTF-8 decoding are bounded and checked.
+
+The frame transport now supports distinct zone 1/2 values for each stick. Its four-argument constructor and legacy four-field JSON retain mirrored output; complete six-field frames add `left2` and `right2`. Mixed/unknown schemas fail before any writes. Fixed-node writes still use no-create operations. Normal effects remain two-sided profiles with mirrored physical zones.
+
+`RgbDiagnostics` offers fixed, low-intensity patterns through `RgbService` and `RgbSession`. One-zone and sequential-zone tests last eight seconds; RGB channel tests last 24. They share the foreground-service deadline, serialized output, stock baseline and journal. Screen-off or timeout ends a diagnostic and restores stock output. No background resume, app-driven pattern changes, raw command input or arbitrary hardware path is introduced. The Shizuku user-service version is advanced so a previously cached process cannot retain an older frame parser.
+
+Run `adb shell am instrument -w -e v8 true nl.thorhaven.app.test/nl.thorhaven.app.SmokeInstrumentation` for `RgbToolsChecks`. The old `v7` RGB mode remains available. All hardware tests use recording fixtures; actual LED output needs physical Thor validation. See [the 0.8 verification report](Thorhaven-0.8.0-test-results.txt) for final counts and signed-update evidence.

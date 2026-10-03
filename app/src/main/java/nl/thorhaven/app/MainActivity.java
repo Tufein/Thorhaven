@@ -979,6 +979,10 @@ public class MainActivity extends Activity implements DisplayManager.DisplayList
     }
     if (result != RESULT_OK || data == null || data.getData() == null) return;
     Uri uri = data.getData();
+    if (req == RgbPresetBundle.EXPORT || req == RgbPresetBundle.IMPORT) {
+      RgbPresetBundle.result(this, req, uri);
+      return;
+    }
     if (req == 48 || req == 49) {
       ExperimentTools.export(this, uri, req);
       return;

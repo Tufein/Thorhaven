@@ -32,13 +32,31 @@ final class RgbStudio {
 
   static boolean change(Context c, Edit action) {
     try {
-      JSONObject settings = new JSONObject(RgbSettings.load(c).toString());
-      action.change(settings);
-      RgbSettings.save(c, settings);
+      RgbSettings.update(c, action::change);
       RgbService.notifySettings(c);
       return true;
     } catch (Exception e) {
       Ui.toast(c, e.getMessage());
+      return false;
+    }
+  }
+
+  static String words(Context c, String dutch, String english) {
+    return Language.isEnglish(c) ? english : dutch;
+  }
+
+  interface Work {
+    void run() throws Exception;
+  }
+
+  static boolean finishEdit(MainActivity a, Work work) {
+    try {
+      work.run();
+      RgbService.notifySettings(a);
+      a.render();
+      return true;
+    } catch (Exception e) {
+      Ui.toast(a, e.getMessage());
       return false;
     }
   }
@@ -115,6 +133,12 @@ final class RgbStudio {
                                 .show());
                   });
             }));
+    control.addView(
+        Ui.rawButton(
+            a,
+            words(a, "RGB-diagnostiek en zones testen", "RGB diagnostics and zone test"),
+            () -> RgbDiagnostics.open(a)));
+    selection(a, settings);
     LinearLayout preview =
         a.card(
             "Voorbeeld · globaal profiel",
@@ -168,6 +192,7 @@ final class RgbStudio {
               }));
     }
     presets(a, settings);
+    sharing(a);
     options(a, settings);
     assignments(a, settings);
   }
@@ -217,34 +242,15 @@ final class RgbStudio {
   }
 
   static void savePreset(Context c, String name) throws Exception {
-    JSONObject q = new JSONObject(RgbSettings.load(c).toString());
-    q.getJSONArray("presets")
-        .put(
-            new JSONObject()
-                .put("id", "p" + UUID.randomUUID().toString().replace("-", ""))
-                .put("name", name.trim())
-                .put("profile", new JSONObject(q.getJSONObject("profile").toString())));
-    RgbSettings.save(c, q);
+    RgbSettings.update(c, q -> RgbPresetTools.append(q, name, q.getJSONObject("profile")));
   }
 
   static void deletePreset(Context c, String id) throws Exception {
-    JSONObject q = new JSONObject(RgbSettings.load(c).toString());
-    JSONArray presets = q.getJSONArray("presets");
-    for (int n = presets.length() - 1; n >= 0; n--)
-      if (id.equals(presets.getJSONObject(n).getString("id"))) presets.remove(n);
-    JSONObject apps = q.getJSONObject("apps");
-    for (Iterator<String> it = apps.keys(); it.hasNext(); ) {
-      String pkg = it.next();
-      if (id.equals(apps.getString(pkg))) it.remove();
-    }
-    RgbSettings.save(c, q);
+    RgbPresetTools.remove(c, id);
   }
 
   static void assign(Context c, String pkg, String id) throws Exception {
-    JSONObject q = new JSONObject(RgbSettings.load(c).toString());
-    if (id.isEmpty()) q.getJSONObject("apps").remove(pkg);
-    else q.getJSONObject("apps").put(pkg, id);
-    RgbSettings.save(c, q);
+    RgbPresetTools.assign(c, pkg, id);
   }
 
   static void presets(MainActivity a, JSONObject q) {
@@ -256,83 +262,20 @@ final class RgbStudio {
     for (int i = 0; i < presets.length(); i++) {
       JSONObject p = presets.optJSONObject(i);
       String id = p.optString("id");
-      box.addView(
-          Ui.rawButton(
-              a,
-              p.optString("name"),
-              () -> {
-                if (change(
-                    a,
-                    settings ->
-                        settings.put(
-                            "profile", new JSONObject(p.getJSONObject("profile").toString()))))
-                  a.render();
-              }));
+      box.addView(Ui.rawButton(a, p.optString("name"), () -> presetDetails(a, id)));
+      box.addView(Ui.rawText(a, profileSummary(a, p.optJSONObject("profile")), 12, Ui.MUTED));
       LinearLayout row = Ui.row(a);
       row.addView(
-          Ui.button(
-              a,
-              "Bijwerken",
-              () -> {
-                if (change(
-                    a,
-                    s -> {
-                      JSONArray list = s.getJSONArray("presets");
-                      for (int n = 0; n < list.length(); n++)
-                        if (id.equals(list.getJSONObject(n).getString("id")))
-                          list.getJSONObject(n)
-                              .put(
-                                  "profile", new JSONObject(s.getJSONObject("profile").toString()));
-                    })) a.render();
-              }),
+          Ui.rawButton(a, words(a, "Bewerken", "Edit"), () -> savedPresetEditor(a, id)),
           new LinearLayout.LayoutParams(0, -2, 1));
       row.addView(
-          Ui.button(
-              a,
-              "Naam wijzigen",
-              () -> {
-                EditText name = Ui.input(a, "Naam van de preset");
-                name.setText(p.optString("name"));
-                new Ui.Dialog(a)
-                    .setTitle("RGB-preset hernoemen")
-                    .setView(name)
-                    .setPositiveButton(
-                        "Opslaan",
-                        (d, w) -> {
-                          if (change(
-                              a,
-                              s -> {
-                                JSONArray list = s.getJSONArray("presets");
-                                for (int n = 0; n < list.length(); n++)
-                                  if (id.equals(list.getJSONObject(n).getString("id")))
-                                    list.getJSONObject(n)
-                                        .put("name", name.getText().toString().trim());
-                              })) a.render();
-                        })
-                    .setNegativeButton("Annuleren", null)
-                    .show();
-              }),
+          Ui.rawButton(a, words(a, "Dupliceren", "Duplicate"), () -> nameDialog(a, id, true)),
           new LinearLayout.LayoutParams(0, -2, 1));
       row.addView(
-          Ui.button(
+          Ui.rawButton(
               a,
-              "Verwijderen",
-              () ->
-                  new Ui.Dialog(a)
-                      .setTitle("RGB-preset verwijderen?")
-                      .setMessage("De app-koppelingen naar deze preset worden ook verwijderd.")
-                      .setPositiveButton(
-                          "Verwijderen",
-                          (d, w) -> {
-                            try {
-                              deletePreset(a, id);
-                              a.render();
-                            } catch (Exception e) {
-                              Ui.toast(a, e.getMessage());
-                            }
-                          })
-                      .setNegativeButton("Annuleren", null)
-                      .show()),
+              words(a, "Globaal gebruiken", "Use globally"),
+              () -> finishEdit(a, () -> RgbPresetTools.useGlobal(a, id))),
           new LinearLayout.LayoutParams(0, -2, 1));
       box.addView(row);
     }
@@ -342,21 +285,23 @@ final class RgbStudio {
             "Globaal profiel als preset bewaren",
             () -> {
               EditText name = Ui.input(a, "Naam van de preset");
-              new Ui.Dialog(a)
-                  .setTitle("RGB-preset bewaren")
-                  .setView(name)
-                  .setPositiveButton(
-                      "Opslaan",
-                      (d, w) -> {
-                        try {
-                          savePreset(a, name.getText().toString());
-                          a.render();
-                        } catch (Exception e) {
-                          Ui.toast(a, e.getMessage());
-                        }
-                      })
-                  .setNegativeButton("Annuleren", null)
-                  .show();
+              android.app.AlertDialog dialog =
+                  new Ui.Dialog(a)
+                      .setTitle("RGB-preset bewaren")
+                      .setView(name)
+                      .setPositiveButton("Opslaan", null)
+                      .setNegativeButton("Annuleren", null)
+                      .create();
+              dialog.setOnShowListener(
+                  v ->
+                      dialog
+                          .getButton(android.app.AlertDialog.BUTTON_POSITIVE)
+                          .setOnClickListener(
+                              button -> {
+                                if (finishEdit(a, () -> savePreset(a, name.getText().toString())))
+                                  dialog.dismiss();
+                              }));
+              dialog.show();
             }));
     box.addView(
         Ui.text(
@@ -365,6 +310,252 @@ final class RgbStudio {
                 + " RGB-sessie.",
             13,
             Ui.MUTED));
+  }
+
+  static String profileSummary(Context c, JSONObject profile) {
+    if (profile == null) return "";
+    StringJoiner summary = new StringJoiner(" · ");
+    for (String side : new String[] {"left", "right"}) {
+      JSONObject p = profile.optJSONObject(side);
+      if (p == null) continue;
+      String label = side.equals("left") ? words(c, "Links", "Left") : words(c, "Rechts", "Right");
+      int index = Arrays.asList(EFFECTS).indexOf(p.optString("effect"));
+      String effect = index >= 0 ? Language.text(c, EFFECT_NAMES[index]) : "";
+      summary.add(
+          label
+              + ": "
+              + (!p.optBoolean("enabled")
+                  ? words(c, "uit", "off")
+                  : effect + " " + p.optInt("brightness") + "% " + p.optString("color")));
+    }
+    return summary.toString();
+  }
+
+  static void selection(MainActivity a, JSONObject settings) {
+    String pkg =
+        RgbService.instance != null
+            ? RgbService.instance.foreground
+            : ThorService.instance != null ? ThorService.instance.foreground : "";
+    String id = settings.optJSONObject("apps").optString(pkg, "");
+    JSONObject profile = settings.optJSONObject("profile");
+    String name = words(a, "Globaal profiel", "Global profile");
+    if (!id.isEmpty()) {
+      try {
+        JSONObject preset = RgbPresetTools.require(settings, id);
+        profile = preset.getJSONObject("profile");
+        name = preset.getString("name");
+      } catch (Exception ignored) {
+      }
+    }
+    LinearLayout box = a.card(words(a, "Huidige profielkeuze", "Current profile selection"), null);
+    box.addView(
+        Ui.rawText(
+            a,
+            (pkg.isEmpty()
+                    ? words(a, "Geen herkende app", "No recognized app")
+                    : Store.name(a, pkg))
+                + " · "
+                + name,
+            15,
+            Ui.TEXT));
+    box.addView(Ui.rawText(a, profileSummary(a, profile), 12, Ui.MUTED));
+    box.addView(
+        new Preview(a, profile, settings), new LinearLayout.LayoutParams(-1, Ui.dp(a, 130)));
+    box.addView(
+        Ui.rawText(
+            a,
+            words(
+                a,
+                "Dit is de profielkeuze bij het openen van deze pagina. Start RGB om de lichten te"
+                    + " bedienen; vernieuw na een appwissel.",
+                "This shows the selection when this page opened. Start RGB to control the lights;"
+                    + " refresh after switching apps."),
+            12,
+            Ui.MUTED));
+    box.addView(
+        Ui.rawButton(a, words(a, "Profielkeuze vernieuwen", "Refresh selection"), a::render));
+  }
+
+  static void sharing(MainActivity a) {
+    LinearLayout box = a.card(words(a, "RGB-presets delen", "Share RGB presets"), null);
+    box.addView(
+        Ui.rawText(
+            a,
+            words(
+                a,
+                "Deel alleen je bewaarde presets. Globaal profiel, app-koppelingen en"
+                    + " herstelgegevens worden niet meegestuurd.",
+                "Share saved presets only. Your global profile, app assignments and recovery data"
+                    + " are not included."),
+            13,
+            Ui.MUTED));
+    box.addView(
+        Ui.rawButton(
+            a, words(a, "Presets exporteren", "Export presets"), () -> RgbPresetBundle.export(a)));
+    box.addView(
+        Ui.rawButton(
+            a,
+            words(a, "Presets importeren", "Import presets"),
+            () -> RgbPresetBundle.importFile(a)));
+  }
+
+  static void nameDialog(MainActivity a, String id, boolean duplicate) {
+    try {
+      JSONObject preset = RgbPresetTools.preset(a, id);
+      EditText name = Ui.input(a, "Naam van de preset");
+      name.setText(preset.getString("name"));
+      name.setFilters(
+          new android.text.InputFilter[] {new android.text.InputFilter.LengthFilter(60)});
+      android.app.AlertDialog dialog =
+          new android.app.AlertDialog.Builder(a)
+              .setTitle(
+                  words(
+                      a,
+                      duplicate ? "RGB-preset dupliceren" : "RGB-preset hernoemen",
+                      duplicate ? "Duplicate RGB preset" : "Rename RGB preset"))
+              .setView(name)
+              .setPositiveButton(Language.text(a, "Opslaan"), null)
+              .setNegativeButton(Language.text(a, "Annuleren"), null)
+              .create();
+      dialog.setOnShowListener(
+          v ->
+              dialog
+                  .getButton(android.app.AlertDialog.BUTTON_POSITIVE)
+                  .setOnClickListener(
+                      button -> {
+                        if (finishEdit(
+                            a,
+                            () -> {
+                              if (duplicate)
+                                RgbPresetTools.duplicate(a, id, name.getText().toString());
+                              else RgbPresetTools.rename(a, id, name.getText().toString());
+                            })) dialog.dismiss();
+                      }));
+      dialog.show();
+      name.setSelectAllOnFocus(true);
+    } catch (Exception e) {
+      Ui.toast(a, e.getMessage());
+    }
+  }
+
+  static void presetDetails(MainActivity a, String id) {
+    try {
+      JSONObject settings = RgbSettings.load(a), preset = RgbPresetTools.require(settings, id);
+      LinearLayout box = Ui.col(a);
+      box.setPadding(Ui.dp(a, 16), Ui.dp(a, 8), Ui.dp(a, 16), Ui.dp(a, 8));
+      box.addView(Ui.rawText(a, preset.getString("name"), 20, Ui.TEXT));
+      box.addView(Ui.rawText(a, sharedMessage(a, settings, id), 13, Ui.MUTED));
+      box.addView(
+          new Preview(a, preset.getJSONObject("profile"), settings),
+          new LinearLayout.LayoutParams(-1, Ui.dp(a, 150)));
+      android.app.AlertDialog dialog =
+          new android.app.AlertDialog.Builder(a)
+              .setTitle(words(a, "Bewaarde RGB-preset", "Saved RGB preset"))
+              .setView(box)
+              .setNegativeButton(Language.text(a, "Sluiten"), null)
+              .create();
+      box.addView(
+          Ui.rawButton(
+              a,
+              words(a, "Preset rechtstreeks bewerken", "Edit this preset directly"),
+              () -> {
+                dialog.dismiss();
+                savedPresetEditor(a, id);
+              }));
+      box.addView(
+          Ui.rawButton(
+              a,
+              words(a, "Dupliceren met eigen naam", "Duplicate with your own name"),
+              () -> {
+                dialog.dismiss();
+                nameDialog(a, id, true);
+              }));
+      box.addView(
+          Ui.rawButton(
+              a,
+              words(a, "Als globaal profiel gebruiken", "Use as global profile"),
+              () -> {
+                if (finishEdit(a, () -> RgbPresetTools.useGlobal(a, id))) dialog.dismiss();
+              }));
+      box.addView(
+          Ui.rawButton(
+              a,
+              words(a, "Naam wijzigen", "Rename"),
+              () -> {
+                dialog.dismiss();
+                nameDialog(a, id, false);
+              }));
+      box.addView(
+          Ui.rawButton(
+              a,
+              words(a, "Vervangen door globaal profiel", "Replace with global profile"),
+              () -> {
+                dialog.dismiss();
+                confirmShared(a, id, false);
+              }));
+      box.addView(
+          Ui.rawButton(
+              a,
+              words(a, "Verwijderen", "Delete"),
+              () -> {
+                dialog.dismiss();
+                confirmShared(a, id, true);
+              }));
+      ScrollView scroll = new ScrollView(a);
+      scroll.addView(box);
+      dialog.setView(scroll);
+      dialog.show();
+    } catch (Exception e) {
+      Ui.toast(a, e.getMessage());
+    }
+  }
+
+  static String sharedMessage(Context c, JSONObject settings, String id) {
+    int count = RgbPresetTools.assignedApps(settings, id);
+    return words(
+        c,
+        "Gedeelde preset voor "
+            + count
+            + " app-koppelingen. Bewerken wijzigt hun stijl en laat het globale profiel intact."
+            + " Dupliceren maakt een onafhankelijke kopie. Opslaan start geen RGB-sessie.",
+        "Shared preset for "
+            + count
+            + " app assignments. Editing changes their style and keeps the global profile intact."
+            + " Duplicating makes an independent copy. Saving does not start RGB.");
+  }
+
+  static void confirmShared(MainActivity a, String id, boolean delete) {
+    try {
+      JSONObject settings = RgbSettings.load(a), preset = RgbPresetTools.require(settings, id);
+      new android.app.AlertDialog.Builder(a)
+          .setTitle(
+              words(
+                  a,
+                  delete ? "Preset verwijderen?" : "Preset vervangen?",
+                  delete ? "Delete preset?" : "Replace preset?"))
+          .setMessage(
+              preset.getString("name")
+                  + "\n\n"
+                  + (delete
+                      ? words(
+                          a,
+                          "De app-koppelingen naar deze preset worden ook verwijderd.",
+                          "App assignments to this preset are also removed.")
+                      : sharedMessage(a, settings, id)))
+          .setPositiveButton(
+              words(a, delete ? "Verwijderen" : "Vervangen", delete ? "Delete" : "Replace"),
+              (d, w) ->
+                  finishEdit(
+                      a,
+                      () -> {
+                        if (delete) RgbPresetTools.remove(a, id);
+                        else RgbPresetTools.updateFromGlobal(a, id);
+                      }))
+          .setNegativeButton(Language.text(a, "Annuleren"), null)
+          .show();
+    } catch (Exception e) {
+      Ui.toast(a, e.getMessage());
+    }
   }
 
   static void options(MainActivity a, JSONObject q) {
@@ -433,64 +624,165 @@ final class RgbStudio {
       for (int i = 0; i < ps.length(); i++)
         if (id.equals(ps.optJSONObject(i).optString("id")))
           label = ps.optJSONObject(i).optString("name");
-      TextView name = new TextView(a);
-      name.setText(Store.name(a, pkg) + " · " + label);
-      name.setTextColor(Ui.TEXT);
-      name.setTextSize(14);
-      box.addView(name);
+      box.addView(Ui.rawText(a, Store.name(a, pkg) + " · " + label, 14, Ui.TEXT));
+      box.addView(Ui.rawText(a, pkg, 12, Ui.MUTED));
+      box.addView(
+          Ui.rawButton(
+              a,
+              words(a, "Gedeelde preset bewerken", "Edit shared preset"),
+              () -> savedPresetEditor(a, id)));
+      box.addView(
+          Ui.rawButton(
+              a,
+              words(a, "Andere preset kiezen", "Choose another preset"),
+              () -> choosePreset(a, pkg)));
       box.addView(
           Ui.button(
               a,
               "Koppeling verwijderen",
               () -> {
-                try {
-                  assign(a, pkg, "");
-                  a.render();
-                } catch (Exception e) {
-                  Ui.toast(a, e.getMessage());
-                }
+                finishEdit(a, () -> assign(a, pkg, ""));
               }));
     }
+    box.addView(Ui.button(a, "App aan RGB-preset koppelen", () -> appPicker(a)));
+  }
+
+  static void choosePreset(MainActivity a, String pkg) {
+    JSONObject settings = RgbSettings.load(a);
+    JSONArray presets = settings.optJSONArray("presets");
+    if (presets.length() == 0) {
+      Ui.toast(a, "Bewaar eerst een RGB-preset.");
+      return;
+    }
+    LinearLayout box = Ui.col(a);
+    box.setPadding(Ui.dp(a, 16), Ui.dp(a, 8), Ui.dp(a, 16), Ui.dp(a, 8));
+    box.addView(Ui.rawText(a, Store.name(a, pkg), 17, Ui.TEXT));
+    box.addView(Ui.rawText(a, pkg, 12, Ui.MUTED));
     box.addView(
-        Ui.button(
+        Ui.rawText(
             a,
-            "App aan RGB-preset koppelen",
-            () -> {
-              JSONArray presets = q.optJSONArray("presets");
-              if (presets.length() == 0) {
-                Ui.toast(a, "Bewaar eerst een RGB-preset.");
-                return;
-              }
-              List<Store.App> installed = Store.apps(a);
-              String[] names = new String[installed.size()];
-              for (int n = 0; n < names.length; n++) names[n] = installed.get(n).name;
-              new android.app.AlertDialog.Builder(a)
-                  .setTitle(Language.text(a, "Kies een app"))
-                  .setItems(
-                      names,
-                      (d, which) -> {
-                        String[] labels = new String[presets.length()];
-                        for (int n = 0; n < labels.length; n++)
-                          labels[n] = presets.optJSONObject(n).optString("name");
-                        new android.app.AlertDialog.Builder(a)
-                            .setTitle(Language.text(a, "Kies een RGB-preset"))
-                            .setItems(
-                                labels,
-                                (dialog, index) -> {
-                                  try {
-                                    assign(
-                                        a,
-                                        installed.get(which).pkg,
-                                        presets.getJSONObject(index).getString("id"));
-                                    a.render();
-                                  } catch (Exception e) {
-                                    Ui.toast(a, e.getMessage());
-                                  }
-                                })
-                            .show();
-                      })
-                  .show();
-            }));
+            words(
+                a,
+                "Kies een bewaarde preset. De koppeling start geen sessie; een actieve sessie"
+                    + " gebruikt hem bij deze app.",
+                "Choose a saved preset. Assigning does not start a session; an active session uses"
+                    + " it for this app."),
+            13,
+            Ui.MUTED));
+    ScrollView scroll = new ScrollView(a);
+    scroll.addView(box);
+    android.app.AlertDialog dialog =
+        new android.app.AlertDialog.Builder(a)
+            .setTitle(words(a, "Kies een RGB-preset", "Choose an RGB preset"))
+            .setView(scroll)
+            .setNegativeButton(Language.text(a, "Annuleren"), null)
+            .create();
+    String current = settings.optJSONObject("apps").optString(pkg, "");
+    for (int i = 0; i < presets.length(); i++) {
+      JSONObject preset = presets.optJSONObject(i);
+      String id = preset.optString("id");
+      String name = preset.optString("name");
+      Button select =
+          Ui.rawButton(
+              a,
+              name,
+              () -> {
+                if (finishEdit(a, () -> assign(a, pkg, id))) dialog.dismiss();
+              });
+      if (id.equals(current)) select.setTextColor(Ui.ACCENT);
+      box.addView(select);
+      if (id.equals(current))
+        box.addView(
+            Ui.rawText(a, words(a, "Huidige koppeling", "Current assignment"), 12, Ui.ACCENT));
+      box.addView(Ui.rawText(a, profileSummary(a, preset.optJSONObject("profile")), 12, Ui.MUTED));
+    }
+    dialog.show();
+  }
+
+  static android.app.AlertDialog appPicker(MainActivity a) {
+    if (RgbSettings.load(a).optJSONArray("presets").length() == 0) {
+      Ui.toast(a, "Bewaar eerst een RGB-preset.");
+      return null;
+    }
+    LinearLayout box = Ui.col(a);
+    box.setPadding(Ui.dp(a, 16), Ui.dp(a, 8), Ui.dp(a, 16), Ui.dp(a, 8));
+    EditText search =
+        Ui.input(a, words(a, "Zoek op appnaam of pakketnaam", "Search app name or package"));
+    box.addView(search);
+    TextView count = Ui.rawText(a, words(a, "Apps laden…", "Loading apps…"), 13, Ui.MUTED);
+    box.addView(count);
+    ListView list = new ListView(a);
+    box.addView(list, new LinearLayout.LayoutParams(-1, Ui.dp(a, 320)));
+    List<Store.App> installed = new ArrayList<>(), visible = new ArrayList<>();
+    ArrayAdapter<String> adapter =
+        new ArrayAdapter<>(a, android.R.layout.simple_list_item_1, new ArrayList<>());
+    list.setAdapter(adapter);
+    android.app.AlertDialog dialog =
+        new android.app.AlertDialog.Builder(a)
+            .setTitle(words(a, "App aan RGB-preset koppelen", "Assign app to RGB preset"))
+            .setView(box)
+            .setNegativeButton(Language.text(a, "Annuleren"), null)
+            .create();
+    final boolean[] loaded = {false};
+    Runnable filter =
+        () -> {
+          visible.clear();
+          visible.addAll(RgbPresetTools.matchingApps(installed, search.getText().toString()));
+          adapter.setNotifyOnChange(false);
+          adapter.clear();
+          for (Store.App app : visible) adapter.add(app.name + "\n" + app.pkg);
+          adapter.notifyDataSetChanged();
+          count.setText(
+              !loaded[0]
+                  ? words(a, "Apps laden…", "Loading apps…")
+                  : visible.isEmpty()
+                      ? words(a, "Geen apps gevonden", "No matching apps")
+                      : visible.size() + words(a, " apps gevonden", " apps found"));
+        };
+    search.addTextChangedListener(
+        new android.text.TextWatcher() {
+          public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+
+          public void onTextChanged(CharSequence s, int start, int before, int count) {
+            filter.run();
+          }
+
+          public void afterTextChanged(android.text.Editable s) {}
+        });
+    list.setOnItemClickListener(
+        (parent, view, position, itemId) -> {
+          if (position < 0 || position >= visible.size()) return;
+          String pkg = visible.get(position).pkg;
+          dialog.dismiss();
+          choosePreset(a, pkg);
+        });
+    dialog.show();
+    dialog.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
+    Controls.worker.execute(
+        () -> {
+          try {
+            List<Store.App> found = Store.apps(a.getApplicationContext());
+            a.handler.post(
+                () -> {
+                  if (!dialog.isShowing() || a.isFinishing() || a.isDestroyed()) return;
+                  installed.addAll(found);
+                  loaded[0] = true;
+                  filter.run();
+                });
+          } catch (RuntimeException e) {
+            a.handler.post(
+                () -> {
+                  if (dialog.isShowing())
+                    count.setText(
+                        words(
+                            a,
+                            "Apps konden niet worden geladen. Sluit dit venster en probeer"
+                                + " opnieuw.",
+                            "Apps could not be loaded. Close this window and try again."));
+                });
+          }
+        });
+    return dialog;
   }
 
   static void toggle(MainActivity a, LinearLayout box, JSONObject q, String key, String label) {
@@ -537,36 +829,75 @@ final class RgbStudio {
     try {
       JSONObject options = RgbSettings.load(a),
           profile = new JSONObject(options.getJSONObject("profile").toString());
-      LinearLayout box = Ui.col(a);
-      box.setPadding(Ui.dp(a, 16), Ui.dp(a, 8), Ui.dp(a, 16), Ui.dp(a, 8));
-      Preview preview = new Preview(a, profile, options);
-      box.addView(preview, new LinearLayout.LayoutParams(-1, Ui.dp(a, 150)));
-      sideEditor(a, box, profile.getJSONObject("left"), "Linker licht");
-      sideEditor(a, box, profile.getJSONObject("right"), "Rechter licht");
-      ScrollView scroll = new ScrollView(a);
-      scroll.addView(box);
-      android.app.AlertDialog dialog =
-          new Ui.Dialog(a)
-              .setTitle("Kleuren en effecten")
-              .setView(scroll)
-              .setPositiveButton("Opslaan", null)
-              .setNegativeButton("Annuleren", null)
-              .create();
-      dialog.setOnShowListener(
-          v ->
-              dialog
-                  .getButton(android.app.AlertDialog.BUTTON_POSITIVE)
-                  .setOnClickListener(
-                      button -> {
-                        if (change(a, s -> s.put("profile", profile))) {
-                          dialog.dismiss();
-                          a.render();
-                        }
-                      }));
-      dialog.show();
+      profileEditor(
+          a,
+          options,
+          profile,
+          words(a, "Globaal profiel bewerken", "Edit global profile"),
+          words(a, "Globaal profiel", "Global profile"),
+          words(
+              a,
+              "Opslaan wijzigt alleen het globale profiel. Bewaarde presets blijven intact.",
+              "Saving changes only the global profile. Saved presets remain unchanged."),
+          () -> RgbSettings.update(a, s -> s.put("profile", new JSONObject(profile.toString()))));
     } catch (Exception e) {
       Ui.toast(a, e.getMessage());
     }
+  }
+
+  static android.app.AlertDialog savedPresetEditor(MainActivity a, String id) {
+    try {
+      JSONObject options = RgbSettings.load(a), preset = RgbPresetTools.require(options, id);
+      JSONObject profile = new JSONObject(preset.getJSONObject("profile").toString());
+      return profileEditor(
+          a,
+          options,
+          profile,
+          words(a, "Bewaarde preset bewerken", "Edit saved preset"),
+          preset.getString("name"),
+          sharedMessage(a, options, id),
+          () -> RgbPresetTools.edit(a, id, profile));
+    } catch (Exception e) {
+      Ui.toast(a, e.getMessage());
+      return null;
+    }
+  }
+
+  static android.app.AlertDialog profileEditor(
+      MainActivity a,
+      JSONObject options,
+      JSONObject profile,
+      String title,
+      String name,
+      String explanation,
+      Work save)
+      throws Exception {
+    LinearLayout box = Ui.col(a);
+    box.setPadding(Ui.dp(a, 16), Ui.dp(a, 8), Ui.dp(a, 16), Ui.dp(a, 8));
+    box.addView(Ui.rawText(a, name, 20, Ui.TEXT));
+    box.addView(Ui.rawText(a, explanation, 13, Ui.MUTED));
+    box.addView(new Preview(a, profile, options), new LinearLayout.LayoutParams(-1, Ui.dp(a, 150)));
+    sideEditor(a, box, profile.getJSONObject("left"), "Linker licht");
+    sideEditor(a, box, profile.getJSONObject("right"), "Rechter licht");
+    ScrollView scroll = new ScrollView(a);
+    scroll.addView(box);
+    android.app.AlertDialog dialog =
+        new android.app.AlertDialog.Builder(a)
+            .setTitle(title)
+            .setView(scroll)
+            .setPositiveButton(Language.text(a, "Opslaan"), null)
+            .setNegativeButton(Language.text(a, "Annuleren"), null)
+            .create();
+    dialog.setOnShowListener(
+        v ->
+            dialog
+                .getButton(android.app.AlertDialog.BUTTON_POSITIVE)
+                .setOnClickListener(
+                    button -> {
+                      if (finishEdit(a, save)) dialog.dismiss();
+                    }));
+    dialog.show();
+    return dialog;
   }
 
   static void sideEditor(MainActivity a, LinearLayout parent, JSONObject side, String title) {

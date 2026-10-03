@@ -61,7 +61,18 @@ final class RgbSettings {
     }
   }
 
-  static void save(Context c, JSONObject settings) throws Exception {
+  interface Update {
+    void apply(JSONObject settings) throws Exception;
+  }
+
+  /** Mutate one current, detached snapshot; invalid changes never reach preferences. */
+  static synchronized void update(Context c, Update change) throws Exception {
+    JSONObject settings = new JSONObject(load(c).toString());
+    change.apply(settings);
+    save(c, settings);
+  }
+
+  static synchronized void save(Context c, JSONObject settings) throws Exception {
     validateSettings(settings);
     String raw = settings.toString();
     validate(raw);

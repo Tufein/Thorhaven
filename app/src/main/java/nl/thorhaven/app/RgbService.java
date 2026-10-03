@@ -14,6 +14,7 @@ public class RgbService extends Service {
   static volatile boolean requested;
   static volatile boolean cancellationPending;
   static volatile long requestGeneration;
+  static volatile String requestedDiagnostic = "";
   static RgbSession.Backend backend = RgbSession.HARDWARE;
   static final int NOTIFICATION = 71;
   static final String CHANNEL = "thorhaven-rgb";
@@ -25,9 +26,34 @@ public class RgbService extends Service {
   final Handler main = new Handler(Looper.getMainLooper());
   volatile boolean stopping;
   volatile String foreground = "";
+  volatile String diagnosticMode = "";
   RgbSession session;
+  boolean screenReceiverRegistered;
+  final BroadcastReceiver screenReceiver =
+      new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context c, Intent intent) {
+          if (Intent.ACTION_SCREEN_OFF.equals(intent.getAction())
+              && (!diagnosticMode.isEmpty() || !requestedDiagnostic.isEmpty()))
+            finishSession(
+                RgbDiagnostics.text(
+                    c,
+                    "RGB-zonetest gestopt omdat de schermen uit zijn",
+                    "RGB zone test stopped because the screens are off"));
+        }
+      };
 
-  static void start(Context c) {
+  static synchronized void start(Context c) {
+    if (!requestedDiagnostic.isEmpty()
+        || (instance != null && !instance.diagnosticMode.isEmpty())) {
+      Ui.toast(
+          c,
+          RgbDiagnostics.text(
+              c,
+              "Stop eerst de zonetest voordat je RGB start.",
+              "Stop the zone test before starting RGB."));
+      return;
+    }
     if (recovering || cancellationPending || (instance != null && instance.stopping)) {
       Ui.toast(c, "RGB-herstel is bezig. Probeer daarna opnieuw.");
       return;
@@ -42,9 +68,56 @@ public class RgbService extends Service {
     }
   }
 
-  static void stop(Context c) {
+  static synchronized boolean startDiagnostic(Context c, String mode) {
+    try {
+      RgbDiagnostics.duration(mode);
+    } catch (IllegalArgumentException invalid) {
+      Ui.toast(c, invalid.getMessage());
+      return false;
+    }
+    if (instance != null
+        || requested
+        || recovering
+        || cancellationPending
+        || RgbSession.recovery(c).contains("baseline")) {
+      Ui.toast(
+          c,
+          RgbDiagnostics.text(
+              c,
+              "Stop en herstel eerst de bestaande RGB-sessie voordat je zones test.",
+              "Stop and restore the existing RGB session before testing zones."));
+      return false;
+    }
+    try {
+      requested = true;
+      requestedDiagnostic = mode;
+      long generation = ++requestGeneration;
+      c.startForegroundService(
+          new Intent(c, RgbService.class)
+              .putExtra("generation", generation)
+              .putExtra("diagnostic", mode));
+      return true;
+    } catch (RuntimeException e) {
+      requested = false;
+      requestedDiagnostic = "";
+      status =
+          RgbDiagnostics.text(
+                  c, "RGB-zonetest starten mislukt: ", "RGB zone test could not start: ")
+              + e.getMessage();
+      Ui.toast(c, status);
+      return false;
+    }
+  }
+
+  static synchronized void stopDiagnostic(Context c) {
+    RgbService s = instance;
+    if (!requestedDiagnostic.isEmpty() || (s != null && !s.diagnosticMode.isEmpty())) stop(c);
+  }
+
+  static synchronized void stop(Context c) {
     boolean pendingStart = requested;
     requested = false;
+    requestedDiagnostic = "";
     ++requestGeneration;
     RgbService s = instance;
     if (s != null) s.finishSession("RGB stopped");
@@ -71,7 +144,7 @@ public class RgbService extends Service {
     // The bounded worker reads one current settings snapshot on its next tick.
   }
 
-  static void recover(Context c) {
+  static synchronized void recover(Context c) {
     if (instance != null || requested || cancellationPending || recovering) {
       Ui.toast(c, "Stop eerst de actieve RGB-sessie.");
       return;
@@ -120,11 +193,17 @@ public class RgbService extends Service {
     foreground = ThorService.instance != null ? ThorService.instance.foreground : "";
     try {
       startForeground(NOTIFICATION, notification("Starting RGB Studio"));
+      IntentFilter screenFilter = new IntentFilter(Intent.ACTION_SCREEN_OFF);
+      if (Build.VERSION.SDK_INT >= 33)
+        registerReceiver(screenReceiver, screenFilter, Context.RECEIVER_NOT_EXPORTED);
+      else registerReceiver(screenReceiver, screenFilter);
+      screenReceiverRegistered = true;
     } catch (RuntimeException e) {
       requested = false;
+      requestedDiagnostic = "";
       stopping = true;
       status = "RGB unavailable: " + e.getMessage();
-      if (instance == this) instance = null;
+      // onDestroy owns the instance/pending-cancellation cleanup, even if FGS setup fails.
       thread.quitSafely();
       stopSelf();
     }
@@ -151,6 +230,7 @@ public class RgbService extends Service {
   public int onStartCommand(Intent intent, int flags, int id) {
     if (intent != null && STOP.equals(intent.getAction())) {
       requested = false;
+      requestedDiagnostic = "";
       ++requestGeneration;
       finishSession("RGB stopped");
       return START_NOT_STICKY;
@@ -162,10 +242,21 @@ public class RgbService extends Service {
       return START_NOT_STICKY;
     }
     final long generation = requestGeneration;
+    final String mode =
+        intent.getStringExtra("diagnostic") == null ? "" : intent.getStringExtra("diagnostic");
+    if (!mode.isEmpty()) {
+      try {
+        RgbDiagnostics.duration(mode);
+      } catch (IllegalArgumentException invalid) {
+        finishSession("Invalid RGB diagnostic mode");
+        return START_NOT_STICKY;
+      }
+    }
     worker.post(
         () -> {
           if (session != null || stopping || !requested || generation != requestGeneration) return;
           try {
+            diagnosticMode = mode;
             session = new RgbSession(this, backend, SystemClock.elapsedRealtime());
             tick.run();
           } catch (Exception e) {
@@ -179,8 +270,21 @@ public class RgbService extends Service {
       () -> {
         if (stopping || session == null) return;
         try {
-          JSONObject options = RgbSettings.load(this);
           boolean awake = getSystemService(PowerManager.class).isInteractive();
+          if (!diagnosticMode.isEmpty()) {
+            if (!session.diagnosticTick(diagnosticMode, SystemClock.elapsedRealtime(), awake)) {
+              finishSession(session.message);
+              return;
+            }
+            boolean changed = !status.equals(session.message);
+            status = session.message;
+            if (changed)
+              getSystemService(NotificationManager.class)
+                  .notify(NOTIFICATION, notification(status));
+            worker.postDelayed(this.tick, 500);
+            return;
+          }
+          JSONObject options = RgbSettings.load(this);
           int level = PlayStats.level(this);
           boolean charging = PlayStats.plugged(this);
           int brightness =
@@ -214,9 +318,10 @@ public class RgbService extends Service {
         }
       };
 
-  void finishSession(String reason) {
+  synchronized void finishSession(String reason) {
     if (stopping) return;
     requested = false;
+    requestedDiagnostic = "";
     stopping = true;
     status = "Stopping RGB · restoring AYN lighting";
     worker.removeCallbacks(tick);
@@ -237,21 +342,43 @@ public class RgbService extends Service {
 
   @Override
   public void onDestroy() {
+    if (screenReceiverRegistered) {
+      try {
+        unregisterReceiver(screenReceiver);
+      } catch (IllegalArgumentException ignored) {
+      }
+      screenReceiverRegistered = false;
+    }
     stopping = true;
-    requested = false;
-    cancellationPending = false;
-    if (instance == this) instance = null;
+    final boolean ownedInstance = instance == this;
+    if (ownedInstance) {
+      requested = false;
+      requestedDiagnostic = "";
+      // Keep start/recovery excluded until the old worker has finished restoring hardware.
+      cancellationPending = true;
+      instance = null;
+    }
     if (worker != null) {
       worker.removeCallbacks(tick);
-      worker.post(
-          () -> {
-            if (session != null && !session.closed) {
-              session.close("RGB service stopped");
-              status = session.message;
-            }
-            thread.quitSafely();
-          });
-    }
+      boolean accepted =
+          worker.post(
+              () -> {
+                try {
+                  if (session != null && !session.closed) {
+                    session.close("RGB service stopped");
+                    status = session.message;
+                  }
+                } finally {
+                  thread.quitSafely();
+                  main.post(
+                      () -> {
+                        if (ownedInstance && instance == null && !requested)
+                          cancellationPending = false;
+                      });
+                }
+              });
+      if (!accepted && ownedInstance) cancellationPending = false;
+    } else if (ownedInstance) cancellationPending = false;
     super.onDestroy();
   }
 

@@ -104,6 +104,33 @@ final class RgbSession {
     return true;
   }
 
+  /** A finite diagnostic ignores profile edits and app focus and ends when the screen sleeps. */
+  boolean diagnosticTick(String mode, long now, boolean interactive) throws Exception {
+    if (closed) return false;
+    long limit = RgbDiagnostics.duration(mode);
+    long elapsed = Math.max(0, now - started);
+    if (!interactive) {
+      message =
+          RgbDiagnostics.text(
+              context,
+              "RGB-zonetest gestopt omdat de schermen uit zijn",
+              "RGB zone test stopped because the screens are off");
+      return false;
+    }
+    if (elapsed >= limit) {
+      message = RgbDiagnostics.text(context, "RGB-zonetest klaar", "RGB zone test finished");
+      return false;
+    }
+    RgbEngine.Frame next = RgbDiagnostics.frame(mode, elapsed);
+    if (!next.equals(last)) {
+      backend.write(context, next);
+      last = next;
+    }
+    paused = false;
+    message = RgbDiagnostics.progress(context, mode, elapsed);
+    return true;
+  }
+
   boolean close(String reason) {
     if (closed) return !recovery(context).contains("baseline");
     closed = true;
