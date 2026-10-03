@@ -36,6 +36,7 @@ public class MainActivity extends Activity implements DisplayManager.DisplayList
     "Controller",
     "Mapping",
     "Systeem",
+    "RGB Studio",
     "Instellen"
   };
   boolean initialized;
@@ -148,7 +149,9 @@ public class MainActivity extends Activity implements DisplayManager.DisplayList
       } else nav.addView(b);
     }
     if (!small) {
-      body.addView(nav, new LinearLayout.LayoutParams(Ui.dp(this, 130), -1));
+      ScrollView menu = new ScrollView(this);
+      menu.addView(nav);
+      body.addView(menu, new LinearLayout.LayoutParams(Ui.dp(this, 130), -1));
     }
     ScrollView scroll = new ScrollView(this);
     scroll.setFillViewport(true);
@@ -182,6 +185,9 @@ public class MainActivity extends Activity implements DisplayManager.DisplayList
         break;
       case "Mapping":
         ControlPages.mapping(this);
+        break;
+      case "RGB Studio":
+        RgbStudio.page(this);
         break;
       case "Systeem":
         ControlPages.system(this);
@@ -818,7 +824,7 @@ public class MainActivity extends Activity implements DisplayManager.DisplayList
     c =
         card(
             "Over deze preview",
-            "Thorhaven 0.6.0 · eigen implementatie, geïnspireerd op Wayfinder.");
+            "Thorhaven 0.7.0 · eigen implementatie, geïnspireerd op Wayfinder.");
     c.addView(
         Ui.text(
             this,

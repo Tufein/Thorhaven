@@ -45,6 +45,7 @@ final class ExperimentTools {
             Ui.MUTED));
     l.addView(Ui.button(a, "Schermspiegeling en opname", () -> ScreenLabActivity.open(a)));
     l.addView(Ui.button(a, "Macro's en trackpad", () -> ControlLab.open(a)));
+    l.addView(Ui.button(a, "RGB Studio", () -> a.go("RGB Studio")));
     media(a, l);
     l.addView(Ui.title(a, "Rapporten exporteren", 18));
     l.addView(
@@ -59,7 +60,7 @@ final class ExperimentTools {
         Ui.button(
             a,
             "Diagnostiek als JSON exporteren",
-            () -> document(a, 48, "application/json", "thorhaven-0.6-diagnostics.json")));
+            () -> document(a, 48, "application/json", "thorhaven-0.7-diagnostics.json")));
     l.addView(
         Ui.button(
             a,
@@ -177,6 +178,11 @@ final class ExperimentTools {
             .put("bridgeConnected", Bridge.remote != null)
             .put("nativeRemappingActive", Controls.active)
             .put("hardwareAutomationEnabled", HardwareAutomation.enabled));
+    j.put(
+        "rgb",
+        new JSONObject()
+            .put("active", RgbService.instance != null)
+            .put("recoveryPending", RgbSession.recovery(c).contains("baseline")));
     j.put("hardwareRecoveryPending", Store.prefs(c).contains("hw:snapshot"));
     j.put(
         "automaticBackup",

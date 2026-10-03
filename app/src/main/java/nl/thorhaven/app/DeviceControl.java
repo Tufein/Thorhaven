@@ -21,6 +21,11 @@ final class DeviceControl {
     "led_light_brightness_percent"
   };
 
+  static final String[] RGB_PATHS = {
+    "/sys/class/sn3112l/led/enable", "/sys/class/sn3112l/led/brightness",
+    "/sys/class/sn3112r/led/enable", "/sys/class/sn3112r/led/brightness"
+  };
+
   static synchronized String call(String request) {
     try {
       JSONObject q = new JSONObject(request);
@@ -43,6 +48,8 @@ final class DeviceControl {
             .toString();
       }
       if (op.equals("pointer")) return sendPointer(runner, q).toString();
+      if (op.equals("rgbStatus")) return rgbStatus(runner, model).toString();
+      if (op.equals("rgbFrame")) return rgbFrame(runner, q).toString();
       if (op.equals("status")) return status(runner, model).toString();
       if (op.equals("capture")) return capture(runner, q.getJSONObject("values")).toString();
       if (op.equals("apply")) return apply(runner, q.getJSONObject("values")).toString();
@@ -52,6 +59,92 @@ final class DeviceControl {
       return Controls.error(e.getMessage() == null ? e.getClass().getSimpleName() : e.getMessage())
           .toString();
     }
+  }
+
+  static void rgbNodes(Runner r) throws Exception {
+    StringBuilder command = new StringBuilder();
+    for (String path : RGB_PATHS) {
+      if (command.length() > 0) command.append(" && ");
+      command.append("test -f ").append(path).append(" && test -w ").append(path);
+    }
+    command.append(" && printf '%s' THORHAVEN_RGB_NODES_OK");
+    if (!r.run(command.toString()).trim().equals("THORHAVEN_RGB_NODES_OK"))
+      throw new IOException("Both Thor LED enable and brightness nodes must exist and be writable");
+    String ddHelp = r.run("dd --help");
+    if (!ddHelp.contains("nocreat") || !ddHelp.contains("notrunc"))
+      throw new IOException("Firmware lacks a no-create RGB node writer");
+  }
+
+  static JSONObject rgbStatus(Runner r, String model) throws Exception {
+    rgbNodes(r);
+    JSONObject baseline = new JSONObject();
+    for (String key : new String[] {RgbHardware.ENABLED, RgbHardware.COLOR, RgbHardware.BRIGHTNESS})
+      baseline.put(key, read(r, key));
+    RgbHardware.validateBaseline(baseline);
+    return new JSONObject()
+        .put("available", true)
+        .put("model", model)
+        .put("baseline", baseline)
+        .put("message", "Thor RGB capability and actual stock lighting checked");
+  }
+
+  static JSONObject rgbFrame(Runner r, JSONObject request) throws Exception {
+    RgbSettings.keys(request, "op", "frame");
+    if (!RgbSettings.string(request, "op").equals("rgbFrame"))
+      throw new IOException("Invalid RGB operation");
+    RgbEngine.Frame frame = RgbEngine.Frame.fromJson(RgbSettings.object(request, "frame"));
+    // Validate all fields and every fixed node before the first write.
+    rgbNodes(r);
+    String[] values = rgbValues(frame);
+    StringBuilder command = new StringBuilder();
+    for (int i = 0; i < values.length; i++) {
+      command
+          .append("printf '%s\\n' ")
+          .append(quote(values[i]))
+          .append(" | dd of=")
+          .append(RGB_PATHS[rgbPathIndex(i)])
+          .append(" conv=nocreat,notrunc status=none")
+          .append(" || { printf '%s' THORHAVEN_RGB_PARTIAL_")
+          .append(i)
+          .append("; exit 1; }; ");
+    }
+    command.append("printf '%s' THORHAVEN_RGB_FRAME_OK");
+    String result = r.run(command.toString()).trim();
+    if (!result.equals("THORHAVEN_RGB_FRAME_OK"))
+      throw new IOException(
+          "RGB frame write failed; state may be partial: "
+              + result.substring(0, Math.min(160, result.length())));
+    return new JSONObject().put("message", "Both zones of both Thor sticks updated");
+  }
+
+  static int rgbPathIndex(int write) {
+    if (write < 0 || write > 5) throw new IllegalArgumentException("Invalid RGB write");
+    return write < 3 ? (write == 0 ? 0 : 1) : (write == 3 ? 2 : 3);
+  }
+
+  static String[] rgbValues(RgbEngine.Frame frame) {
+    String left =
+        (frame.left >>> 16 & 255)
+            + ":"
+            + (frame.left >>> 8 & 255)
+            + ":"
+            + (frame.left & 255)
+            + ":255";
+    String right =
+        (frame.right >>> 16 & 255)
+            + ":"
+            + (frame.right >>> 8 & 255)
+            + ":"
+            + (frame.right & 255)
+            + ":255";
+    return new String[] {
+      frame.leftEnabled ? "1" : "0",
+      "1-" + left,
+      "2-" + left,
+      frame.rightEnabled ? "1" : "0",
+      "1-" + right,
+      "2-" + right
+    };
   }
 
   static JSONObject sendKey(Runner runner, JSONObject q) throws Exception {

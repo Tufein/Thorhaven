@@ -1,5 +1,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
  <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
+ <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE"/>
  <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PROJECTION"/>
  <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
  <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
@@ -13,6 +14,9 @@
    <intent-filter><action android:name="android.intent.action.MAIN"/><category android:name="android.intent.category.LAUNCHER"/></intent-filter>
   </activity>
   <activity android:name=".ScreenLabActivity" android:launchMode="singleTask" android:taskAffinity="nl.thorhaven.app.screenlab" android:exported="false" android:resizeableActivity="true" android:configChanges="orientation|screenSize|smallestScreenSize|screenLayout"/>
+  <service android:name=".RgbService" android:exported="false" android:foregroundServiceType="specialUse">
+   <property android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE" android:value="User-started local AYN Thor joystick RGB effects"/>
+  </service>
   <service android:name=".ScreenLabService" android:exported="false" android:foregroundServiceType="mediaProjection"/>
   <activity android:name=".GuideActivity" android:exported="false" android:resizeableActivity="true"/>
   <service android:name=".ThorService" android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE" android:exported="true" android:label="Thorhaven · controller &amp; snelpaneel">

@@ -14,7 +14,8 @@ final class ExtraFeatures {
   };
 
   static boolean key(String k) {
-    return k.equals("controlLab")
+    return k.equals("rgbStudio")
+        || k.equals("controlLab")
         || k.equals("sessions")
         || k.equals("touchTiles")
         || k.equals("panelOrder")
@@ -27,6 +28,10 @@ final class ExtraFeatures {
   static void validate(String k, Object v) throws Exception {
     if (!(v instanceof String) || ((String) v).length() > (k.equals("sessions") ? 750000 : 100000))
       throw new Exception("Invalid tool data");
+    if (k.equals("rgbStudio")) {
+      RgbSettings.validate((String) v);
+      return;
+    }
     if (k.equals("controlLab")) {
       ControlLab.validate((String) v);
       return;

@@ -6,9 +6,9 @@ Thorhaven helps you launch apps on either screen, keep a game guide or your note
 
 **Android 11 or newer · Dutch and English · Free and open source**
 
-[**Download the APK**](https://github.com/Tufein/Thorhaven/releases/download/v0.6.0-preview/Thorhaven-0.6.0-preview.apk) · [Release notes](https://github.com/Tufein/Thorhaven/releases/tag/v0.6.0-preview) · [User guide](docs/Thorhaven-0.6.0-guide.md)
+[**Download the APK**](https://github.com/Tufein/Thorhaven/releases/download/v0.7.0-preview/Thorhaven-0.7.0-preview.apk) · [Release notes](https://github.com/Tufein/Thorhaven/releases/tag/v0.7.0-preview) · [User guide](docs/Thorhaven-0.7.0-guide.md)
 
-> Version 0.6 is an early preview. Some features depend on your Thor's firmware and the apps you use. Start with the basic features before enabling advanced controller or hardware settings.
+> Version 0.7 is an early preview. Some features depend on your Thor's firmware and the apps you use. Start with the basic features before enabling advanced controller or hardware settings.
 
 ## What can it do?
 
@@ -27,19 +27,20 @@ Thorhaven helps you launch apps on either screen, keep a game guide or your note
 | **Experimental input tools** | Configure touch buttons, short key macros, bounded turbo and an absolute touch/mouse pad with supported root access. |
 | **Experimental Screen Lab** | Mirror the main screen below, choose a crop, save screenshots and record short silent MP4 clips. |
 | **Media and reports** | Control an active music session, export completed session samples to CSV or save a diagnostic report. |
+| **RGB Studio** | Set different colors and effects for each joystick, save your own styles and switch them per app. |
 | **Optional hardware profiles** | Apply supported per-app fan/performance settings with session opt-in and recovery. |
 
 Advanced options can also move running apps between screens and adjust supported performance, fan and joystick-light settings. These need extra setup; see **Optional setup** below.
 
 ## Install in a few steps
 
-1. [Download the APK](https://github.com/Tufein/Thorhaven/releases/download/v0.6.0-preview/Thorhaven-0.6.0-preview.apk) on your Thor.
+1. [Download the APK](https://github.com/Tufein/Thorhaven/releases/download/v0.7.0-preview/Thorhaven-0.7.0-preview.apk) on your Thor.
 2. Open it in Android **Files**. If Android asks, allow that app to install the APK.
 3. Open **Thorhaven**. In **Instellen / Settings**, choose **Nederlands** or **English**.
 4. In **Settings → Displays**, check which screen is assigned as top and bottom.
 5. Open **Apps**, choose an app and launch it on the screen you want.
 
-**Already using Thorhaven?** Install the new APK over the existing version to keep your data. Do not uninstall first. The published 0.1–0.6 APKs use the same signing certificate.
+**Already using Thorhaven?** Install the new APK over the existing version to keep your data. Do not uninstall first. The published 0.1–0.7 APKs use the same signing certificate.
 
 ## Try these first
 
@@ -59,30 +60,34 @@ Basic app launching, saved pairs, notes and settings do not require root. Enable
 | --- | --- |
 | The quick panel, guides over games, Select shortcuts and usage measurements | Thorhaven's **accessibility service**, through Settings. |
 | The controller keyboard | **Thorhaven Controller Keyboard** in Android's keyboard settings. |
+| RGB Studio | Compatible Thor lighting controls; try **Check RGB access**. Direct access can work without root. App-specific RGB switching also uses the accessibility service. |
 | Screen Lab mirroring and recording | Android's **screen capture consent** for each session; notifications are optional. |
 | System brightness controls | Android permission to **modify system settings**. |
 | Moving or swapping running apps | [Shizuku](https://shizuku.rikka.app/download/), then connect it in Thorhaven. |
 | Input Lab, advanced controller remapping and supported hardware controls | The supported AYN root service, or **Shizuku running with root access**. |
 
-Shizuku provides additional Android system access. Starting it through wireless debugging can support live app moves, but normally does not provide the root access needed for advanced input or hardware controls. The [user guide](docs/Thorhaven-0.6.0-guide.md) explains the setup and default shortcuts.
+Shizuku provides additional Android system access. Starting it through wireless debugging can support live app moves, but normally does not provide the root access needed for advanced input or hardware controls. The [user guide](docs/Thorhaven-0.7.0-guide.md) explains the setup and default shortcuts.
 
 **Controller emergency stop:** while advanced remapping is active, hold the original **Select + Start for three seconds** to stop it. You can also stop remapping from the app or quick panel.
 
-## What is new in 0.6?
+## What is new in 0.7?
 
-- **Screen Lab:** main-screen preview on the lower display, crop controls, PNG screenshots and short silent MP4 recordings with Android consent.
-- **Input Lab:** up to six short macros, firmware-dependent bounded key holds, finite turbo bursts and an absolute touch/mouse pad.
-- **Better document tools:** search and filter the library, rename guides, export original files, adjust text size/PDF zoom and edit individual bookmarks or markers.
-- **Media buttons and reports:** previous/play/pause/next, diagnostic JSON and play-session CSV exports.
+- **RGB Studio:** independent left/right colors, brightness and effects, with a preview, copy and swap controls.
+- **Seven effects and nine quick styles:** solid, breathing, rainbow, color cycle, soft pulse, battery level and charging indicator.
+- **Your own styles:** save up to 20 named presets and assign them to up to 64 Android apps. Unassigned apps use your global profile.
+- **Session controls:** choose 2, 5 or 10 updates per second with direct access, plus screen-off pause, brightness following, low-battery dimming and an optional stop timer. Root/AYN bridge updates are capped at 2 per second.
+- **Stop and recovery:** a foreground notification offers Stop & restore. Interrupted sessions keep a separate recovery record.
 
-Open **Settings → Experimental workshop** to try the new tools. Input Lab settings are under **Extra tools → Open extra options**. Enable only the tools you want to test.
+Open **RGB Studio**, choose a quick style and select **Check RGB access**. Select **Start RGB** when you want the hardware session to begin. Presets and the on-screen preview work without compatible lighting hardware. The [user guide](docs/Thorhaven-0.7.0-guide.md) explains setup and recovery.
 
-[Read the full change details](docs/Thorhaven-0.6.0-release-notes.md).
+[Read the full change details](docs/Thorhaven-0.7.0-release-notes.md). All features introduced in 0.6 remain available; its [release notes](docs/Thorhaven-0.6.0-release-notes.md) describe Screen Lab, Input Lab and document tools.
 
 <details>
-<summary>See the English settings interface (0.4 example)</summary>
+<summary>See RGB Studio in English</summary>
 
-![Thorhaven settings showing language selection and keyboard sizes](https://github.com/Tufein/Thorhaven/releases/download/v0.4.0-preview/Thorhaven-0.4.0-English-settings.png)
+![Thorhaven RGB Studio with independent ring previews and copy/swap controls](docs/screenshots/Thorhaven-0.7.0-RGB-Studio.png)
+
+An emulator example of the editor. Physical light colors depend on your Thor.
 
 </details>
 
@@ -97,19 +102,22 @@ Open **Settings → Experimental workshop** to try the new tools. Input Lab sett
 - Automatic backups can be deferred by Android. Hardware automation is experimental, is disabled after restart and needs compatible Thor firmware.
 - Screen Lab captures Android's **default/main display**, which may differ from a manually assigned top screen. The preview is limited to 5 frames per second and 960 pixels on its longest side. Recording captures the full main screen, without audio or crop, for up to 3 minutes or 96 MB. Protected content may stay black.
 - Screen Lab retains six screenshots and three recordings locally. Export files you want to keep; captures are not included in complete settings backups.
+- RGB Studio supports the Thor's two joystick lights when its firmware allows access. The hardware color may differ from the on-screen preview. Stop other RGB controllers and AYN animated lighting before using it.
+- RGB Studio restores the actual AYN color, on/off and brightness settings, using current stock settings when they can be read. It cannot resume another app's previous animation. Recovery remains available after an interruption; new sessions wait until recovery succeeds.
+- RGB effects do not start automatically after process/device restart or backup import. Screen-color and audio-reactive RGB effects are not included in 0.7.
 - Gyro mapping, analog touch sticks, ROM detection and physical display power-off remain unavailable.
 
-**242 automated checks passed**, including real screen-sharing consent, cropped PNG screenshots and silent MP4 recording on the emulator. A signed 0.5 → 0.6 update preserves existing settings, notes and guides. Physical AYN Thor validation is still needed, especially for firmware, input acceptance and capture performance. See the [test report](docs/Thorhaven-0.6.0-test-results.txt) for the exact scope and limits.
+The 0.7 release passed **317 automated checks**, including 75 new RGB checks, and a signed update from 0.6 that preserved the app's data. See the [verification report](docs/Thorhaven-0.7.0-test-results.txt) for the results. Physical AYN Thor validation is still needed for LED output, firmware behavior, input acceptance and capture performance. An emulator or simulated lighting backend cannot verify the physical colors or both lighting zones.
 
 ## Your data stays local
 
 Thorhaven has **no Internet permission, ads or trackers**. Notes, profiles, guides and measurements stay on your device. Online guide links open in your own browser.
 
-The optional accessibility service uses foreground app names and controller buttons. It does not read screen text or save a keystroke history. Backup files contain your personal notes, guides and usage data, so store them somewhere appropriate. Screen Lab asks Android for capture consent each time and uses a foreground service while sharing. Captures can include visible personal information. Diagnostic reports include firmware and display information but omit notes, guide contents, macro contents, tokens and key history; review any file before sharing it.
+The optional accessibility service uses foreground app names and controller buttons. It does not read screen text or save a keystroke history. Backup files contain your personal notes, guides and usage data, so store them somewhere appropriate. Screen Lab asks Android for capture consent each time and uses a foreground service while sharing. Captures can include visible personal information. RGB effects run in a user-started foreground service; RGB Studio does not capture screen images or audio. Its presets are included in backups, while active sessions and device recovery records are excluded. Diagnostic reports include firmware and display information but omit notes, guide contents, macro contents, tokens and key history; review any file before sharing it.
 
 ## Help and feedback
 
-Check the [user guide](docs/Thorhaven-0.6.0-guide.md) for setup and troubleshooting. If something does not work, [open an issue](https://github.com/Tufein/Thorhaven/issues) and include your Thor model, Android/firmware version, Thorhaven version and the steps that caused the problem. Share logs only after checking them for personal information.
+Check the [user guide](docs/Thorhaven-0.7.0-guide.md) for setup and troubleshooting. If something does not work, [open an issue](https://github.com/Tufein/Thorhaven/issues) and include your Thor model, Android/firmware version, Thorhaven version and the steps that caused the problem. Share logs only after checking them for personal information.
 
 ## For developers
 

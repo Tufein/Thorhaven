@@ -736,3 +736,77 @@ Invoermogelijkheden gecontroleerd	Input capabilities checked
 Firmware heeft deze invoeractie geweigerd	Firmware refused this input action
 Aanwijzeractie verstuurd	Pointer action sent
 De Android-bestandskiezer is niet beschikbaar.	The Android file picker is unavailable.
+Twee joysticklichten. Jouw kleuren, effecten en gameprofielen.	Two joystick lights. Your colors, effects and game profiles.
+RGB-sessie	RGB session
+Start bewust een sessie. De effecten blijven via een zichtbare Android-melding actief. Na stoppen worden de AYN-kleur-, aan/uit- en helderheidsinstellingen hersteld. Zet andere RGB-apps en AYN-animaties uit als ze de kleuren overschrijven.	Start a session when you want lighting effects. A visible Android notification keeps them active. Stopping restores the AYN color, on/off and brightness settings. Stop other RGB apps and AYN animations if they overwrite your colors.
+RGB starten	Start RGB
+Stoppen en AYN herstellen	Stop and restore AYN
+Herstellen na onderbreking	Restore after interruption
+RGB-toegang controleren	Check RGB access
+RGB-toegang	RGB access
+Controleert firmwaretoegang; de fysieke lichten en beide zones moet je op je Thor testen.	Checks firmware access; test the physical lights and both zones on your Thor.
+Voorbeeld · globaal profiel	Preview · global profile
+Dit voorbeeld gebruikt dezelfde kleurenberekening als de lichten, zonder hardwarewijzigingen.	This preview uses the same color calculation as the lights, without changing hardware.
+Kleuren en effecten bewerken	Edit colors and effects
+Links naar rechts kopiëren	Copy left to right
+Links en rechts omwisselen	Swap left and right
+Snelle stijlen	Quick styles
+Kies een stijl als globaal profiel. Je kunt hem daarna aanpassen en met een eigen naam bewaren.	Choose a style as the global profile. You can then customize it and save it with your own name.
+Mijn RGB-presets	My RGB presets
+Bewaar maximaal 20 stijlen. App-koppelingen gebruiken een bewaarde preset.	Save up to 20 styles. App assignments use a saved preset.
+Bijwerken	Update
+Naam van de preset	Preset name
+RGB-preset hernoemen	Rename RGB preset
+RGB-preset verwijderen?	Delete RGB preset?
+De app-koppelingen naar deze preset worden ook verwijderd.	App assignments for this preset will also be removed.
+Globaal profiel als preset bewaren	Save global profile as a preset
+RGB-preset bewaren	Save RGB preset
+RGB-presets en app-koppelingen zitten in beide Thorhaven-back-ups. Import start geen RGB-sessie.	Both Thorhaven backup formats include RGB presets and app assignments. Importing does not start an RGB session.
+Lichtgedrag	Lighting behavior
+De grenzen gelden voor beide lichten. Wijzigingen worden in een actieve sessie op de volgende update gebruikt.	These controls apply to both lights. An active session uses changes on its next update.
+RGB dimmen met systeemhelderheid	Dim RGB with system brightness
+Onder 20% accu extra dimmen	Dim further below 20% battery
+Pauzeren wanneer de schermen uit zijn	Pause when the screens are off
+Snelheid van updates	Update rate
+Zuinig · 2 per seconde	Eco · 2 per second
+Gebalanceerd · 5 per seconde	Balanced · 5 per second
+Vloeiend · 10 per seconde	Smooth · 10 per second
+Automatisch stoppen na	Stop automatically after
+Geen timer	No timer
+5 minuten	5 minutes
+15 minuten	15 minutes
+30 minuten	30 minutes
+60 minuten	60 minutes
+De timer telt vanaf de start van de sessie, ook tijdens schermpauze. Dimmen volgt Androids systeemhelderheid, niet afzonderlijk de twee schermen. Via de root- of AYN-koppeling zijn updates begrensd op 2 per seconde; directe toegang gebruikt je keuze hierboven.	The timer counts from session start, including screen pauses. Dimming follows Android system brightness, rather than each screen separately. Root or AYN bridge updates are limited to 2 per second; direct access uses your selection above.
+RGB per app	RGB per app
+Binnen een actieve RGB-sessie wisselt de optionele toegankelijkheidsservice automatisch van preset. Apps zonder koppeling gebruiken het globale profiel.	During an active RGB session, the optional accessibility service selects presets for foreground apps. Unassigned apps use the global profile.
+Activeer de controller-service bij Instellen voor automatische app-herkenning.	Enable the controller service in Settings for automatic app detection.
+Koppeling verwijderen	Remove assignment
+App aan RGB-preset koppelen	Assign an RGB preset to an app
+Bewaar eerst een RGB-preset.	Save an RGB preset first.
+Kies een RGB-preset	Choose an RGB preset
+Kleuren en effecten	Colors and effects
+Linker licht	Left light
+Rechter licht	Right light
+Een eigen aan/uit-stand, kleur, effect en helderheid voor dit licht.	Choose on/off, color, effect and brightness independently for this light.
+Dit licht aan	Enable this light
+Hoofdkleur · #RRGGBB	Primary color · #RRGGBB
+Tweede kleur voor kleurovergang · #RRGGBB	Secondary color for color cycle · #RRGGBB
+Effectduur (seconden)	Effect duration (seconds)
+Accukleuren gebruiken de werkelijk gemeten accu; laadindicatie ademt alleen tijdens laden.	Battery colors use the actual battery reading; the charging indicator breathes only while charging.
+Vaste kleur	Solid color
+Ademen	Breathing
+Regenboog	Rainbow
+Kleurovergang	Color cycle
+Zachte puls	Soft pulse
+Accuniveau	Battery level
+Laadindicatie	Charging indicator
+Voorbeeld van de linker en rechter RGB-ring	Preview of the left and right RGB rings
+Voer een geldige kleur in voor het voorbeeld.	Enter a valid color to see the preview.
+RGB-herstel is bezig. Probeer daarna opnieuw.	RGB restoration is in progress. Try again afterward.
+RGB starten mislukt:	Could not start RGB:
+RGB is niet actief. Gebruik Herstellen als herstel nog nodig is.	RGB is inactive. Use Restore if recovery is still pending.
+Stop eerst de actieve RGB-sessie.	Stop the active RGB session first.
+RGB stoppen en AYN herstellen	Stop RGB and restore AYN
+RGB Studio · kleuren en effecten	RGB Studio · colors and effects
+Stop eerst RGB Studio voordat je de AYN-lichtinstellingen wijzigt.	Stop RGB Studio before changing AYN lighting settings.

@@ -33,7 +33,7 @@ final class Bridge {
             .daemon(false)
             .processNameSuffix("displaybridge")
             .tag("thorhaven.displaybridge")
-            .version(3)
+            .version(4)
             .debuggable(false);
     Shizuku.addBinderReceivedListenerSticky(Bridge::bind);
     Shizuku.addBinderDeadListener(

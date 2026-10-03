@@ -34,6 +34,16 @@ final class QuickPanel {
               if (close != null) close.run();
               ExperimentTools.open(c);
             }));
+    l.addView(
+        Ui.button(
+            c,
+            "RGB Studio",
+            () -> {
+              if (close != null) close.run();
+              RgbStudio.open(c);
+            }));
+    if (RgbService.instance != null)
+      l.addView(Ui.button(c, "RGB stoppen en AYN herstellen", () -> RgbService.stop(c)));
     ExperimentTools.media(c, l);
     l.addView(
         Ui.button(

@@ -14,6 +14,7 @@ import org.json.*;
 public class SmokeInstrumentation extends Instrumentation {
   boolean v5Only;
   boolean v6Only;
+  boolean v7Only;
   boolean captureOnly;
   int passed;
   StringBuilder report = new StringBuilder();
@@ -23,6 +24,7 @@ public class SmokeInstrumentation extends Instrumentation {
     super.onCreate(args);
     v5Only = args != null && "true".equals(args.getString("v5"));
     v6Only = args != null && "true".equals(args.getString("v6"));
+    v7Only = args != null && "true".equals(args.getString("v7"));
     captureOnly = args != null && "true".equals(args.getString("capture"));
     start();
   }
@@ -35,6 +37,10 @@ public class SmokeInstrumentation extends Instrumentation {
 
   @Override
   public void onStart() {
+    if (v7Only) {
+      v7();
+      return;
+    }
     if (captureOnly) {
       capture();
       return;
@@ -567,6 +573,45 @@ public class SmokeInstrumentation extends Instrumentation {
       code = 1;
     } finally {
       ControlLab.stop();
+      if (before != null)
+        try {
+          Store.restore(c, before);
+        } catch (Exception ignored) {
+        }
+      if (a != null) {
+        MainActivity done = a;
+        runOnMainSync(done::finish);
+      }
+    }
+    finish(code, result);
+  }
+
+  void v7() {
+    Bundle result = new Bundle();
+    Context c = getTargetContext();
+    String before = null;
+    MainActivity a = null;
+    int code = 0;
+    try {
+      before = Store.backup(c).toString();
+      a =
+          (MainActivity)
+              startActivitySync(
+                  new Intent(c, MainActivity.class).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
+      RgbStudioChecks.run(this, c, a);
+      result.putString("result", "PASS " + passed + " RGB checks\n" + report);
+    } catch (Throwable e) {
+      code = 1;
+      result.putString(
+          "result",
+          "FAIL after "
+              + passed
+              + " checks\n"
+              + report
+              + "\n"
+              + android.util.Log.getStackTraceString(e));
+    } finally {
+      RgbService.stop(c);
       if (before != null)
         try {
           Store.restore(c, before);

@@ -302,6 +302,7 @@ final class ControlPages {
   }
 
   static void system(MainActivity a) {
+    a.content.addView(Ui.button(a, "RGB Studio · kleuren en effecten", () -> a.go("RGB Studio")));
     a.heading("Thor-systeem", "Prestatiemodus, ventilator, CPU-limieten en joystickverlichting.");
     LinearLayout access =
         a.card(
@@ -495,6 +496,13 @@ final class ControlPages {
   }
 
   static void apply(MainActivity a, JSONObject patch) {
+    if (RgbService.instance != null
+        && (patch.has("joystick_light_enabled")
+            || patch.has("joystick_led_light_picker_color")
+            || patch.has("led_light_brightness_percent"))) {
+      Ui.toast(a, "Stop eerst RGB Studio voordat je de AYN-lichtinstellingen wijzigt.");
+      return;
+    }
     if (hardware != null
         && hardware.optJSONObject("settings") != null
         && hardware.optJSONObject("settings").has("is_quick_set_performance_and_fan_enable")

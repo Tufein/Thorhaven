@@ -48,6 +48,7 @@ public class ThorService extends AccessibilityService {
       Store.recordRecent(this, p);
       Controls.foreground(this, p);
       HardwareAutomation.focus(this, p);
+      RgbService.focus(this, p);
       if (Store.prefs(this).getBoolean("autoProfiles", false)) Store.apply(this, p);
     }
   }
@@ -69,6 +70,7 @@ public class ThorService extends AccessibilityService {
     if (cover != null) cover.hide();
     if (stats != null) stats.stop();
     Controls.stop(this);
+    RgbService.focus(this, "");
     instance = null;
     handler.removeCallbacksAndMessages(null);
     super.onDestroy();

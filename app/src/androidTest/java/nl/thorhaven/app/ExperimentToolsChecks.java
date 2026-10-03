@@ -16,7 +16,10 @@ final class ExperimentToolsChecks {
         report.getString("format").equals("thorhaven-diagnostics") && report.getInt("schema") == 1,
         "Diagnostic report has a versioned format");
     t.check(
-        report.getJSONObject("app").getLong("versionCode") == 6,
+        report.getJSONObject("app").getLong("versionCode")
+            == c.getPackageManager().getPackageInfo(c.getPackageName(), 0).getLongVersionCode()
+            && report.getJSONObject("app").getString("version")
+                .equals(c.getPackageManager().getPackageInfo(c.getPackageName(), 0).versionName),
         "Diagnostic report identifies the actual installed version");
     t.check(
         report.getJSONArray("displays").length() >= 2 && report.has("assignedBottom"),
