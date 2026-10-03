@@ -1,99 +1,111 @@
 # Thorhaven
 
-Native Android companion for the AYN Thor, written independently of Wayfinder. Preview 0.4.0. Dutch and English UI.
+**Make the most of both screens on your AYN Thor.**
 
-Download the signed APK from [GitHub Releases](https://github.com/Tufein/Thorhaven/releases). This is an experimental pre-release and has not been tested on a physical AYN Thor. MIT-licensed original application code.
+Thorhaven helps you launch apps on either screen, keep a game guide or your notes below your game, and adjust your controls from one place. Use the features you need and leave the others switched off.
 
-Features: public display discovery and assignment; launch apps on chosen displays; app profiles for system music volume and brightness; favorites; app pairs; local notes and browser guides; JSON backup/validated import; AccessibilityService quick panel and optional Select shortcuts; controller diagnostics; an InputMethodService keyboard; optional Shizuku UserService for live root-task movement and swapping.
+**Android 11 or newer · Dutch and English · Free and open source**
 
-Added in 0.2: native evdev/uinput button remapping, D-pad-to-keyboard mapping, stick inversion/swap/dead zones/response curves, automatic per-app controller profiles, emergency stop and connection watchdog; firmware-probed stock performance/fan modes, CPU frequency caps and joystick RGB with persisted recovery snapshots. Root is needed for these additions, through root Shizuku or the firmware PServer binder. Hardware controls refuse non-Thor devices.
+[**Download the APK**](https://github.com/Tufein/Thorhaven/releases/download/v0.4.0-preview/Thorhaven-0.4.0-preview.apk) · [Release notes](https://github.com/Tufein/Thorhaven/releases/tag/v0.4.0-preview) · [User guide](docs/Thorhaven-0.4.0-guide.md)
 
-Not implemented: macros/turbo, gyro/mouse, analog-trigger reassignment, screen power, capture or per-ROM detection. Real AYN Thor firmware and controllers have not been tested.
+> Version 0.4 is an early preview. Some features depend on your Thor's firmware and the apps you use. Start with the basic features before enabling advanced controller or hardware settings.
 
-Added in 0.3: private offline PDF/UTF-8/Markdown imports and an accessibility-overlay reader with page bookmarks/zoom; per-session standby drain and foreground app-time measurements; touch-only quick panel, recent apps and configurable cards; a non-focusable black bottom-screen curtain; face-button/keyboard presets, profile copy and a five-second stick rest measurement; saving the two live app tasks as a pair from the quick panel. The curtain does not power off the display or put the device to sleep. No extra Android permissions or dependencies were added.
+## What can it do?
 
-## Latest changes: custom shortcuts, complete backups and bilingual UI
+| Feature | How it helps |
+| --- | --- |
+| **Apps on both screens** | Choose where an app opens, or launch two apps together as a saved pair. |
+| **Offline guides** | Read your own PDF, text or Markdown guide on the bottom screen while playing. |
+| **Notes beside your guide** | Keep tips and progress notes next to the guide, then save your edits. |
+| **Quick panel** | Reach volume, brightness, favorites and recent apps without returning to the main app. |
+| **Custom shortcuts** | Assign Select + button combinations to apps, guides, saved pairs and other actions. |
+| **Controller tools** | Test buttons and sticks, choose presets and adjust button mappings or stick settings. |
+| **Controller keyboard** | Type with the controller or touch, insert symbols and move the text cursor. |
+| **Battery and play time** | View local screen-off battery measurements and estimated time spent in apps. |
+| **Backups** | Save settings, notes, offline guides and reading positions in a complete ZIP backup. |
 
-- Switch between Dutch and English without translating user documents or notes.
-- Assign supported Select chords to apps, pairs, pages, overlays and display/system actions; disable individual actions or reset defaults.
-- Export/import a bounded complete ZIP backup with guides, bookmarks and usage history, staged validation and crash-recoverable rollback.
-- Type symbols, move the cursor with L1/R1 and choose keyboard key sizes; controller navigation follows the real row layout.
-- Read an offline guide beside an editable notes column, with explicit saving.
+Advanced options can also move running apps between screens and adjust supported performance, fan and joystick-light settings. These need extra setup; see **Optional setup** below.
 
-See [the 0.4 change details](docs/Thorhaven-0.4.0-release-notes.md) and [the English guide](docs/Thorhaven-0.4.0-guide.md) for setup, validation and limitations.
+## Install in a few steps
 
-## Build
+1. [Download the APK](https://github.com/Tufein/Thorhaven/releases/download/v0.4.0-preview/Thorhaven-0.4.0-preview.apk) on your Thor.
+2. Open it in Android **Files**. If Android asks, allow that app to install the APK.
+3. Open **Thorhaven**. In **Instellen / Settings**, choose **Nederlands** or **English**.
+4. In **Settings → Displays**, check which screen is assigned as top and bottom.
+5. Open **Apps**, choose an app and launch it on the screen you want.
 
-Use JDK 21, Android SDK platform 36 and build tools 36.0.0. Set `ANDROID_HOME` or create `local.properties` with `sdk.dir=...`. Android Gradle Plugin 9.1.0 and the included Gradle 9.3.1 wrapper are used.
+**Already using Thorhaven?** Install the new APK over the existing version to keep your data. Do not uninstall first. The published 0.1–0.4 APKs use the same signing certificate.
 
-```
-./gradlew :app:assembleDebug
-```
+## Try these first
 
-Output: `app/build/outputs/apk/debug/app-debug.apk`. This build is signed with your local Android debug certificate.
+- **Save an app pair:** combine your emulator on top with a music app or browser below, then reopen both with one action.
+- **Add a guide:** go to **Guides**, select your game or emulator app and import a PDF, text or Markdown file.
+- **Customize the panel:** select touch-only mode to keep controller focus with your game, and choose which cards to show.
+- **Set a shortcut:** open **Settings → Custom shortcuts** and choose what a supported Select + button combination should do.
+- **Make a backup:** use **Settings → Complete backup** to include your guides and reading positions. The older JSON backup saves settings only.
 
-For a release with your own signing key, set `THORHAVEN_KEYSTORE` and `THORHAVEN_KEYSTORE_PASSWORD` (alias `thorhaven`), then run `./gradlew :app:assembleRelease`. Without these variables, release uses the local debug certificate. The signing key used for the delivered APK is not included in the source archive; builds signed with another certificate cannot update that installed APK directly.
+Guide imports support PDFs up to **16 MB**, or UTF-8 text and Markdown up to **2 MB**. Markdown is displayed as text. Complete backups support up to **64 guides** and **128 MB of guide data**.
 
-An optional `THORHAVEN_BUILD_ROOT` environment variable puts build products outside the source checkout. Minimum Android API 30; target API 33. The new input helper supports arm64-v8a, the Thor ABI. Kotlin runtime is added by AGP's built-in Kotlin support; the app itself is Java.
+## Optional setup
 
-Rebuild the bundled ARM64 helper after native edits:
+Basic app launching, saved pairs, notes and settings do not require root. Enable additional access only for the features you want.
 
-```
-ANDROID_NDK_HOME=/path/to/ndk/27.2.12479018 ./native/build.sh
-```
+| To use… | Enable… |
+| --- | --- |
+| The quick panel, guides over games, Select shortcuts and usage measurements | Thorhaven's **accessibility service**, through Settings. |
+| The controller keyboard | **Thorhaven Controller Keyboard** in Android's keyboard settings. |
+| System brightness controls | Android permission to **modify system settings**. |
+| Moving or swapping running apps | [Shizuku](https://shizuku.rikka.app/download/), then connect it in Thorhaven. |
+| Advanced controller remapping and supported hardware controls | The supported AYN root service, or **Shizuku running with root access**. |
 
-The prebuilt helper is included for app-only builds. The root process checks its SHA-256 before execution. The app has no Internet permission; helper communication uses a random abstract Unix socket, peer UID checks and a per-session token. Loss of heartbeat or socket closes releases the grabbed input device. Holding raw Select + Start for three seconds stops capture. The virtual pad may appear as a second player because the original device remains enumerated by Android; select Thorhaven Controller in the emulator. No firmware modules or stock mapping services are disabled.
+Shizuku provides additional Android system access. Starting it through wireless debugging can support live app moves, but normally does not provide the root access needed for advanced input or hardware controls. The [user guide](docs/Thorhaven-0.4.0-guide.md) explains the setup and default shortcuts.
 
-## Architecture
+**Controller emergency stop:** while advanced remapping is active, hold the original **Select + Start for three seconds** to stop it. You can also stop remapping from the app or quick panel.
 
-- `Language` / `english.tsv`: local UI catalog; guide contents and note text use untranslated views.
-- `Shortcuts`: bounded and validated Select-chord bindings; app/pair/page targets are checked before execution. Native emergency stop is independent.
-- `CompleteBackup`: bounded ZIP extraction, content validation, private staging, recoverable file/preference transactions and startup recovery. In-flight measurements and hardware recovery snapshots are excluded from transfer.
-- `KeyboardSettings` / `ThorKeyboard`: symbol rows, paired cursor events, key sizing and row-aware controller navigation.
+## What is new in 0.4?
 
-- `OfflineGuides`, `GuidePane`, `GuideActivity`, `GuidePages`: validated atomic local import, bounded native PDF rendering, independent reader/overlay lifecycle and private bookmarks. No downloaded HTML, scripts or network permission.
-- `PlayStats`: dynamically registered screen/battery events while accessibility is enabled; elapsed-time and boot-identity checks; charge-aware sleep history with duration-weighted averages from eligible sessions ≥ 3 hours. Screen-off is not a measurement of deep sleep. No wake lock, alarm, reboot receiver or radio control.
-- `ScreenCover`: black accessibility overlay on the assigned bottom display, touch-to-restore, no controller focus and no panel-power commands.
-- `DriftCheck`: observes stick rest peaks for five seconds and offers a bounded dead-zone recommendation. A moving stick is rejected; this is not a hardware diagnosis.
-- `PanelActions`: snapshots two distinct visible non-home tasks through the typed Shizuku API, then asks for the pair name.
-- `Controls` / `PadProfile` / `ControlPages`: asynchronous root control, authenticated native sessions, validated per-app mappings and firmware capability UI.
-- `DeviceControl`: fixed key/path allowlists, available-frequency caps, readback, rollback and conditional restore. PServer parcel protocol is adapted with MIT attribution from OdinTools.
-- `native/thorpad.cpp`: original Linux evdev/uinput helper; releases outputs before destroying the virtual pad and ungrabbing the source.
-- `MainActivity`: responsive ten-page Android Views interface, profile editing and Android document-picker backup/import.
-- `Store`: local preferences, public display enumeration, display-targeted launch, app discovery, profile application, notes and validated backups. Import is validated before any preference commit.
-- `ThorService`: optional accessibility service with window-state events and key filtering; it does not retrieve view content. Panel is attached to an accessible target display using an accessibility overlay.
-- `QuickPanel`: volume/brightness, foreground-app actions, favorites and app pairs.
-- `ThorKeyboard`: optional input method with touch and controller navigation.
-- `Bridge`: permission-gated Shizuku lifecycle and worker-thread Binder operations.
-- `SystemBridge` / `IThorBridge`: narrowly scoped Shizuku user service. Uses fixed executable arguments for `am stack list` and `am display move-stack`; no user shell text is executed. Package names and display arguments are checked, home/recents tasks are excluded, commands are bounded, moves are verified, and the first half of a failed swap is rolled back when possible.
+- Choose **Dutch or English**.
+- Configure **your own Select shortcuts**.
+- Make a **complete backup**, including guides, reading positions and usage history.
+- Use **more keyboard symbols**, cursor controls and three key sizes.
+- Read a **guide and edit notes side by side**.
 
-Shizuku API documentation: https://github.com/RikkaApps/Shizuku-API
+[Read the full change details](docs/Thorhaven-0.4.0-release-notes.md).
 
-## Device tests
+<details>
+<summary>See the English interface</summary>
 
-`SmokeInstrumentation` is a dependency-free Android instrumentation suite. It needs a dedicated emulator/device with two public displays, Settings and Shizuku installed, Shizuku running and Thorhaven authorized. It exercises live task movement, so use a test environment. Install the app and test APK with matching signing certificates.
+![Thorhaven settings showing language selection and keyboard sizes](https://github.com/Tufein/Thorhaven/releases/download/v0.4.0-preview/Thorhaven-0.4.0-English-settings.png)
 
-```
-./gradlew :app:assembleDebug :app:assembleDebugAndroidTest
-adb install -r app/build/outputs/apk/debug/app-debug.apk
-adb install -r app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk
-adb shell am instrument -w nl.thorhaven.app.test/nl.thorhaven.app.SmokeInstrumentation
-```
+</details>
 
-For the extended suite, use a dedicated root-enabled ARM64 emulator and start the test-only `native/test-fixture.cpp` binary as root. It creates a virtual source gamepad and a command FIFO, and observes physical and remapped output. This fixture is not packaged in the application. Shizuku must run as root for native integration tests. The hardware tests use an in-memory runner; fan/CPU/RGB physical behavior remains untested.
+## A few things to know
 
-The suite exercises stack filtering and argument validation, display enumeration, app discovery, Unicode backup round trips, atomic invalid-import rejection, unknown schema handling, disabled screen assignment, secondary-context panel creation, all ten UI pages, Shizuku connection, live moves, two-app swaps and repeated-move behavior. It restores its preference changes after success. Accessibility service may need toggling after instrumentation force-stops the target process.
+- The **black bottom-screen mode** places a black layer over the screen. It does not physically turn the display off. Double-tap or touch with three fingers to restore the picture.
+- Moving a running app can cause it to reload, or the app may refuse to move.
+- Profiles belong to an **Android app**, not to individual ROMs inside an emulator. Volume and brightness settings apply to the system.
+- The virtual controller may appear as another player. If needed, select **Thorhaven Controller** in your emulator.
+- Screen-off battery measurements do not prove that the device entered deep sleep. Play-time figures are estimates.
+- Macros, turbo, mouse/trackpad, gyro mapping, screen recording and physical display power-off are not included.
 
-See [the English guide](docs/Thorhaven-0.4.0-guide.md) for installation and limitations. Third-party licenses are in `THIRD_PARTY_NOTICES.txt` and bundled in `app/src/main/assets/licenses.txt`.
+**112 automated checks passed** for this release, including two-screen behavior, controller input, backups and update preservation. Tests ran on an Android emulator; firmware-specific fan, CPU and lighting behavior was checked with simulated hardware responses. See the [test report](docs/Thorhaven-0.4.0-test-results.txt) for the scope and limits.
 
-## 0.3 validation
+## Your data stays local
 
-The extended suite also imports Unicode text and a real generated two-page PDF, rejects invalid/oversized imports without replacing the existing guide, renders bookmarked pages, verifies all navigation wrapping, tests presets and charge/reboot-aware battery arithmetic, and attaches the real black curtain, touch-only panel and PDF reader to the secondary display. PDF page dialogs and controller B closing are exercised with a real bound accessibility service. Tests use UiAutomation with accessibility suppression disabled. Input-fixture writes drain their command echo so closing a pipe cannot discard test events.
+Thorhaven has **no Internet permission, ads or trackers**. Notes, profiles, guides and measurements stay on your device. Online guide links open in your own browser.
 
-Offline guides and measurements are not part of the JSON settings backup; copy the original guide documents separately. Settings backups include the bounded recent app list and panel-card preferences. The optional accessibility service tracks foreground package names and session durations locally. The native input layer and firmware-specific physical behavior remain untested on an actual AYN Thor.
+The optional accessibility service uses foreground app names and controller buttons. It does not read screen text or save a keystroke history. Backup files contain your personal notes, guides and usage data, so store them somewhere appropriate.
 
-## 0.4 validation
+## Help and feedback
 
-`V4FeatureChecks` covers UI language, unchanged user text, validated custom bindings, actual custom shortcut execution and release consumption, complete guide/settings/usage backup round trips, rejection of unsafe ZIP paths and invalid charging-session eligibility, rollback after a late transaction failure, side-by-side note saving, symbol input, paired cursor events and keyboard row/size bounds. The extended suite remains in `SmokeInstrumentation`; test fixtures are not packaged into the APK.
+Check the [user guide](docs/Thorhaven-0.4.0-guide.md) for setup and troubleshooting. If something does not work, [open an issue](https://github.com/Tufein/Thorhaven/issues) and include your Thor model, Android/firmware version, Thorhaven version and the steps that caused the problem. Share logs only after checking them for personal information.
 
-Complete ZIP backups include guide files and usage history, unlike the legacy settings-only JSON export. Both formats include the new language, shortcut and keyboard preferences. ZIP imports merge matching guide/settings entries and replace usage history. Limits: 64 guides, 128 MB guide data and 1 MB metadata. No Internet permission or new third-party dependency was added.
+## For developers
+
+The full source is available in this repository and with each release. Build instructions, code structure and test setup are in the [developer guide](docs/DEVELOPMENT.md).
+
+## Credits and license
+
+Thorhaven is an independently written project inspired by [Thor-Wayfinder](https://github.com/Thor-Wayfinder/thor-wayfinder) and the AYN Thor community. No Wayfinder source code or artwork is included. The AYN service protocol adaptation credits OdinTools in the third-party notices.
+
+Original application code is released under the [MIT license](LICENSE.txt). Dependency licenses and attributions are listed in [Third-party notices](THIRD_PARTY_NOTICES.txt).
