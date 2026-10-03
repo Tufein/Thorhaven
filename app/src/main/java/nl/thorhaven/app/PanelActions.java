@@ -24,7 +24,7 @@ final class PanelActions {
           name.setText(
               Store.name(c, r.optString("top")) + " + " + Store.name(c, r.optString("bottom")));
           AlertDialog dialog =
-              new AlertDialog.Builder(c)
+              new Ui.Dialog(c)
                   .setTitle("Huidige apps als paar bewaren")
                   .setView(name)
                   .setPositiveButton(

@@ -141,7 +141,7 @@ final class QuickPanel {
                 }));
       String notes = Store.prefs(c).getString("notes:" + active, "");
       if (Store.prefs(c).getBoolean("panelNotes", true) && !notes.isEmpty())
-        now.addView(Ui.text(c, notes, 14, Ui.TEXT));
+        now.addView(Ui.rawText(c, notes, 14, Ui.TEXT));
     }
     l.addView(
         Ui.button(

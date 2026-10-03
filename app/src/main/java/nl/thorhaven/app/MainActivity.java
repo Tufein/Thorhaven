@@ -51,6 +51,8 @@ public class MainActivity extends Activity implements DisplayManager.DisplayList
     getSystemService(DisplayManager.class).registerDisplayListener(this, handler);
     if ("notes".equals(getIntent().getStringExtra("page"))) page = "Notities";
     if ("system".equals(getIntent().getStringExtra("page"))) page = "Systeem";
+    if (Arrays.asList(PAGES).contains(getIntent().getStringExtra("pageKey")))
+      page = getIntent().getStringExtra("pageKey");
     render();
     initialized = true;
   }
@@ -67,6 +69,8 @@ public class MainActivity extends Activity implements DisplayManager.DisplayList
   public void onNewIntent(Intent i) {
     super.onNewIntent(i);
     setIntent(i);
+    if (Arrays.asList(PAGES).contains(i.getStringExtra("pageKey")))
+      page = i.getStringExtra("pageKey");
     if ("notes".equals(i.getStringExtra("page"))) page = "Notities";
     if ("system".equals(i.getStringExtra("page"))) page = "Systeem";
     render();
@@ -376,7 +380,7 @@ public class MainActivity extends Activity implements DisplayManager.DisplayList
     LinearLayout l = Ui.col(this);
     l.setPadding(Ui.dp(this, 18), 0, Ui.dp(this, 18), 0);
     Switch favorite = new Switch(this);
-    favorite.setText("Favoriet");
+    favorite.setText(Language.text(this, "Favoriet"));
     favorite.setTextColor(Ui.TEXT);
     favorite.setChecked(Store.prefs(this).getBoolean("favorite:" + a.pkg, false));
     l.addView(favorite);
@@ -397,7 +401,8 @@ public class MainActivity extends Activity implements DisplayManager.DisplayList
         selected = i;
     }
     spinner.setAdapter(
-        new ArrayAdapter<>(this, android.R.layout.simple_spinner_dropdown_item, names));
+        new ArrayAdapter<>(
+            this, android.R.layout.simple_spinner_dropdown_item, Language.labels(this, names)));
     spinner.setSelection(selected);
     l.addView(spinner);
     final int[] values = {
@@ -405,13 +410,13 @@ public class MainActivity extends Activity implements DisplayManager.DisplayList
       Store.prefs(this).getInt("brightness:" + a.pkg, -1)
     };
     Switch vol = new Switch(this);
-    vol.setText("Volume toepassen");
+    vol.setText(Language.text(this, "Volume toepassen"));
     vol.setTextColor(Ui.TEXT);
     vol.setChecked(values[0] >= 0);
     l.addView(vol);
     Ui.seek(this, l, "Mediavolume (%)", 100, values[0] >= 0 ? values[0] : 50, v -> values[0] = v);
     Switch bright = new Switch(this);
-    bright.setText("Helderheid toepassen (systeem)");
+    bright.setText(Language.text(this, "Helderheid toepassen (systeem)"));
     bright.setTextColor(Ui.TEXT);
     bright.setChecked(values[1] >= 0);
     l.addView(bright);
@@ -429,7 +434,7 @@ public class MainActivity extends Activity implements DisplayManager.DisplayList
     l.addView(guide);
     ScrollView sc = new ScrollView(this);
     sc.addView(l);
-    new AlertDialog.Builder(this)
+    new Ui.Dialog(this)
         .setTitle(a.name)
         .setView(sc)
         .setPositiveButton(
@@ -497,7 +502,7 @@ public class MainActivity extends Activity implements DisplayManager.DisplayList
   void pick(String title, java.util.function.Consumer<Store.App> action) {
     String[] labels = new String[apps.size()];
     for (int i = 0; i < labels.length; i++) labels[i] = apps.get(i).name;
-    new AlertDialog.Builder(this)
+    new Ui.Dialog(this)
         .setTitle(title)
         .setItems(labels, (d, w) -> action.accept(apps.get(w)))
         .setNegativeButton("Annuleren", null)
@@ -517,7 +522,7 @@ public class MainActivity extends Activity implements DisplayManager.DisplayList
                   }
                   EditText e = Ui.input(this, "Naam van je app-paar");
                   e.setText(top.name + " + " + bottom.name);
-                  new AlertDialog.Builder(this)
+                  new Ui.Dialog(this)
                       .setTitle("App-paar opslaan")
                       .setView(e)
                       .setPositiveButton(
@@ -565,7 +570,9 @@ public class MainActivity extends Activity implements DisplayManager.DisplayList
     }
     for (Store.App a : apps)
       if (!Store.prefs(this).getString("notes:" + a.pkg, "").isEmpty()) {
-        LinearLayout c = card(a.name, Store.prefs(this).getString("notes:" + a.pkg, ""));
+        LinearLayout c = card(a.name, null);
+        c.addView(
+            Ui.rawText(this, Store.prefs(this).getString("notes:" + a.pkg, ""), 13, Ui.MUTED));
         c.addView(Ui.button(this, "Bewerken", () -> notes(a.pkg)));
       }
   }
@@ -577,7 +584,7 @@ public class MainActivity extends Activity implements DisplayManager.DisplayList
     e.setMaxLines(10);
     e.setGravity(Gravity.TOP);
     e.setText(Store.prefs(this).getString("notes:" + pkg, ""));
-    new AlertDialog.Builder(this)
+    new Ui.Dialog(this)
         .setTitle(Store.name(this, pkg) + " · notities")
         .setView(e)
         .setPositiveButton(
@@ -626,7 +633,7 @@ public class MainActivity extends Activity implements DisplayManager.DisplayList
 
   void settingSwitch(LinearLayout l, String text, String key, boolean fallback) {
     Switch s = new Switch(this);
-    s.setText(text);
+    s.setText(Language.text(this, text));
     s.setTextColor(Ui.TEXT);
     s.setPadding(0, Ui.dp(this, 6), 0, Ui.dp(this, 6));
     s.setChecked(Store.prefs(this).getBoolean(key, fallback));
@@ -643,6 +650,11 @@ public class MainActivity extends Activity implements DisplayManager.DisplayList
 
   void settingsPage() {
     heading("Instellen", "Kies zelf welke toegang en functies je inschakelt.");
+    Language.settings(this, content);
+    KeyboardSettings.page(this, content);
+    Shortcuts.page(this, content);
+    CompleteBackup.page(this, content);
+    settingSwitch(content, "Notities naast gids", "guideNotes", false);
     LinearLayout panelSettings =
         card(
             "Snelpaneel tijdens gamen",
@@ -659,7 +671,7 @@ public class MainActivity extends Activity implements DisplayManager.DisplayList
             this,
             "Mijn Select-combinaties bekijken",
             () ->
-                new AlertDialog.Builder(this)
+                new Ui.Dialog(this)
                     .setTitle("Select-combinaties")
                     .setMessage(
                         "Select + Start: snelpaneel\n"
@@ -691,7 +703,7 @@ public class MainActivity extends Activity implements DisplayManager.DisplayList
             this,
             "Service instellen",
             () ->
-                new AlertDialog.Builder(this)
+                new Ui.Dialog(this)
                     .setTitle("Controller-service inschakelen")
                     .setMessage(
                         "Android vraagt brede toegankelijkheidstoegang. Thorhaven gebruikt alleen"
@@ -791,18 +803,18 @@ public class MainActivity extends Activity implements DisplayManager.DisplayList
     c =
         card(
             "Over deze preview",
-            "Thorhaven 0.3.0 · eigen implementatie, geïnspireerd op Wayfinder.");
+            "Thorhaven 0.4.0 · eigen implementatie, geïnspireerd op Wayfinder.");
     c.addView(
         Ui.text(
             this,
             "Beschikbaar: schermkeuze, app-profielen, app-paren, favorieten, gidsen, notities,"
                 + " snelpaneel, systeemvolume/helderheid, controller-test, combinaties en"
                 + " toetsenbord.\n\n"
-                + "Nieuw: offline gidsen, accu/slaapmetingen, controllerpresets en driftadvies.\n"
+                + "Nieuw: taalkeuze, eigen sneltoetsen, volledige back-up, uitgebreid toetsenbord"
+                + " en gids/notities naast elkaar.\n"
                 + "Experimenteel: live schermwissels, root-remapping en fan/CPU/RGB-bediening.\n"
-                + "Nog niet beschikbaar: macro's, muis/gyro,"
-                + " schermuitschakeling en opname. Deze functies vragen aanvullende"
-                + " systeemintegratie en testen op een echte Thor.\n\n"
+                + "Nog niet beschikbaar: macro's, muis/gyro, schermuitschakeling en opname. Deze"
+                + " functies vragen aanvullende systeemintegratie en testen op een echte Thor.\n\n"
                 + "Geen advertenties, trackers of netwerkpermissie. Gidslinks openen in je eigen"
                 + " browser. Schermkeuze kan door een app of firmware geweigerd worden.",
             13,
@@ -820,7 +832,7 @@ public class MainActivity extends Activity implements DisplayManager.DisplayList
       text.setPadding(Ui.dp(this, 18), 0, Ui.dp(this, 18), 0);
       ScrollView scroll = new ScrollView(this);
       scroll.addView(text);
-      new AlertDialog.Builder(this)
+      new Ui.Dialog(this)
           .setTitle("Licenties")
           .setView(scroll)
           .setPositiveButton("Sluiten", null)
@@ -843,7 +855,11 @@ public class MainActivity extends Activity implements DisplayManager.DisplayList
       if (ds.get(i).getDisplayId() == selected) index = i + 1;
     }
     Spinner s = new Spinner(this);
-    s.setAdapter(new ArrayAdapter<>(this, android.R.layout.simple_spinner_dropdown_item, labels));
+    s.setAdapter(
+        new ArrayAdapter<>(
+            this,
+            android.R.layout.simple_spinner_dropdown_item,
+            Language.labels(this, labels.toArray(new String[0]))));
     s.setSelection(index);
     l.addView(s);
     s.setOnItemSelectedListener(
@@ -861,11 +877,7 @@ public class MainActivity extends Activity implements DisplayManager.DisplayList
     LinearLayout l = QuickPanel.build(this, null);
     ScrollView s = new ScrollView(this);
     s.addView(l);
-    new AlertDialog.Builder(this)
-        .setTitle("Snelpaneel")
-        .setView(s)
-        .setPositiveButton("Sluiten", null)
-        .show();
+    new Ui.Dialog(this).setTitle("Snelpaneel").setView(s).setPositiveButton("Sluiten", null).show();
   }
 
   @Override
@@ -941,7 +953,19 @@ public class MainActivity extends Activity implements DisplayManager.DisplayList
     super.onActivityResult(req, result, data);
     if (result != RESULT_OK || data == null || data.getData() == null) return;
     Uri uri = data.getData();
-    if (req == 43) {
+    if (req == 44) {
+      CompleteBackup.exportUri(this, uri);
+    } else if (req == 45) {
+      new Ui.Dialog(this)
+          .setTitle("Volledige back-up importeren?")
+          .setMessage(
+              "De back-up vervangt overeenkomstige instellingen, gidsen en lokale metingen. Andere"
+                  + " gidsen blijven staan. Hardwareherstel en lopende slaapmetingen worden niet"
+                  + " overgenomen.")
+          .setPositiveButton("Importeren", (d, w) -> CompleteBackup.importUri(this, uri))
+          .setNegativeButton("Annuleren", null)
+          .show();
+    } else if (req == 43) {
       if (!guideImportPackage.isEmpty()) OfflineGuides.importUri(this, guideImportPackage, uri);
     } else if (req == 41) {
       try (OutputStream out = getContentResolver().openOutputStream(uri)) {
@@ -961,7 +985,7 @@ public class MainActivity extends Activity implements DisplayManager.DisplayList
           if (out.size() > 1_000_000) throw new IOException("Te groot");
         }
         String json = out.toString("UTF-8");
-        new AlertDialog.Builder(this)
+        new Ui.Dialog(this)
             .setTitle("Back-up importeren?")
             .setMessage(
                 "Instellingen in deze back-up overschrijven overeenkomstige instellingen. Je andere"
@@ -1016,7 +1040,7 @@ public class MainActivity extends Activity implements DisplayManager.DisplayList
         paint.setColor(Ui.TEXT);
         paint.setTextSize(Ui.dp(getContext(), 13));
         c.drawText(
-            n == 0 ? "LINKER STICK" : "RECHTER STICK",
+            Language.text(getContext(), n == 0 ? "LINKER STICK" : "RECHTER STICK"),
             x - radius,
             y + radius + Ui.dp(getContext(), 24),
             paint);

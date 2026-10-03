@@ -264,7 +264,7 @@ final class PlayStats {
             a,
             "Wis mijn metingen",
             () ->
-                new android.app.AlertDialog.Builder(a)
+                new Ui.Dialog(a)
                     .setTitle("Metingen wissen?")
                     .setMessage("Slaaphistorie en actieve app-tijd worden gewist.")
                     .setPositiveButton(

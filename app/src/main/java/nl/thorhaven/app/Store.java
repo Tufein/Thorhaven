@@ -144,7 +144,11 @@ final class Store {
   }
 
   static boolean validKey(String k) {
-    return k.equals("top")
+    return k.equals("language")
+        || k.equals("shortcuts")
+        || k.equals("keyboardSize")
+        || k.equals("guideNotes")
+        || k.equals("top")
         || k.equals("bottom")
         || k.equals("combos")
         || k.equals("keepAwake")
@@ -166,6 +170,10 @@ final class Store {
   }
 
   static void restore(Context c, String s) throws Exception {
+    restore(c, s, true);
+  }
+
+  static void restore(Context c, String s, boolean commit) throws Exception {
     JSONObject root = new JSONObject(s);
     if (root.getInt("schema") != 1) throw new Exception("Onbekende backupversie");
     JSONObject data = root.getJSONObject("data");
@@ -175,7 +183,19 @@ final class Store {
       String k = it.next();
       Object v = data.get(k);
       if (!validKey(k)) throw new Exception("Onbekende instelling");
-      if (k.startsWith("mapping:")) {
+      if (k.equals("language")) {
+        if (!(v instanceof String) || (!v.equals("nl") && !v.equals("en")))
+          throw new Exception("Invalid language");
+        ed.putString(k, (String) v);
+      } else if (k.equals("shortcuts")) {
+        if (!(v instanceof String)) throw new Exception("Invalid shortcuts");
+        Shortcuts.validate((String) v);
+        ed.putString(k, (String) v);
+      } else if (k.equals("keyboardSize")) {
+        if (!(v instanceof Number) || ((Number) v).intValue() < 40 || ((Number) v).intValue() > 64)
+          throw new Exception("Invalid keyboard size");
+        ed.putInt(k, ((Number) v).intValue());
+      } else if (k.startsWith("mapping:")) {
         if (!(v instanceof String)) throw new Exception("Ongeldig controllerprofiel");
         PadProfile.parse((String) v);
         ed.putString(k, (String) v);
@@ -217,7 +237,7 @@ final class Store {
         ed.putBoolean(k, (Boolean) v);
       }
     }
-    ed.commit();
+    if (commit && !ed.commit()) throw new Exception("Could not save settings");
   }
 
   static JSONArray recent(Context c) {

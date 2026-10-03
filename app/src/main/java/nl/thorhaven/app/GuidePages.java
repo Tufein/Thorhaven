@@ -1,6 +1,5 @@
 package nl.thorhaven.app;
 
-import android.app.AlertDialog;
 import android.widget.*;
 import org.json.*;
 
@@ -70,7 +69,7 @@ final class GuidePages {
               a,
               "Gids verwijderen",
               () ->
-                  new AlertDialog.Builder(a)
+                  new Ui.Dialog(a)
                       .setTitle("Gids verwijderen?")
                       .setMessage("Alleen de lokale kopie en leespositie worden gewist.")
                       .setPositiveButton(

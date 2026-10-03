@@ -2,9 +2,7 @@ package nl.thorhaven.app;
 
 import android.accessibilityservice.*;
 import android.content.*;
-import android.media.AudioManager;
 import android.os.*;
-import android.provider.Settings;
 import android.view.*;
 import android.view.accessibility.AccessibilityEvent;
 import android.widget.*;
@@ -101,72 +99,7 @@ public class ThorService extends AccessibilityService {
     if (!select) return false;
     if (e.getAction() != KeyEvent.ACTION_DOWN || e.getRepeatCount() != 0)
       return consumed.contains(k);
-    switch (k) {
-      case KeyEvent.KEYCODE_BUTTON_B:
-        hidePanel();
-        if (cover != null) cover.show();
-        break;
-      case KeyEvent.KEYCODE_BUTTON_A:
-        hidePanel();
-        String guidePkg =
-            foreground.isEmpty() ? Store.prefs(this).getString("last", "") : foreground;
-        if (!guidePkg.isEmpty()) OfflineGuides.open(this, guidePkg);
-        break;
-      case KeyEvent.KEYCODE_BUTTON_START:
-        if (panel == null) showPanel();
-        else hidePanel();
-        break;
-      case KeyEvent.KEYCODE_BUTTON_X:
-        hidePanel();
-        String p = foreground.isEmpty() ? Store.prefs(this).getString("last", "") : foreground;
-        if (!p.isEmpty())
-          Bridge.move(
-              this,
-              p,
-              foregroundDisplay == Store.screen(this, false)
-                  ? Store.screen(this, true)
-                  : Store.screen(this, false));
-        break;
-      case KeyEvent.KEYCODE_BUTTON_Y:
-        hidePanel();
-        Intent i =
-            new Intent(this, MainActivity.class)
-                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                .putExtra("page", "notes");
-        int target = Store.screen(this, true);
-        try {
-          startActivity(
-              i,
-              android.app.ActivityOptions.makeBasic()
-                  .setLaunchDisplayId(target >= 0 ? target : Store.screen(this, false))
-                  .toBundle());
-        } catch (Exception x) {
-          Ui.toast(this, "Notities konden niet worden geopend.");
-        }
-        break;
-      case KeyEvent.KEYCODE_BUTTON_L1:
-      case KeyEvent.KEYCODE_BUTTON_R1:
-        getSystemService(AudioManager.class)
-            .adjustStreamVolume(
-                AudioManager.STREAM_MUSIC,
-                k == KeyEvent.KEYCODE_BUTTON_R1 ? 1 : -1,
-                AudioManager.FLAG_SHOW_UI);
-        break;
-      case KeyEvent.KEYCODE_DPAD_UP:
-      case KeyEvent.KEYCODE_DPAD_DOWN:
-        if (Settings.System.canWrite(this)) {
-          int b =
-              Settings.System.getInt(getContentResolver(), Settings.System.SCREEN_BRIGHTNESS, 128);
-          Settings.System.putInt(getContentResolver(), Settings.System.SCREEN_BRIGHTNESS_MODE, 0);
-          Settings.System.putInt(
-              getContentResolver(),
-              Settings.System.SCREEN_BRIGHTNESS,
-              Math.max(8, Math.min(255, b + (k == KeyEvent.KEYCODE_DPAD_UP ? 20 : -20))));
-        } else Ui.toast(this, "Activeer helderheidstoegang in Thorhaven.");
-        break;
-      default:
-        return false;
-    }
+    if (!Shortcuts.run(this, k)) return false;
     consumed.add(k);
     return true;
   }
@@ -197,7 +130,9 @@ public class ThorService extends AccessibilityService {
               (int) (m.widthPixels * .96),
               (int) (m.heightPixels * .94),
               WindowManager.LayoutParams.TYPE_ACCESSIBILITY_OVERLAY,
-              panelFlags(c),
+              Store.prefs(c).getBoolean("guideNotes", false)
+                  ? WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL
+                  : panelFlags(c),
               android.graphics.PixelFormat.TRANSLUCENT);
       lp.gravity = Gravity.CENTER;
       wm.addView(reader, lp);

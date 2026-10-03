@@ -1,6 +1,6 @@
 # Thorhaven
 
-Native Android companion for the AYN Thor, written independently of Wayfinder. Preview 0.3.0. Dutch UI.
+Native Android companion for the AYN Thor, written independently of Wayfinder. Preview 0.4.0. Dutch and English UI.
 
 Download the signed APK from [GitHub Releases](https://github.com/Tufein/Thorhaven/releases). This is an experimental pre-release and has not been tested on a physical AYN Thor. MIT-licensed original application code.
 
@@ -12,17 +12,15 @@ Not implemented: macros/turbo, gyro/mouse, analog-trigger reassignment, screen p
 
 Added in 0.3: private offline PDF/UTF-8/Markdown imports and an accessibility-overlay reader with page bookmarks/zoom; per-session standby drain and foreground app-time measurements; touch-only quick panel, recent apps and configurable cards; a non-focusable black bottom-screen curtain; face-button/keyboard presets, profile copy and a five-second stick rest measurement; saving the two live app tasks as a pair from the quick panel. The curtain does not power off the display or put the device to sleep. No extra Android permissions or dependencies were added.
 
-## Latest changes: guides, battery statistics and controller tools
+## Latest changes: custom shortcuts, complete backups and bilingual UI
 
-- Import local PDF, text and Markdown guides; read them over a game on the bottom screen with saved page or scroll position.
-- Inspect screen-off battery drain and estimated app time; charging and reboot checks filter the long-session average.
-- Keep controller focus with the game through the touch-only quick panel, with configurable cards and recent apps.
-- Save the two currently visible apps as a pair through Shizuku.
-- Apply Xbox, Nintendo, PC-menu or WASD presets, copy profiles and measure stick rest movement before choosing a dead zone.
-- Restore the black bottom-screen curtain by double-tapping or touching with three fingers; this overlay does not power off the panel.
-- Navigate all ten pages correctly with L1/R1.
+- Switch between Dutch and English without translating user documents or notes.
+- Assign supported Select chords to apps, pairs, pages, overlays and display/system actions; disable individual actions or reset defaults.
+- Export/import a bounded complete ZIP backup with guides, bookmarks and usage history, staged validation and crash-recoverable rollback.
+- Type symbols, move the cursor with L1/R1 and choose keyboard key sizes; controller navigation follows the real row layout.
+- Read an offline guide beside an editable notes column, with explicit saving.
 
-See [the change details](docs/Thorhaven-0.3.0-release-notes.md) for requirements, validation and limitations.
+See [the 0.4 change details](docs/Thorhaven-0.4.0-release-notes.md) and [the English guide](docs/Thorhaven-0.4.0-guide.md) for setup, validation and limitations.
 
 ## Build
 
@@ -47,6 +45,11 @@ ANDROID_NDK_HOME=/path/to/ndk/27.2.12479018 ./native/build.sh
 The prebuilt helper is included for app-only builds. The root process checks its SHA-256 before execution. The app has no Internet permission; helper communication uses a random abstract Unix socket, peer UID checks and a per-session token. Loss of heartbeat or socket closes releases the grabbed input device. Holding raw Select + Start for three seconds stops capture. The virtual pad may appear as a second player because the original device remains enumerated by Android; select Thorhaven Controller in the emulator. No firmware modules or stock mapping services are disabled.
 
 ## Architecture
+
+- `Language` / `english.tsv`: local UI catalog; guide contents and note text use untranslated views.
+- `Shortcuts`: bounded and validated Select-chord bindings; app/pair/page targets are checked before execution. Native emergency stop is independent.
+- `CompleteBackup`: bounded ZIP extraction, content validation, private staging, recoverable file/preference transactions and startup recovery. In-flight measurements and hardware recovery snapshots are excluded from transfer.
+- `KeyboardSettings` / `ThorKeyboard`: symbol rows, paired cursor events, key sizing and row-aware controller navigation.
 
 - `OfflineGuides`, `GuidePane`, `GuideActivity`, `GuidePages`: validated atomic local import, bounded native PDF rendering, independent reader/overlay lifecycle and private bookmarks. No downloaded HTML, scripts or network permission.
 - `PlayStats`: dynamically registered screen/battery events while accessibility is enabled; elapsed-time and boot-identity checks; charge-aware sleep history with duration-weighted averages from eligible sessions ≥ 3 hours. Screen-off is not a measurement of deep sleep. No wake lock, alarm, reboot receiver or radio control.
@@ -81,10 +84,16 @@ For the extended suite, use a dedicated root-enabled ARM64 emulator and start th
 
 The suite exercises stack filtering and argument validation, display enumeration, app discovery, Unicode backup round trips, atomic invalid-import rejection, unknown schema handling, disabled screen assignment, secondary-context panel creation, all ten UI pages, Shizuku connection, live moves, two-app swaps and repeated-move behavior. It restores its preference changes after success. Accessibility service may need toggling after instrumentation force-stops the target process.
 
-See [the English guide](docs/Thorhaven-0.3.0-guide.md) for installation and limitations. Third-party licenses are in `THIRD_PARTY_NOTICES.txt` and bundled in `app/src/main/assets/licenses.txt`.
+See [the English guide](docs/Thorhaven-0.4.0-guide.md) for installation and limitations. Third-party licenses are in `THIRD_PARTY_NOTICES.txt` and bundled in `app/src/main/assets/licenses.txt`.
 
 ## 0.3 validation
 
 The extended suite also imports Unicode text and a real generated two-page PDF, rejects invalid/oversized imports without replacing the existing guide, renders bookmarked pages, verifies all navigation wrapping, tests presets and charge/reboot-aware battery arithmetic, and attaches the real black curtain, touch-only panel and PDF reader to the secondary display. PDF page dialogs and controller B closing are exercised with a real bound accessibility service. Tests use UiAutomation with accessibility suppression disabled. Input-fixture writes drain their command echo so closing a pipe cannot discard test events.
 
 Offline guides and measurements are not part of the JSON settings backup; copy the original guide documents separately. Settings backups include the bounded recent app list and panel-card preferences. The optional accessibility service tracks foreground package names and session durations locally. The native input layer and firmware-specific physical behavior remain untested on an actual AYN Thor.
+
+## 0.4 validation
+
+`V4FeatureChecks` covers UI language, unchanged user text, validated custom bindings, actual custom shortcut execution and release consumption, complete guide/settings/usage backup round trips, rejection of unsafe ZIP paths and invalid charging-session eligibility, rollback after a late transaction failure, side-by-side note saving, symbol input, paired cursor events and keyboard row/size bounds. The extended suite remains in `SmokeInstrumentation`; test fixtures are not packaged into the APK.
+
+Complete ZIP backups include guide files and usage history, unlike the legacy settings-only JSON export. Both formats include the new language, shortcut and keyboard preferences. ZIP imports merge matching guide/settings entries and replace usage history. Limits: 64 guides, 128 MB guide data and 1 MB metadata. No Internet permission or new third-party dependency was added.

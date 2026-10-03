@@ -129,6 +129,7 @@ public class SmokeInstrumentation extends Instrumentation {
           "Current app-pair capture reflects both real screen tasks");
       extended(c, (MainActivity) a);
       new NewFeatureChecks(this, c, (MainActivity) a).run();
+      new V4FeatureChecks(this, c, (MainActivity) a).run();
       Store.prefs(c).edit().clear().commit();
       Store.restore(c, before.toString());
       result.putString("stream", report + "\n" + passed + " checks passed\n");

@@ -236,6 +236,10 @@ final class NewFeatureChecks {
             activity.dispatchKeyEvent(
                 new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_BUTTON_R1)));
     check(activity.page.equals("Overzicht"), "R1 wraps through the full ten-page navigation");
+    // Instrumentation force-stops the target; reset stale binding state before enabling.
+    test.shell("settings delete secure enabled_accessibility_services");
+    test.shell("settings put secure accessibility_enabled 0");
+    Thread.sleep(300);
     // Verify real accessibility overlays, not just their view builders.
     test.shell(
         "settings put secure enabled_accessibility_services"

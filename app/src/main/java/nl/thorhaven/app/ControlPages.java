@@ -24,7 +24,7 @@ final class ControlPages {
             a,
             label + " · " + names[Math.max(0, Math.min(selected, names.length - 1))],
             () ->
-                new AlertDialog.Builder(a)
+                new Ui.Dialog(a)
                     .setTitle(label)
                     .setSingleChoiceItems(
                         names,
@@ -88,13 +88,13 @@ final class ControlPages {
                                 + d.optInt("event")
                                 + (d.optInt("bus") == 5 ? " · Bluetooth" : "");
                       }
-                      new AlertDialog.Builder(a)
+                      new Ui.Dialog(a)
                           .setTitle("Kies de ingebouwde Thor-controller")
                           .setItems(
                               names,
                               (dialog, i) -> {
                                 JSONObject d = devices.optJSONObject(i);
-                                new AlertDialog.Builder(a)
+                                new Ui.Dialog(a)
                                     .setTitle("Remapping activeren?")
                                     .setMessage(
                                         names[i]
@@ -129,7 +129,7 @@ final class ControlPages {
             a,
             "Kies controllerpreset",
             () ->
-                new AlertDialog.Builder(a)
+                new Ui.Dialog(a)
                     .setTitle("Preset voor dit profiel")
                     .setItems(
                         new String[] {
@@ -213,7 +213,7 @@ final class ControlPages {
         Button button = Ui.button(a, PadProfile.LABELS[i] + " → " + targetNames[current], () -> {});
         button.setOnClickListener(
             v ->
-                new AlertDialog.Builder(a)
+                new Ui.Dialog(a)
                     .setTitle(PadProfile.LABELS[index] + " omzetten naar…")
                     .setItems(
                         targetNames,
@@ -239,7 +239,7 @@ final class ControlPages {
       for (int i = 0; i < 4; i++) {
         final int bit = 1 << i;
         Switch s = new Switch(a);
-        s.setText(invert[i]);
+        s.setText(Language.text(a, invert[i]));
         s.setTextColor(Ui.TEXT);
         s.setMinHeight(Ui.dp(a, 48));
         s.setChecked((p.getInt("mask") & bit) != 0);
@@ -248,7 +248,7 @@ final class ControlPages {
         editor.addView(s);
       }
       Switch swap = new Switch(a);
-      swap.setText("Linker- en rechterstick wisselen");
+      swap.setText(Language.text(a, "Linker- en rechterstick wisselen"));
       swap.setTextColor(Ui.TEXT);
       swap.setMinHeight(Ui.dp(a, 48));
       swap.setChecked(p.getInt("swap") == 1);
@@ -261,7 +261,7 @@ final class ControlPages {
       for (int i = 0; i < 3; i++) {
         RadioButton b = new RadioButton(a);
         b.setId(100 + i);
-        b.setText(names[i]);
+        b.setText(Language.text(a, names[i]));
         b.setTextColor(Ui.TEXT);
         curves.addView(b);
       }
@@ -425,7 +425,7 @@ final class ControlPages {
                   + " verlichting is alleen op de Thor te controleren.");
       if (settings.has("joystick_light_enabled")) {
         Switch enabled = new Switch(a);
-        enabled.setText("Joystickverlichting aan");
+        enabled.setText(Language.text(a, "Joystickverlichting aan"));
         enabled.setTextColor(Ui.TEXT);
         enabled.setMinHeight(Ui.dp(a, 48));
         enabled.setChecked(settings.optString("joystick_light_enabled").equals("1,1"));

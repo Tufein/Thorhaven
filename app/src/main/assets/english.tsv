@@ -1,0 +1,509 @@
+Overzicht	Overview
+Paren	Pairs
+Notities	Notes
+Gidsen	Guides
+Accu	Battery
+Systeem	System
+Instellen	Settings
+Sluiten	Close
+Opslaan	Save
+Annuleren	Cancel
+Openen	Open
+Importeren	Import
+Verwijderen	Remove
+Vernieuwen	Refresh
+Activeren	Activate
+Controleren	Check
+Favoriet	Favorite
+Favorieten	Favorites
+Standaard	Default
+Profiel	Profile
+Schermen	Displays
+Snelpaneel	Quick panel
+Mediavolume	Media volume
+Spatie	Space
+Andere	Other
+Vorige	Previous
+Volgende	Next
+Pagina	Page
+Paginanummer	Page number
+Ga naar pagina	Go to page
+Twee schermen. Jouw speelplek.	Two screens. Your gaming space.
+Kies een scherm, start een app of open je snelpaneel.	Choose a display, launch an app or open your quick panel.
+Klaar voor je volgende game	Ready for your next game
+Je schermen	Your displays
+Bovenste scherm	Top display
+Onderste scherm	Bottom display
+bovenste scherm	top display
+onderste scherm	bottom display
+Bovenste	Top
+Onderste	Bottom
+Boven	Top
+Onder	Bottom
+Niet toegewezen	Unassigned
+Snel beginnen	Quick start
+Binnen handbereik	Within reach
+Snel naar	Jump to
+Naar instellingen	Go to settings
+beschikbare schermen · automatische detectie	available displays · automatically detected
+Het tweede scherm verschijnt zodra Android het beschikbaar maakt.	The second display appears when Android makes it available.
+Je favoriete apps openen op hun gekozen scherm.	Launch your favorite apps on their chosen displays.
+Voeg favorieten toe via Apps → Profiel.	Add favorites through Apps → Profile.
+Markeer apps als favoriet via Apps → Profiel.	Mark apps as favorites through Apps → Profile.
+Apps & profielen	Apps & profiles
+Schermvoorkeur, favorieten, volume en notities per app.	Display preference, favorites, volume and notes per app.
+Zoek een app…	Search apps…
+Geen apps gevonden.	No apps found.
+Open boven	Open on top
+Open onder	Open on bottom
+Open standaard op	Default launch display
+Voorkeur:	Preference:
+Samen openen	Open together
+Nieuw app-paar	New app pair
+Nog geen app-paren	No app pairs yet
+Je game boven, een tweede app onder. Eén druk om beide te openen.	Your game on top, a second app below. One press opens both.
+Combineer bijvoorbeeld een emulator met een browser of muziekapp.	Pair an emulator with a browser or music app, for example.
+App voor het bovenste scherm	App for the top display
+App voor het onderste scherm	App for the bottom display
+Naam van je app-paar	App-pair name
+Naam voor dit app-paar	Name this app pair
+App-paar opslaan	Save app pair
+App-paar bewaard	App pair saved
+Bewaar dit app-paar (Shizuku)	Save current app pair (Shizuku)
+Huidige apps als paar bewaren	Save the current apps as a pair
+Tip: open het snelpaneel boven je twee apps en kies Bewaar dit app-paar.	Tip: open the quick panel over your two apps and choose Save current app pair.
+Kies twee verschillende apps.	Choose two different apps.
+Kies twee verschillende schermen.	Choose two different displays.
+Een app-paar heeft twee verschillende schermen nodig.	An app pair requires two different displays.
+Geen tweede scherm gevonden. Kijk bij Instellen → Schermen.	No second display found. Check Settings → Displays.
+Deze app is niet meer geïnstalleerd.	This app is no longer installed.
+Android geeft geen toegang tot dit scherm voor deze app.	Android does not allow this app on that display.
+Openen op scherm 	Opening on display 
+ geweigerd: 	 refused: 
+Gidsen & notities	Guides & notes
+Je voortgang, tips en gidslinks blijven lokaal op dit apparaat.	Your progress, tips and guide links stay on this device.
+Schrijf je notities…	Write your notes…
+Notities voor…	Notes for…
+Notities openen	Open notes
+Gids op onderste scherm	Guide on bottom display
+Gids openen	Open guide
+Laatst geopend	Last launched
+Laatst actief	Last active
+Offline gidsen	Offline guides
+Mijn offline gidsen	My offline guides
+Mijn Select-combinaties bekijken	View my Select shortcuts
+Kies een app	Choose an app
+Voor welke app?	For which app?
+Deze gidsen blijven op je Thor. Er is geen internettoegang nodig.	These guides stay on your Thor. No Internet access is needed.
+Je eigen PDF-, tekst- en Markdown-gidsen op het onderste scherm, ook bovenop een game voor	Your own PDF, text and Markdown guides on the bottom display, including over a game using
+ beide schermen.	 both displays.
+Importeer PDF / tekst / Markdown	Import PDF / text / Markdown
+Offline gids openen	Open offline guide
+Offline gids boven mijn game	Offline guide over my game
+Offline gids voor…	Offline guide for…
+Offline gids	Offline guide
+Gids verwijderen?	Remove guide?
+Gids verwijderen	Remove guide
+Alleen de lokale kopie en leespositie worden gewist.	Only the local copy and reading position are removed.
+Online gids in mijn browser	Online guide in my browser
+Opgeslagen gidsen	Saved guides
+Nog geen offline gids voor deze app.	No offline guide for this app yet.
+Nog geen offline gidsen geïmporteerd.	No offline guides imported yet.
+PDF maximaal 16 MB; UTF-8 tekst of Markdown maximaal 2 MB. PDF-bladwijzers en	PDF up to 16 MB; UTF-8 text or Markdown up to 2 MB. PDF bookmarks and
+ leespositie worden lokaal onthouden.	 reading position are saved locally.
+Gids laden…	Loading guide…
+Offline tekst · je leespositie blijft bewaard	Offline text · your reading position is saved
+Kies een pagina van 1 tot 	Choose a page from 1 to 
+ van 	 of 
+Gids niet leesbaar: 	Cannot read guide: 
+PDF niet leesbaar: 	Cannot read PDF: 
+Offline opgeslagen: 	Saved offline: 
+Gids niet opgeslagen: 	Guide not saved: 
+Accu & speeltijd	Battery & play time
+Accu onbekend	Battery unavailable
+laden	charging
+Gemeten stroom:	Measured current:
+Stroommeting niet beschikbaar	Current measurement unavailable
+Tijdens scherm-uit	While screen is off
+Lokale metingen tijdens de toegankelijkheidsservice. Scherm uit is geen bewijs van diepe	Local measurements while accessibility is enabled. Screen-off does not prove deep
+ slaap.	 sleep.
+Activeer de toegankelijkheidsservice om nieuwe metingen te verzamelen.	Enable accessibility to collect new measurements.
+Nog geen bruikbare meting van minstens 3 uur zonder laden.	No eligible measurement of at least 3 hours without charging yet.
+Gemiddeld %.2f procentpunt per uur · sessies ≥ 3 uur, zonder laden	Average %.2f percentage points per hour · sessions ≥ 3 hours without charging
+procentpunt	percentage points
+Actieve app-tijd	Active app time
+Schatting vanaf inschakelen van de service. Pauzeert bij scherm-uit en terwijl	Estimated since enabling the service. Pauses while screen is off and while
+ Thorhaven zelf op de voorgrond staat.	 Thorhaven is in the foreground.
+Wis mijn metingen	Clear my measurements
+Metingen wissen?	Clear measurements?
+Slaaphistorie en actieve app-tijd worden gewist.	Screen-off history and active app time will be cleared.
+ · lader aangesloten, uitgesloten	 · charger connected, excluded
+ · uitgesloten van gemiddelde	 · excluded from average
+ · telt mee	 · included
+Controller noodstop	Controller emergency stop
+Bediening van Thorhaven	Thorhaven controls
+D-pad / stick: navigeren · A: selecteren · B: terug	D-pad / stick: navigate · A: select · B: back
+L1 / R1: vorige / volgende pagina	L1 / R1: previous / next page
+Android-knopcodes kunnen afwijken van de gedrukte A/B/X/Y-labels.	Android key codes may differ from the printed A/B/X/Y labels.
+Beweeg de sticks en druk op een knop. De test verandert je mapping niet.	Move the sticks and press a button. This test does not change mapping.
+Wacht op controller-invoer…	Waiting for controller input…
+LINKER STICK	LEFT STICK
+RECHTER STICK	RIGHT STICK
+Links %.2f / %.2f · Rechts %.2f / %.2f	Left %.2f / %.2f · Right %.2f / %.2f
+Meet stickdrift · 5 seconden	Measure stick drift · 5 seconds
+Beweeg beide sticks, laat los en meet daarna hun ruststand.	Move both sticks, release them, then measure at rest.
+Beweeg beide sticks even, laat los en start daarna de meting.	Move both sticks briefly, release them, then start measuring.
+Stop remapping voordat je de fysieke ruststand meet.	Stop remapping before measuring physical stick rest.
+Laat beide sticks los · 	Release both sticks · 
+Advies: links 	Recommendation: left 
+%, rechts 	%, right 
+% · gemeten piek + 3 procentpunt marge	% · measured peak + 3 percentage-point margin
+%. Dit is een rustmeting, geen hardwarediagnose.	%. This is a rest measurement, not a hardware diagnosis.
+Dode zone opslaan	Save dead zone
+Dode zone voor…	Dead zone for…
+Dode zones opgeslagen voor 	Dead zones saved for 
+alle apps	all apps
+Dode zone links (%)	Left dead zone (%)
+Dode zone rechts (%)	Right dead zone (%)
+Kies controllerpreset	Choose controller preset
+Kopieer profiel van een app	Copy profile from an app
+Kies app-profiel	Choose app profile
+Standaardprofiel bewerken	Edit default profile
+Standaard voor alle apps	Default for all apps
+Controllerprofiel voor…	Controller profile for…
+Controllerprofiel opgeslagen	Controller profile saved
+Een app zonder eigen profiel gebruikt het standaardprofiel. Bij een appwissel kiest de	Apps without their own profile use the default. When the foreground app changes, the
+ toegankelijkheidsservice het bijbehorende profiel.	 accessibility service selects its profile.
+Profielen per app. Activeer alleen de ingebouwde controller die je zelf kiest.	Per-app profiles. Activate only the built-in controller you explicitly select.
+Profiel opslaan	Save profile
+Profiel terug naar standaard	Reset profile to default
+Profiel gekopieerd	Profile copied
+Profiel kopiëren van…	Copy profile from…
+Preset voor dit profiel	Preset for this profile
+Xbox / standaard	Xbox / default
+Nintendo · A/B en X/Y wisselen	Nintendo · swap A/B and X/Y
+PC-menu · pijlen, Enter, Escape	PC menu · arrows, Enter, Escape
+PC WASD · D-pad, spatie, Escape	PC WASD · D-pad, Space, Escape
+Een preset vervangt en bewaart dit controllerprofiel. Je kunt daarna iedere knop	A preset replaces and saves this controller profile. You can then edit each button
+ aanpassen.	.
+Links horizontaal omkeren	Invert left horizontal
+Links verticaal omkeren	Invert left vertical
+Rechts horizontaal omkeren	Invert right horizontal
+Rechts verticaal omkeren	Invert right vertical
+Linker- en rechterstick wisselen	Swap left and right sticks
+Lineaire gevoeligheid	Linear response
+Fijner rond het midden	Finer around center
+Sneller rond het midden	Faster around center
+D-pad omhoog	D-pad up
+D-pad omlaag	D-pad down
+D-pad links	D-pad left
+D-pad rechts	D-pad right
+Pijl omhoog	Arrow up
+Pijl omlaag	Arrow down
+Pijl links	Arrow left
+Pijl rechts	Arrow right
+Remapping uit	Remapping off
+Remapping actief	Remapping active
+Remapping gestopt · oorspronkelijke controller vrij	Remapping stopped · original controller released
+Remapping activeren?	Activate remapping?
+Noodstop · originele controller terug	Emergency stop · restore original controller
+Originele controller hersteld	Original controller restored
+Zoek beschikbare controllers	Find available controllers
+Kies de ingebouwde Thor-controller	Choose the built-in Thor controller
+Hardware-noodstop: houd de fysieke Select + Start drie seconden vast. Remapping start	Hardware emergency stop: hold physical Select + Start for three seconds. Remapping starts
+ nooit automatisch na een herstart.	 only when explicitly activated after a restart.
+Roottoegang en de toegankelijkheidsservice zijn nodig. De virtuele controller kan in	Root and accessibility are required. The virtual controller may appear in
+ een emulator als een extra speler verschijnen; kies daar Thorhaven Controller	 an emulator as an additional player; select Thorhaven Controller
+ als invoer.	 as the input device.
+ wordt exclusief door Thorhaven verwerkt totdat je	 is captured exclusively by Thorhaven until you
+ stopt. Kies de ingebouwde controller; Bluetooth- en	 stop. Choose the built-in controller; Bluetooth and
+ USB-controllers blijven vrij zolang je die niet	 USB controllers remain free unless you
+ kiest.	 select them.
+Prestatiemodus, ventilator, CPU-limieten en joystickverlichting.	Performance, fan, CPU caps and stick lighting.
+Thor-systeemregelaars	Thor system controls
+Lees beschikbare systeemregelaars	Read available system controls
+De app toont alleen instellingen die jouw Thor-firmware aanbiedt. Toegang verloopt via	Only controls exposed by your Thor firmware are shown. Access uses
+ de AYN-rootservice of Shizuku in rootmodus.	 the AYN root service or root-mode Shizuku.
+Wijzigingen worden teruggelezen. De herstelknop bewaart de waarden van vóór jouw	Changes are read back. Recovery preserves values from before your
+ eerste wijziging; instellingen die je elders hebt veranderd, worden	 first change; settings changed outside Thorhaven are
+ overgeslagen.	 skipped.
+Herstel mijn eerdere instellingen	Restore my previous settings
+Hoge prestaties	High performance
+Prestaties	Performance
+Ventilator	Fan
+Stil	Quiet
+Lichtsterkte (%)	Brightness (%)
+Lichtsterkte toepassen	Apply brightness
+Lichtstand toepassen	Apply lighting state
+Joystickverlichting aan	Stick lighting enabled
+Linker kleur #RRGGBB	Left color #RRGGBB
+Rechter kleur #RRGGBB	Right color #RRGGBB
+Kleuren toepassen	Apply colors
+Helderheid (%)	Brightness (%)
+Mediavolume (%)	Media volume (%)
+Helderheid toepassen (systeem)	Apply brightness (system)
+Volume toepassen	Apply volume
+Optionele gidslink (https://…)	Optional guide link (https://…)
+Kies zelf welke toegang en functies je inschakelt.	Choose which access and features to enable.
+Snelpaneel tijdens gamen	Quick panel while gaming
+Met Alleen aanraken blijft controllerfocus bij je game. Sluiten doe je met aanraken of	Touch-only mode keeps controller focus with your game. Close by touch or
+Alleen aanraken · controller blijft bij game	Touch only · controller stays with game
+Recente apps in snelpaneel	Recent apps in quick panel
+Favorieten in snelpaneel	Favorites in quick panel
+App-paren in snelpaneel	App pairs in quick panel
+Notities in snelpaneel	Notes in quick panel
+Recente apps	Recent apps
+Open apps om ze hier te zien.	Launch apps to see them here.
+Via Thorhaven of de actieve toegankelijkheidsservice gezien.	Observed through Thorhaven or the active accessibility service.
+Controller & snelpaneel	Controller & quick panel
+Service actief	Service active
+Service nog niet ingeschakeld	Service not enabled yet
+Service instellen	Configure service
+Controller-service inschakelen	Enable controller service
+Select-combinaties inschakelen	Enable Select shortcuts
+Profielen automatisch toepassen	Apply profiles automatically
+Select wordt bij combinaties ingeschakeld als modifier onderschept. Uitschakelen geeft	Select is intercepted as a modifier when shortcuts are enabled. Disabling them returns
+ Select terug aan de game. Home en AYN worden niet overgenomen.	 Select to the game. Home and AYN are not intercepted.
+Controleer welke Android-scherm-ID bij boven en onder hoort.	Check which Android display IDs correspond to top and bottom.
+Thorhaven-scherm wakker houden	Keep Thorhaven display awake
+Live schermwissels · Shizuku	Live display moves · Shizuku
+Shizuku koppelen	Connect Shizuku
+Shizuku openen	Open Shizuku
+Shizuku niet actief	Shizuku not running
+Shizuku actief · koppel de service	Shizuku running · connect the service
+Shizuku-toestemming nog nodig	Shizuku authorization still required
+Verbonden · live verplaatsen beschikbaar	Connected · live moves available
+Live schermwissels verbonden.	Live display moves connected.
+Schermen live wisselen (Shizuku)	Swap live displays (Shizuku)
+Beide schermen wisselen (Shizuku)	Swap both displays (Shizuku)
+Live naar ander scherm (Shizuku)	Move live to the other display (Shizuku)
+Helderheid & toetsenbord	Brightness & keyboard
+Helderheidstoegang actief	Brightness access active
+Helderheidstoegang optioneel	Brightness access optional
+Helderheidstoegang instellen	Configure brightness access
+Controller-toetsenbord activeren	Enable controller keyboard
+Controller-toetsenbord kiezen	Choose controller keyboard
+Toetsenbord kiezen	Choose keyboard
+Activeer helderheidstoegang in Thorhaven.	Enable brightness access in Thorhaven.
+Helderheid: activeer instellingstoegang in Thorhaven.	Brightness: enable settings access in Thorhaven.
+Thorhaven · D-pad: kies · A: typ · B: sluit	Thorhaven · D-pad: select · A: type · B: close
+Over deze preview	About this preview
+Licenties bekijken	View licenses
+Licenties	Licenses
+Back-up exporteren	Export settings backup
+Back-up importeren?	Import settings backup?
+Back-up importeren	Import settings backup
+Back-up opgeslagen.	Backup saved.
+Back-up geïmporteerd.	Backup imported.
+Back-up	Backup
+Export mislukt.	Export failed.
+Opslaan mislukt.	Save failed.
+Bewaren mislukt.	Save failed.
+Onderste scherm zwart / herstellen	Black bottom display / restore
+Zwarte modus: dubbeltik of tik met drie vingers om terug te keren.	Black mode: double-tap or touch with three fingers to restore.
+Zwarte OLED-modus. Dubbeltik om terug te keren.	Black OLED curtain. Double-tap to restore.
+Activeer de toegankelijkheidsservice. Dit is een zwarte OLED-overlay, geen	Enable accessibility. This is a black OLED overlay, not
+ schermuitschakeling.	 physical display power-off.
+Optioneel · inschakelen bij Instellen	Optional · enable in Settings
+Ingeschakeld · zolang Android de knoppen doorgeeft	Enabled · while Android forwards the keys
+Snelpaneel openen	Open quick panel
+Thorhaven op het andere scherm	Thorhaven on the other display
+Taal / Language	Language
+Nederlands of English. Je notities en gidsen blijven zoals je ze hebt geschreven.	Dutch or English. Your notes and guides stay as you wrote them.
+Eigen sneltoetsen	Custom shortcuts
+Herstel standaardcombinaties	Restore default shortcuts
+Actie kiezen	Choose action
+Uitgeschakeld	Disabled
+Live verplaatsen	Move live
+Schermen wisselen	Swap displays
+Onderste scherm zwart	Black bottom display
+Volume lager	Volume down
+Volume hoger	Volume up
+Helderheid hoger	Brightness up
+Helderheid lager	Brightness down
+App openen boven	Launch app on top
+App openen onder	Launch app on bottom
+App-paar openen	Open app pair
+Thorhaven-pagina	Thorhaven page
+App-paar kiezen	Choose app pair
+Pagina kiezen	Choose page
+Maak eerst een app-paar.	Create an app pair first.
+Sneltoets mislukt:	Shortcut failed:
+Select + knop. Uitgeschakelde acties laten de tweede knop door. Select blijft onderschept zolang combinaties aan staan.	Select + button. Disabled actions let the second button through. Select stays intercepted while shortcuts are enabled.
+Volledige back-up	Complete backup
+Inclusief gidsen, leesposities en speeltijd. Het ZIP-bestand bevat je persoonlijke gegevens.	Includes guides, reading positions and app time. The ZIP contains your personal data.
+Volledige back-up exporteren	Export complete backup
+Volledige back-up importeren	Import complete backup
+Volledige back-up importeren?	Import complete backup?
+De back-up vervangt overeenkomstige instellingen, gidsen en lokale metingen. Andere gidsen blijven staan. Hardwareherstel en lopende slaapmetingen worden niet overgenomen.	The backup replaces matching settings, guides and local measurements. Other guides stay. Hardware recovery and unfinished sleep sessions are not transferred.
+Bezig met back-up…	Processing backup…
+Gids en notities naast elkaar	Guide and notes side by side
+Notities naast gids	Notes beside guide
+Gids tonen	Show guide
+Toetsgrootte	Key size
+Symbolen	Symbols
+Letters	Letters
+Cursor links	Cursor left
+Cursor rechts	Cursor right
+Toetsenbordgrootte	Keyboard size
+Normaal	Normal
+Groot	Large
+Extra groot	Extra large
+Notities opgeslagen.	Notes saved.
+De optionele toegankelijkheidsservice ontvangt app-namen en controllerknoppen voor	The optional accessibility service receives app names and controller keys for
+ combinaties, profielen, het snelpaneel en lokale accu-/tijdmetingen. Hij leest	 shortcuts, profiles, the quick panel and local battery/time measurements. It reads
+ geen schermtekst, bewaart geen toetsgeschiedenis en heeft geen	 no screen text, keeps no keystroke history and has no
+ internettoegang.	 Internet access.
+Android vraagt brede toegankelijkheidstoegang. Thorhaven gebruikt alleen	Android asks for broad accessibility access. Thorhaven only uses
+ app-herkenning, controllerknoppen en een paneel boven apps. Schakel	 app detection, controller keys and a panel over apps. Enable
+ in de volgende pagina uitsluitend Thorhaven in. Bij 'Beperkte	 only Thorhaven on the following page. For 'Restricted
+ instelling': App-info → menu → Beperkte instellingen toestaan.	 setting': App info → menu → Allow restricted settings.
+Optionele systeemtoegang om actieve apps te verplaatsen zonder ze opnieuw te starten.	Optional system access to move active apps without relaunching them.
+ Installeer en start Shizuku, geef Thorhaven toestemming en koppel hieronder.	 Install and start Shizuku, authorize Thorhaven and connect below.
+ Een game kan bij verplaatsen alsnog opnieuw laden of Android kan de actie	 A game may still reload when moved, or Android may
+ weigeren. Geen Wayfinder-systeemcode wordt gebruikt.	 refuse. No Wayfinder system code is used.
+Installeer Shizuku via shizuku.rikka.app/download.	Install Shizuku from shizuku.rikka.app/download.
+Installeer en start Shizuku eerst. Zie de handleiding.	Install and start Shizuku first. See the guide.
+Instellingen in deze back-up overschrijven overeenkomstige instellingen. Je andere	Settings in this backup overwrite matching settings. Your other
+ gegevens blijven staan.	 data is preserved.
+Exporteer je profielen, favorieten, app-paren, notities en schermkeuze.	Export profiles, favorites, app pairs, notes and display assignments.
+Thorhaven 0.4.0 · eigen implementatie, geïnspireerd op Wayfinder.	Thorhaven 0.4.0 · independent implementation, inspired by Wayfinder.
+Beschikbaar: schermkeuze, app-profielen, app-paren, favorieten, gidsen, notities,	Available: display assignments, app profiles, app pairs, favorites, guides, notes,
+ snelpaneel, systeemvolume/helderheid, controller-test, combinaties en	 quick panel, system volume/brightness, controller tests, shortcuts and
+ toetsenbord.	 keyboard.
+Nieuw: offline gidsen, accu/slaapmetingen, controllerpresets en driftadvies.	New: offline guides, battery/screen-off statistics, controller presets and stick-rest advice.
+Experimenteel: live schermwissels, root-remapping en fan/CPU/RGB-bediening.	Experimental: live display moves, root remapping and fan/CPU/RGB controls.
+Nog niet beschikbaar: macro's, muis/gyro,	Not available yet: macros, mouse/gyro,
+ schermuitschakeling en opname. Deze functies vragen aanvullende	 physical display power-off and recording. These require additional
+ systeemintegratie en testen op een echte Thor.	 system integration and tests on a real Thor.
+Geen advertenties, trackers of netwerkpermissie. Gidslinks openen in je eigen	No ads, trackers or Internet permission. Guide links open in your own
+ browser. Schermkeuze kan door een app of firmware geweigerd worden.	 browser. Apps or firmware may refuse display assignments.
+Het toetsenbord werkt in normale tekstvelden. Activeer het eerst bij Instellen.	The keyboard works in regular text fields. Enable it in Settings first.
+ Globale knopcombinaties staan tijdens deze test uit.	 Global shortcuts are disabled during this test.
+Geldt bij starten via Thorhaven. Met automatische profielen ook als de app via een	Applies to launches through Thorhaven. With automatic profiles, also when another
+ andere launcher opent. Helderheid vereist instellingstoegang. Deze waarden	 launcher opens the app. Brightness requires settings access. These values
+ wijzigen het systeem en worden niet automatisch teruggezet.	 change system settings and are not automatically restored.
+Deze firmware publiceert geen instelbare CPU-frequentielijst. De standaard	This firmware exposes no selectable CPU frequency list. Stock
+ prestatiemodi blijven beschikbaar als de firmware die aanbiedt.	 performance modes remain available if exposed by the firmware.
+Kies een vaste lichteffectstand in de AYN-instellingen als een animatie jouw gekozen	Choose a fixed lighting effect in AYN settings if an animation overrides your selected
+ kleur overschrijft. Teruglezen bevestigt de instelling; de fysieke	 color. Readback confirms the setting; physical
+ verlichting is alleen op de Thor te controleren.	 lighting can only be checked on the Thor.
+Geen toegankelijk scherm.	No accessible display.
+Wijs eerst twee verschillende schermen toe.	Assign two different displays first.
+Wijs twee verschillende schermen toe.	Assign two different displays.
+Gebruik een http- of https-link.	Use an http or https link.
+Geen browser beschikbaar op dit scherm.	No browser available on this display.
+App-paar kan niet worden gelezen.	Cannot read app pair.
+Ongeldig app-paar.	Invalid app pair.
+App naar het andere scherm verplaatst.	App moved to the other display.
+Apps op beide schermen gewisseld.	Apps swapped between displays.
+App staat al op dit scherm.	App is already on this display.
+Live verplaatsen vereist de Shizuku-koppeling bij Instellen.	Live moves require the Shizuku connection in Settings.
+Geen zichtbare apps om te wisselen.	No visible apps to swap.
+Geen zichtbare taak van deze app gevonden.	No visible task for this app found.
+Android heeft de verplaatsing niet bevestigd	Android did not confirm the move
+Verplaatsen geweigerd:	Move refused:
+Wisselen geweigerd:	Swap refused:
+Gids-overlay niet beschikbaar:	Guide overlay unavailable:
+Paneel niet beschikbaar:	Panel unavailable:
+Gids kon niet op dit scherm worden geopend.	Could not open the guide on this display.
+Importeer eerst een PDF- of tekstgids via Gidsen.	Import a PDF or text guide through Guides first.
+Notities konden niet worden geopend.	Could not open notes.
+Koppel Shizuku bij Instellen om de huidige apps te lezen.	Connect Shizuku in Settings to read the current apps.
+Open op beide schermen een verschillende app; startschermen tellen niet mee.	Open a different app on each display; home screens do not count.
+Geen instellingen om te herstellen	No settings to restore
+Instelling niet beschikbaar.	Setting unavailable.
+Instellingen toegepast en teruggelezen	Settings applied and read back
+ instellingen hersteld; 	 settings restored; 
+ elders gewijzigde instellingen overgeslagen	 settings changed elsewhere skipped
+Roottoegang nodig: koppel Shizuku in rootmodus, of gebruik firmware met AYN PServer.	Root access required: connect root-mode Shizuku or use firmware with AYN PServer.
+Geen AYN-rootservice. Koppel Shizuku in rootmodus bij Instellen.	No AYN root service. Connect root-mode Shizuku in Settings.
+Deze systeemregelaars zijn alleen beschikbaar op een AYN Thor.	These system controls are only available on an AYN Thor.
+Hoge prestaties vereist Smart of Sport als fanstand	High performance requires Smart or Sport fan mode
+Ventilator uitschakelen wordt niet aangeboden	Turning the fan off is not offered
+Back-up kan niet worden gelezen (maximaal 1 MB).	Cannot read settings backup (maximum 1 MB).
+Ongeldige back-up:	Invalid backup:
+Onbekende backupversie	Unknown backup version
+Onbekende instelling	Unknown setting
+Onbekende bewerking	Unknown operation
+Onbekende systeeminstelling	Unknown system setting
+Onbekende preset	Unknown preset
+Ongeldige app	Invalid app
+Ongeldig controllerprofiel	Invalid controller profile
+Ongeldige recente apps	Invalid recent apps
+Ongeldige app-paren	Invalid app pairs
+Ongeldig pakket	Invalid package
+Ongeldig scherm	Invalid display
+Ongeldig percentage	Invalid percentage
+Ongeldige tekst	Invalid text
+Ongeldige schakelaar	Invalid switch
+Te veel instellingen	Too many settings
+Te veel recente apps	Too many recent apps
+Te veel app-paren	Too many app pairs
+Bewerking mislukt	Operation failed
+Bestand niet leesbaar	Cannot read file
+Leeg bestand	Empty file
+Maximaal 16 MB voor PDF, 2 MB voor tekst	Up to 16 MB for PDF, 2 MB for text
+PDF bevat geen bruikbaar aantal pagina's	PDF has no usable page count
+Tekstgids maximaal 2 MB	Text guide up to 2 MB
+Dit is geen tekstgids of PDF	This is not a text guide or PDF
+Gids te groot	Guide too large
+Geen opslag voor gidsen	No guide storage available
+Gidsgegevens konden niet worden opgeslagen	Could not save guide metadata
+Geen leesbare gamepad gevonden. Controleer roottoegang.	No readable gamepad found. Check root access.
+Geen controllersessie	No controller session
+Stop remapping voordat je opnieuw naar controllers zoekt	Stop remapping before searching for controllers again
+Activeer eerst de Thorhaven-toegankelijkheidsservice bij Instellen	Enable Thorhaven accessibility in Settings first
+Invoerhelper niet bereikbaar. Firmware of roottoegang ondersteunt deze	Input helper unreachable. Firmware or root access does not support this
+ invoerlaag niet.	 input layer.
+Invoerverbinding verbroken	Input connection lost
+Helpercontrole mislukt	Helper verification failed
+Opslag voor invoerhelper niet beschikbaar	Input-helper storage unavailable
+Profiel niet leesbaar:	Cannot read profile:
+Controllerwaarde buiten bereik	Controller value out of range
+Ongeldige controllerwaarde	Invalid controller value
+Ongeldige knop	Invalid button
+Ongeldig aantal knoppen	Invalid button count
+Te veel stickbeweging om een ruststand te bepalen. Meet opnieuw zonder de sticks	Too much stick movement to measure rest. Repeat without touching the sticks
+ aan te raken.	.
+Licenties kunnen niet worden geopend.	Could not open licenses.
+Shizuku kon geen toestemming vragen.	Shizuku could not request authorization.
+Shizuku-koppeling mislukt.	Shizuku connection failed.
+Shizuku-verbinding verbroken. Koppel opnieuw bij Instellen.	Shizuku connection lost. Reconnect in Settings.
+Zwarte modus niet beschikbaar:	Black mode unavailable:
+ pagina's	 pages
+tekstgids	text guide
+ · notities	 · notes
+Knop	Button
+Kiezen	Choose
+Links	Left
+Rechts	Right
+Profiel opgeslagen	Profile saved
+Select-combinaties	Select shortcuts
+Select + Start: snelpaneel	Select + Start: quick panel
+Select + X: live verplaatsen	Select + X: move live
+Select + Y: notities	Select + Y: notes
+Select + A: offline gids	Select + A: offline guide
+Select + B: zwarte onderste schermmodus	Select + B: black bottom-screen curtain
+Select + L1/R1: volume	Select + L1/R1: volume
+Select + D-pad op/neer: helderheid	Select + D-pad up/down: brightness
+Bij actieve root-remapping: fysieke Select + Start drie seconden	When root remapping is active: hold physical Select + Start for three seconds
+ vasthouden = noodstop.	 = emergency stop.
+Select + Start   Snelpaneel	Select + Start   Quick panel
+Select + X   Live naar ander scherm (Shizuku)	Select + X   Move live to other display (Shizuku)
+Select + Y   Notities	Select + Y   Notes
+Select + L1 / R1   Volume lager / hoger	Select + L1 / R1   Volume down / up
+Select + D-pad omhoog / omlaag   Helderheid	Select + D-pad up / down   Brightness
+Thorhaven · D-pad: kies · A: typ · B: sluit · L1/R1: cursor	Thorhaven · D-pad: select · A: type · B: close · L1/R1: cursor
+Omhoog	Up
+Omlaag	Down
+omzetten naar…	map to…
+Toets	Key
+Wissen	Clear
+Opslaan en sluiten	Save and close
+Nieuw: taalkeuze, eigen sneltoetsen, volledige back-up, uitgebreid toetsenbord en gids/notities naast elkaar.	New: language selection, custom shortcuts, complete backup, expanded keyboard and guides beside notes.
+Bewerken	Edit
+Slaap	Sleep
+Sneltoetsen bewerken	Edit shortcuts
+L3	L3
+R3	R3

@@ -23,6 +23,8 @@ final class GuidePane extends LinearLayout {
   android.app.AlertDialog pageDialog;
   ScrollView scroll;
   Bitmap bitmap;
+  EditText notes;
+  Runnable saveNotes;
   volatile boolean closed;
   int generation, page, pages;
   float zoom = 1;
@@ -39,9 +41,38 @@ final class GuidePane extends LinearLayout {
     head.addView(Ui.title(c, Store.name(c, pkg), 18), new LayoutParams(0, -2, 1));
     head.addView(Ui.button(c, "Sluiten", dismiss), new LayoutParams(-2, -2));
     addView(head);
-    addView(Ui.text(c, m.optString("name", "Offline gids"), 13, Ui.MUTED));
+    addView(Ui.rawText(c, m.optString("name", Language.text(c, "Offline gids")), 13, Ui.MUTED));
     scroll = new ScrollView(c);
-    addView(scroll, new LayoutParams(-1, 0, 1));
+    if (Store.prefs(c).getBoolean("guideNotes", false)) {
+      LinearLayout panes = Ui.row(c);
+      panes.setGravity(Gravity.TOP);
+      panes.addView(scroll, new LayoutParams(0, -1, 1.5f));
+      LinearLayout side = Ui.col(c);
+      side.setPadding(Ui.dp(c, 12), 0, 0, 0);
+      side.addView(Ui.title(c, "Notities", 16));
+      notes = Ui.input(c, "Schrijf je notities…");
+      notes.setSingleLine(false);
+      notes.setGravity(Gravity.TOP);
+      notes.setInputType(
+          android.text.InputType.TYPE_CLASS_TEXT
+              | android.text.InputType.TYPE_TEXT_FLAG_MULTI_LINE);
+      notes.setText(Store.prefs(c).getString("notes:" + pkg, ""));
+      ScrollView noteScroll = new ScrollView(c);
+      noteScroll.addView(notes);
+      side.addView(noteScroll, new LayoutParams(-1, 0, 1));
+      saveNotes =
+          () -> {
+            String value = notes.getText().toString();
+            if (value.length() > 50000) Ui.toast(c, "Notes are limited to 50,000 characters.");
+            else {
+              Store.prefs(c).edit().putString("notes:" + pkg, value).commit();
+              Ui.toast(c, "Notities opgeslagen.");
+            }
+          };
+      side.addView(Ui.button(c, "Opslaan", saveNotes));
+      panes.addView(side, new LayoutParams(0, -1, 1));
+      addView(panes, new LayoutParams(-1, 0, 1));
+    } else addView(scroll, new LayoutParams(-1, 0, 1));
     LinearLayout content = Ui.col(c);
     scroll.addView(content);
     status = Ui.text(c, "Gids laden…", 14, Ui.MUTED);
@@ -72,7 +103,7 @@ final class GuidePane extends LinearLayout {
             EditText input = Ui.input(c, "Paginanummer");
             input.setInputType(android.text.InputType.TYPE_CLASS_NUMBER);
             pageDialog =
-                new android.app.AlertDialog.Builder(c)
+                new Ui.Dialog(c)
                     .setTitle("Ga naar pagina")
                     .setView(input)
                     .setPositiveButton(
@@ -112,7 +143,7 @@ final class GuidePane extends LinearLayout {
       addView(controls);
       renderPdf();
     } else {
-      TextView text = Ui.text(c, "", 17, Ui.TEXT);
+      TextView text = Ui.rawText(c, "", 17, Ui.TEXT);
       text.setTextIsSelectable(true);
       content.addView(text);
       worker.execute(

@@ -39,7 +39,7 @@ final class Ui {
   }
 
   static TextView text(Context c, String s, int size, int color) {
-    TextView t = new TextView(c);
+    TextView t = new Label(c);
     t.setText(s);
     t.setTextSize(size);
     t.setTextColor(color);
@@ -54,7 +54,7 @@ final class Ui {
   }
 
   static Button button(Context c, String s, Runnable action) {
-    Button b = new Button(c);
+    Button b = new Action(c);
     b.setText(s);
     b.setTextSize(13);
     b.setAllCaps(false);
@@ -83,14 +83,14 @@ final class Ui {
   }
 
   static void toast(Context c, String s) {
-    Toast.makeText(c, s, Toast.LENGTH_LONG).show();
+    Toast.makeText(c, Language.text(c, s), Toast.LENGTH_LONG).show();
   }
 
   static EditText input(Context c, String hint) {
     EditText e = new EditText(c);
     e.setTextColor(TEXT);
     e.setHintTextColor(MUTED);
-    e.setHint(hint);
+    e.setHint(Language.text(c, hint));
     e.setTextSize(15);
     e.setSingleLine(true);
     return e;
@@ -120,5 +120,80 @@ final class Ui {
 
           public void onStopTrackingTouch(SeekBar b) {}
         });
+  }
+
+  static final class Label extends TextView {
+    Label(Context c) {
+      super(c);
+    }
+
+    public void setText(CharSequence text, BufferType type) {
+      super.setText(Language.text(getContext(), text == null ? null : text.toString()), type);
+    }
+  }
+
+  static final class Action extends Button {
+    Action(Context c) {
+      super(c);
+    }
+
+    public void setText(CharSequence text, BufferType type) {
+      super.setText(Language.text(getContext(), text == null ? null : text.toString()), type);
+    }
+  }
+
+  static TextView rawText(Context c, String s, int size, int color) {
+    TextView t = new TextView(c);
+    t.setText(s);
+    t.setTextSize(size);
+    t.setTextColor(color);
+    t.setPadding(0, dp(c, 4), 0, dp(c, 4));
+    return t;
+  }
+
+  static final class Dialog extends android.app.AlertDialog.Builder {
+    final Context context;
+
+    Dialog(Context c) {
+      super(c);
+      context = c;
+    }
+
+    public android.app.AlertDialog.Builder setTitle(CharSequence s) {
+      return super.setTitle(Language.text(context, s.toString()));
+    }
+
+    public android.app.AlertDialog.Builder setMessage(CharSequence s) {
+      return super.setMessage(Language.text(context, s.toString()));
+    }
+
+    public android.app.AlertDialog.Builder setPositiveButton(
+        CharSequence s, DialogInterface.OnClickListener l) {
+      return super.setPositiveButton(Language.text(context, s.toString()), l);
+    }
+
+    public android.app.AlertDialog.Builder setNegativeButton(
+        CharSequence s, DialogInterface.OnClickListener l) {
+      return super.setNegativeButton(Language.text(context, s.toString()), l);
+    }
+
+    public android.app.AlertDialog.Builder setNeutralButton(
+        CharSequence s, DialogInterface.OnClickListener l) {
+      return super.setNeutralButton(Language.text(context, s.toString()), l);
+    }
+
+    public android.app.AlertDialog.Builder setSingleChoiceItems(
+        CharSequence[] items, int selected, DialogInterface.OnClickListener l) {
+      CharSequence[] out = items.clone();
+      for (int i = 0; i < out.length; i++) out[i] = Language.text(context, out[i].toString());
+      return super.setSingleChoiceItems(out, selected, l);
+    }
+
+    public android.app.AlertDialog.Builder setItems(
+        CharSequence[] items, DialogInterface.OnClickListener l) {
+      CharSequence[] out = items.clone();
+      for (int i = 0; i < out.length; i++) out[i] = Language.text(context, out[i].toString());
+      return super.setItems(out, l);
+    }
   }
 }

@@ -1,6 +1,5 @@
 package nl.thorhaven.app;
 
-import android.app.AlertDialog;
 import android.widget.TextView;
 
 final class DriftCheck {
@@ -47,7 +46,7 @@ final class DriftCheck {
                     + "%, rechts "
                     + right
                     + "% · gemeten piek + 3 procentpunt marge");
-            new AlertDialog.Builder(a)
+            new Ui.Dialog(a)
                 .setTitle("Dode zone opslaan")
                 .setMessage(
                     "Links "

@@ -1,0 +1,123 @@
+Thorhaven 0.4.0-preview — validation report
+
+Android 15 ARM64 emulator: 1920×1080 and 1240×1080 public displays.
+Fan/CPU/RGB use an in-memory firmware fixture. Input uses real Linux uinput events.
+No independent physical AYN Thor validation of this build.
+
+PASS Stack parser excludes the home task
+PASS Bridge rejects malformed package names before execution
+PASS Two public displays discovered
+PASS Independent display IDs selected
+PASS Installed launchable apps discovered
+PASS Backup round-trip preserves Unicode notes
+PASS Backup round-trip preserves profile values
+PASS Malformed import is rejected atomically
+PASS Unknown backup schema is rejected
+PASS Unassigned secondary display stays disabled
+PASS Quick panel builds in secondary-display context
+PASS Dashboard starts successfully
+PASS All ten pages render without exception
+PASS Shizuku user service connects with authorized shell privileges
+PASS An existing settings task moves live to the secondary display: App live verplaatst naar scherm 2.
+PASS Two existing app tasks swap displays with Shizuku: Apps op beide schermen gewisseld.
+PASS Repeated move to the same screen is a safe no-op
+PASS Current app-pair capture reflects both real screen tasks
+PASS Hardware transaction applies and reads back multiple settings
+PASS Hardware snapshot restores original settings
+PASS Partial hardware failure rolls back earlier writes
+PASS High performance with quiet fan is rejected before writes
+PASS Restore preserves settings changed outside Thorhaven
+PASS CPU cap selects a published frequency
+PASS CPU cap restores previous frequency
+PASS Unavailable CPU frequencies rejected before writes
+PASS Unknown hardware command is rejected
+PASS Backup preserves validated mapping profiles
+PASS Invalid mapping import is rejected atomically
+PASS Hardware controls refuse non-Thor hardware
+PASS Native helper starts through root Shizuku with verified hash
+PASS Real Linux uinput fixture discovered as gamepad
+PASS Authenticated app connects and grabs a real gamepad: {"message":"Remapping actief. Select + Start drie seconden vasthouden is de noodstop."}
+PASS A maps to B and shared target stays held until both sources release
+PASS Shared target releases without stuck button
+PASS Native stick inversion transforms actual kernel events
+PASS Hat D-pad mapping emits keyboard Enter and releases it
+PASS Raw Select plus Start emergency stop releases original device
+PASS Remapping can be restarted after emergency stop
+PASS Foreground app selects its own mapping profile
+PASS Per-app identity mapping produces its own kernel events
+PASS Connection loss watchdog releases the physical gamepad without app assistance
+PASS Authentication test helper launches
+PASS Incorrect session token is rejected before device access
+PASS Missing heartbeat closes the session and destroys the virtual controller
+PASS RGB color, enable and brightness round-trip through typed backend
+PASS RGB snapshot restores the original values
+PASS All supported system controls render with fixture capabilities
+PASS Nintendo preset swaps both face-button pairs
+PASS PC-menu preset uses arrows and Enter
+PASS WASD preset uses Linux keyboard targets
+PASS Drift recommendation includes a three-point rest margin
+PASS Moving or invalid sticks do not produce a calibration recommendation
+PASS Recent list is bounded and moves repeated apps to the front
+PASS Recent apps round-trip through backup without launching them
+PASS Touch-only panel explicitly leaves controller focus to the game
+PASS Controller panel can take focus when requested
+PASS Uncharged four-hour screen-off session records measured battery loss
+PASS Standby average uses elapsed time and percentage-point loss
+PASS Short sleep sessions do not distort the long-session average
+PASS A charger connected during screen-off excludes the whole measurement
+PASS A reboot invalidates an unfinished elapsed-time sleep measurement
+PASS Active app-time pauses while Thorhaven is foreground
+PASS UTF-8 guide is copied into private local storage
+PASS Rejected binary import preserves the earlier offline guide
+PASS Guide identifiers cannot traverse storage paths
+PASS Oversized text import preserves existing guide metadata
+PASS Real PDF is parsed and counted before local installation
+PASS PDF page bookmark survives reader creation
+PASS Local text reader loads without network access
+PASS PDF reader renders the bookmarked second page
+PASS L1 wraps from first page to the final page
+PASS R1 wraps through the full ten-page navigation
+PASS Real accessibility service binds for second-display overlays
+PASS Black OLED curtain attaches only to the assigned bottom display
+PASS Black curtain restores the underlying screen without power commands
+PASS Real touch-only quick panel keeps its window non-focusable
+PASS PDF guide attaches as an accessibility overlay over the second display
+PASS Real guide overlay renders its PDF page
+PASS PDF page dialog opens above a real accessibility overlay
+PASS Closing guide overlay releases the reader and window
+PASS Controller B closes a focusable panel even with combos disabled
+PASS Removing a guide clears only its private copy
+PASS English catalog translates navigation and guide actions
+PASS Dynamic status labels use the selected language
+PASS User guide content is not translated
+PASS Custom shortcuts and language survive settings backup
+PASS Shortcut editor cannot intercept Home or arbitrary keys
+PASS Shortcut package targets are validated before execution
+PASS Custom Select+A binding opens the real quick panel instead of the default guide action
+PASS Executed custom shortcuts consume the matching key release
+PASS A disabled custom action passes its second button through to the game
+PASS Complete ZIP backup restores guide bytes and reading position
+PASS Complete ZIP backup restores notes and typed app-time values
+PASS Completed restore excludes unfinished sleep state and clears its recovery journal
+PASS A late transaction failure restores prior guide files and preference values
+PASS Unsafe ZIP paths are rejected without replacing existing guides
+PASS Imported battery averages cannot include charging sessions
+PASS Side-by-side guide editor saves notes for the correct app
+PASS Symbol keyboard includes angle brackets and currency characters
+PASS Keyboard commits symbols and sends paired cursor key events
+PASS Keyboard size preference and every-row navigation stay within bounds
+
+102 checks passed
+
+
+PASS 10 native checks
+
+Total: 112 automated checks passed.
+
+Additional installation and UI checks:
+PASS Installed signed 0.3, stored a Unicode note and preference, updated to signed 0.4 without clearing data; both values preserved.
+PASS Updated app renders the preserved Unicode note in the English interface.
+PASS English settings page inspected at 1920×1080, including language and keyboard-size controls.
+PASS Release signature verified; same signing certificate as 0.3.
+
+The final release differs from the automated-check build only by added catalog labels and the updated license version header.
