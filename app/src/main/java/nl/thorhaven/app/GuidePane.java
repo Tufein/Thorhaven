@@ -40,6 +40,8 @@ final class GuidePane extends LinearLayout {
     setBackgroundColor(Ui.BG);
     setPadding(Ui.dp(c, 14), Ui.dp(c, 10), Ui.dp(c, 14), Ui.dp(c, 10));
     JSONObject m = OfflineGuides.meta(c, pkg);
+    int savedZoom = m.optInt("zoom", 100);
+    zoom = savedZoom == 150 ? 1.5f : savedZoom == 200 ? 2 : 1;
     LinearLayout head = Ui.row(c);
     head.addView(
         Ui.title(c, Store.name(c, OfflineGuides.owner(c, pkg)), 18), new LayoutParams(0, -2, 1));
@@ -144,7 +146,7 @@ final class GuidePane extends LinearLayout {
           controls,
           "Zoom",
           () -> {
-            zoom = zoom == 1 ? 1.5f : zoom == 1.5f ? 2 : 1;
+            cycleZoom();
             renderPdf();
           });
       addView(controls);
@@ -162,16 +164,13 @@ final class GuidePane extends LinearLayout {
                         "Opslaan",
                         (d, w) -> {
                           try {
-                            String title = name.getText().toString().trim();
-                            if (title.isEmpty() || title.length() > 100)
-                              throw new Exception("Use 1–100 characters");
+                            String title = GuideTools.title(name.getText().toString(), 100);
                             JSONObject meta = OfflineGuides.meta(c, pkg);
                             JSONArray rows = meta.optJSONArray("bookmarks");
                             if (rows == null) rows = new JSONArray();
                             rows.put(new JSONObject().put("name", title).put("page", page));
                             meta.put("bookmarks", rows);
-                            ExtraFeatures.validateGuide(meta);
-                            OfflineGuides.prefs(c).edit().putString(pkg, meta.toString()).commit();
+                            GuideTools.save(c, pkg, meta);
                             Ui.toast(c, "Bookmark saved");
                           } catch (Exception e) {
                             Ui.toast(c, e.getMessage());
@@ -180,43 +179,7 @@ final class GuidePane extends LinearLayout {
                     .setNegativeButton("Annuleren", null)
                     .create());
           });
-      addButton(
-          bookmarks,
-          "Bladwijzers",
-          () -> {
-            JSONArray rows = OfflineGuides.meta(c, pkg).optJSONArray("bookmarks");
-            if (rows == null || rows.length() == 0) {
-              Ui.toast(c, "No bookmarks yet");
-              return;
-            }
-            String[] labels = new String[rows.length()];
-            for (int i = 0; i < labels.length; i++)
-              labels[i] =
-                  rows.optJSONObject(i).optString("name")
-                      + " · "
-                      + (rows.optJSONObject(i).optInt("page") + 1);
-            dialog(
-                new Ui.Dialog(c)
-                    .setTitle("Bladwijzers")
-                    .setItems(
-                        labels,
-                        (d, w) -> {
-                          page = rows.optJSONObject(w).optInt("page");
-                          renderPdf();
-                        })
-                    .setNeutralButton(
-                        "Bladwijzers wissen",
-                        (d, w) -> {
-                          try {
-                            JSONObject m2 = OfflineGuides.meta(c, pkg);
-                            m2.remove("bookmarks");
-                            OfflineGuides.prefs(c).edit().putString(pkg, m2.toString()).commit();
-                          } catch (Exception ignored) {
-                          }
-                        })
-                    .setNegativeButton("Annuleren", null)
-                    .create());
-          });
+      addButton(bookmarks, "Bladwijzers", this::bookmarks);
       addView(bookmarks);
       renderPdf();
     } else if (m.optString("kind").equals("image")) {
@@ -231,29 +194,10 @@ final class GuidePane extends LinearLayout {
           controls,
           "Zoom",
           () -> {
-            zoom = zoom == 1 ? 1.5f : zoom == 1.5f ? 2 : 1;
+            cycleZoom();
             sizeImage();
           });
-      addButton(
-          controls,
-          "Markeringen wissen",
-          () ->
-              dialog(
-                  new Ui.Dialog(c)
-                      .setTitle("Alle kaartmarkeringen wissen?")
-                      .setPositiveButton(
-                          "Wissen",
-                          (d, w) -> {
-                            try {
-                              JSONObject m2 = OfflineGuides.meta(c, pkg);
-                              m2.remove("markers");
-                              OfflineGuides.prefs(c).edit().putString(pkg, m2.toString()).commit();
-                              image.invalidate();
-                            } catch (Exception ignored) {
-                            }
-                          })
-                      .setNegativeButton("Annuleren", null)
-                      .create()));
+      addButton(controls, "Markeringen", this::markers);
       addView(controls);
       worker.execute(
           () -> {
@@ -288,7 +232,8 @@ final class GuidePane extends LinearLayout {
             }
           });
     } else {
-      TextView text = Ui.rawText(c, "", 17, Ui.TEXT);
+      TextView text =
+          Ui.rawText(c, "", Math.max(12, Math.min(30, m.optInt("textSize", 17))), Ui.TEXT);
       guideText = text;
       LinearLayout search = Ui.row(c);
       EditText query = Ui.input(c, "Zoeken in deze gids");
@@ -296,6 +241,7 @@ final class GuidePane extends LinearLayout {
       search.addView(query, new LayoutParams(0, -2, 1));
       search.addView(Ui.button(c, "Volgende zoeken", () -> find(query.getText().toString())));
       addView(search, 2);
+      addView(Ui.button(c, "Tekstgrootte", this::textSize), 3);
       text.setTextIsSelectable(true);
       content.addView(text);
       worker.execute(
@@ -331,6 +277,209 @@ final class GuidePane extends LinearLayout {
     if (!(context instanceof android.app.Activity))
       d.getWindow().setType(WindowManager.LayoutParams.TYPE_ACCESSIBILITY_OVERLAY);
     d.show();
+  }
+
+  void cycleZoom() {
+    float next = zoom == 1 ? 1.5f : zoom == 1.5f ? 2 : 1;
+    try {
+      GuideTools.reading(context, pkg, "zoom", Math.round(next * 100));
+      zoom = next;
+    } catch (Exception e) {
+      Ui.toast(context, e.getMessage());
+    }
+  }
+
+  void textSize() {
+    int[] sizes = {12, 14, 17, 20, 24, 30};
+    String[] labels = new String[sizes.length];
+    for (int i = 0; i < sizes.length; i++) labels[i] = "" + sizes[i];
+    dialog(
+        new Ui.Dialog(context)
+            .setTitle("Tekstgrootte")
+            .setMessage("Deze grootte wordt voor dit document onthouden.")
+            .setItems(
+                labels,
+                (d, w) -> {
+                  try {
+                    GuideTools.reading(context, pkg, "textSize", sizes[w]);
+                    if (guideText != null) guideText.setTextSize(sizes[w]);
+                  } catch (Exception e) {
+                    Ui.toast(context, e.getMessage());
+                  }
+                })
+            .setNegativeButton("Annuleren", null)
+            .create());
+  }
+
+  void bookmarks() {
+    JSONArray rows = OfflineGuides.meta(context, pkg).optJSONArray("bookmarks");
+    if (rows == null || rows.length() == 0) {
+      Ui.toast(context, "Nog geen bladwijzers.");
+      return;
+    }
+    String[] labels = new String[rows.length()];
+    for (int i = 0; i < labels.length; i++) {
+      JSONObject b = rows.optJSONObject(i);
+      labels[i] = b.optString("name") + " · " + (b.optInt("page") + 1);
+    }
+    // The labels are supplied by the user, so bypass the translated dialog item wrapper.
+    dialog(
+        new android.app.AlertDialog.Builder(context)
+            .setTitle(Language.text(context, "Bladwijzers"))
+            .setItems(labels, (d, w) -> bookmarkActions(w))
+            .setNegativeButton(Language.text(context, "Annuleren"), null)
+            .create());
+  }
+
+  void bookmarkActions(int index) {
+    dialog(
+        new Ui.Dialog(context)
+            .setTitle("Bladwijzeropties")
+            .setItems(
+                new String[] {"Openen", "Naam / pagina wijzigen", "Verwijderen"},
+                (d, w) -> {
+                  JSONObject b = entry("bookmarks", index);
+                  if (b == null) return;
+                  if (w == 0) {
+                    page = Math.max(0, Math.min(pages - 1, b.optInt("page")));
+                    renderPdf();
+                  } else if (w == 1) {
+                    LinearLayout fields = Ui.col(context);
+                    EditText name = Ui.input(context, "Naam van de bladwijzer");
+                    name.setText(b.optString("name"));
+                    fields.addView(name);
+                    EditText number = Ui.input(context, "Paginanummer");
+                    number.setInputType(android.text.InputType.TYPE_CLASS_NUMBER);
+                    number.setText("" + (b.optInt("page") + 1));
+                    fields.addView(number);
+                    dialog(
+                        new Ui.Dialog(context)
+                            .setTitle("Bladwijzer wijzigen")
+                            .setView(fields)
+                            .setPositiveButton(
+                                "Opslaan",
+                                (d2, w2) -> {
+                                  try {
+                                    int target =
+                                        Integer.parseInt(number.getText().toString().trim()) - 1;
+                                    if (target < 0 || target >= pages)
+                                      throw new Exception("Kies een pagina van 1 tot " + pages);
+                                    GuideTools.changeEntry(
+                                        context,
+                                        pkg,
+                                        "bookmarks",
+                                        index,
+                                        name.getText().toString(),
+                                        target,
+                                        false);
+                                    Ui.toast(context, "Bladwijzer opgeslagen.");
+                                  } catch (Exception e) {
+                                    Ui.toast(context, e.getMessage());
+                                  }
+                                })
+                            .setNegativeButton("Annuleren", null)
+                            .create());
+                  } else removeEntry("bookmarks", index);
+                })
+            .setNegativeButton("Annuleren", null)
+            .create());
+  }
+
+  JSONObject entry(String key, int index) {
+    JSONArray a = OfflineGuides.meta(context, pkg).optJSONArray(key);
+    JSONObject b = a == null ? null : a.optJSONObject(index);
+    if (b == null) Ui.toast(context, "Deze vermelding bestaat niet meer.");
+    return b;
+  }
+
+  void removeEntry(String key, int index) {
+    dialog(
+        new Ui.Dialog(context)
+            .setTitle(key.equals("markers") ? "Markering verwijderen?" : "Bladwijzer verwijderen?")
+            .setPositiveButton(
+                "Verwijderen",
+                (d, w) -> {
+                  try {
+                    GuideTools.changeEntry(context, pkg, key, index, "", null, true);
+                    if (image != null) image.invalidate();
+                  } catch (Exception e) {
+                    Ui.toast(context, e.getMessage());
+                  }
+                })
+            .setNegativeButton("Annuleren", null)
+            .create());
+  }
+
+  void markers() {
+    JSONArray rows = OfflineGuides.meta(context, pkg).optJSONArray("markers");
+    if (rows == null || rows.length() == 0) {
+      Ui.toast(context, "Nog geen markeringen. Houd de kaart ingedrukt om er een toe te voegen.");
+      return;
+    }
+    String[] labels = new String[rows.length()];
+    for (int i = 0; i < labels.length; i++) labels[i] = rows.optJSONObject(i).optString("name");
+    dialog(
+        new android.app.AlertDialog.Builder(context)
+            .setTitle(Language.text(context, "Markeringen"))
+            .setItems(labels, (d, w) -> markerActions(w))
+            .setNegativeButton(Language.text(context, "Annuleren"), null)
+            .create());
+  }
+
+  void markerActions(int index) {
+    dialog(
+        new Ui.Dialog(context)
+            .setTitle("Markeringopties")
+            .setItems(
+                new String[] {"Tonen op kaart", "Naam wijzigen", "Verwijderen"},
+                (d, w) -> {
+                  JSONObject b = entry("markers", index);
+                  if (b == null) return;
+                  if (w == 0) {
+                    horizontal.smoothScrollTo(
+                        Math.max(
+                            0,
+                            (int) (b.optDouble("x") * image.getWidth())
+                                - horizontal.getWidth() / 2),
+                        0);
+                    scroll.smoothScrollTo(
+                        0,
+                        Math.max(
+                            0,
+                            image.getTop()
+                                + (int) (b.optDouble("y") * image.getHeight())
+                                - scroll.getHeight() / 2));
+                  } else if (w == 1) {
+                    EditText name = Ui.input(context, "Naam van de markering");
+                    name.setText(b.optString("name"));
+                    dialog(
+                        new Ui.Dialog(context)
+                            .setTitle("Markering wijzigen")
+                            .setView(name)
+                            .setPositiveButton(
+                                "Opslaan",
+                                (d2, w2) -> {
+                                  try {
+                                    GuideTools.changeEntry(
+                                        context,
+                                        pkg,
+                                        "markers",
+                                        index,
+                                        name.getText().toString(),
+                                        null,
+                                        false);
+                                    image.invalidate();
+                                    Ui.toast(context, "Markering opgeslagen.");
+                                  } catch (Exception e) {
+                                    Ui.toast(context, e.getMessage());
+                                  }
+                                })
+                            .setNegativeButton("Annuleren", null)
+                            .create());
+                  } else removeEntry("markers", index);
+                })
+            .setNegativeButton("Annuleren", null)
+            .create());
   }
 
   void find(String query) {
@@ -405,20 +554,14 @@ final class GuidePane extends LinearLayout {
                               "Opslaan",
                               (d, w) -> {
                                 try {
-                                  String title = name.getText().toString().trim();
-                                  if (title.isEmpty() || title.length() > 100)
-                                    throw new Exception("Use 1–100 characters");
+                                  String title = GuideTools.title(name.getText().toString(), 100);
                                   JSONObject meta = OfflineGuides.meta(c, pkg);
                                   JSONArray rows = meta.optJSONArray("markers");
                                   if (rows == null) rows = new JSONArray();
                                   rows.put(
                                       new JSONObject().put("name", title).put("x", x).put("y", y));
                                   meta.put("markers", rows);
-                                  ExtraFeatures.validateGuide(meta);
-                                  OfflineGuides.prefs(c)
-                                      .edit()
-                                      .putString(pkg, meta.toString())
-                                      .commit();
+                                  GuideTools.save(c, pkg, meta);
                                   invalidate();
                                 } catch (Exception ex) {
                                   Ui.toast(c, ex.getMessage());

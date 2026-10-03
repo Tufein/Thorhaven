@@ -42,7 +42,7 @@ public class ThorService extends AccessibilityService {
     if (stats != null && !p.equals("com.android.systemui") && !p.equals("android")) stats.focus(p);
     if (p.equals(getPackageName()) || p.equals("com.android.systemui") || p.equals("android"))
       return;
-    foregroundDisplay = e.getDisplayId();
+    foregroundDisplay = Build.VERSION.SDK_INT >= 33 ? e.getDisplayId() : Display.DEFAULT_DISPLAY;
     if (!p.equals(foreground)) {
       foreground = p;
       Store.recordRecent(this, p);
@@ -63,6 +63,7 @@ public class ThorService extends AccessibilityService {
   public void onDestroy() {
     hidePanel();
     TouchControls.hide();
+    ControlLab.stop();
     HardwareAutomation.enabled = false;
     HardwareAutomation.focus(this, "");
     if (cover != null) cover.hide();
@@ -127,8 +128,7 @@ public class ThorService extends AccessibilityService {
       wm = c.getSystemService(WindowManager.class);
       GuidePane reader = new GuidePane(c, pkg, this::hidePanel);
       guidePane = reader;
-      android.util.DisplayMetrics m = new android.util.DisplayMetrics();
-      d.getRealMetrics(m);
+      android.util.DisplayMetrics m = Store.displayMetrics(this, d);
       WindowManager.LayoutParams lp =
           new WindowManager.LayoutParams(
               (int) (m.widthPixels * .96),
@@ -171,8 +171,7 @@ public class ThorService extends AccessibilityService {
       ScrollView scroll = new ScrollView(c);
       scroll.setBackground(Ui.bg(c, Ui.BG));
       scroll.addView(QuickPanel.build(c, this::hidePanel));
-      android.util.DisplayMetrics m = new android.util.DisplayMetrics();
-      d.getRealMetrics(m);
+      android.util.DisplayMetrics m = Store.displayMetrics(this, d);
       WindowManager.LayoutParams lp =
           new WindowManager.LayoutParams(
               Math.min(Ui.dp(c, 580), (int) (m.widthPixels * .94)),

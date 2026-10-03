@@ -58,6 +58,8 @@ public class MainActivity extends Activity implements DisplayManager.DisplayList
       page = getIntent().getStringExtra("pageKey");
     render();
     initialized = true;
+    if (getIntent().getBooleanExtra("experiments", false))
+      handler.post(() -> ExperimentTools.dialog(this));
   }
 
   @Override
@@ -78,6 +80,7 @@ public class MainActivity extends Activity implements DisplayManager.DisplayList
     if ("notes".equals(i.getStringExtra("page"))) page = "Notities";
     if ("system".equals(i.getStringExtra("page"))) page = "Systeem";
     render();
+    if (i.getBooleanExtra("experiments", false)) handler.post(() -> ExperimentTools.dialog(this));
   }
 
   @Override
@@ -208,8 +211,7 @@ public class MainActivity extends Activity implements DisplayManager.DisplayList
             "Je schermen",
             Store.displays(this).size() + " beschikbare schermen · automatische detectie");
     for (android.view.Display d : Store.displays(this)) {
-      android.util.DisplayMetrics m = new android.util.DisplayMetrics();
-      d.getRealMetrics(m);
+      android.util.DisplayMetrics m = Store.displayMetrics(this, d);
       String label =
           d.getDisplayId() == Store.screen(this, false)
               ? "Boven"
@@ -666,6 +668,7 @@ public class MainActivity extends Activity implements DisplayManager.DisplayList
     Shortcuts.page(this, content);
     CompleteBackup.page(this, content);
     ExtraFeatures.settings(this);
+    ExperimentTools.page(this);
     settingSwitch(content, "Notities naast gids", "guideNotes", false);
     LinearLayout panelSettings =
         card(
@@ -815,19 +818,20 @@ public class MainActivity extends Activity implements DisplayManager.DisplayList
     c =
         card(
             "Over deze preview",
-            "Thorhaven 0.5.0 · eigen implementatie, geïnspireerd op Wayfinder.");
+            "Thorhaven 0.6.0 · eigen implementatie, geïnspireerd op Wayfinder.");
     c.addView(
         Ui.text(
             this,
             "Beschikbaar: schermkeuze, app-profielen, app-paren, favorieten, gidsen, notities,"
                 + " snelpaneel, systeemvolume/helderheid, controller-test, combinaties en"
                 + " toetsenbord.\n\n"
-                + "Nieuw: gidsbibliotheken, zoeken, bladwijzers, kaarten, checklists, gameprofielen,"
-                + " paneelvolgorde, batterijgrafieken en automatische lokale back-ups.\n"
-                + "Experimenteel nieuw: aanraakknoppen en automatische hardwareprofielen.\n"
+                + "Nieuw: gidsbeheer, leesinstellingen, originele gids-export, mediaknoppen en"
+                + " diagnostiek/CSV-export.\n"
+                + "Experimenteel nieuw: schermspiegeling, uitsnedes, screenshots, stille"
+                + " MP4-opname, macro's, begrensde turbo en trackpad.\n"
                 + "Experimenteel: live schermwissels, root-remapping en fan/CPU/RGB-bediening.\n"
-                + "Nog niet beschikbaar: macro's, muis/gyro, schermuitschakeling en opname. Deze"
-                + " functies vragen aanvullende systeemintegratie en testen op een echte Thor.\n\n"
+                + "Nog niet beschikbaar: gyro-mapping, analoge aanraaksticks en fysieke"
+                + " schermuitschakeling. Test de nieuwe hulpmiddelen op je eigen Thor.\n\n"
                 + "Geen advertenties, trackers of netwerkpermissie. Gidslinks openen in je eigen"
                 + " browser. Schermkeuze kan door een app of firmware geweigerd worden.",
             13,
@@ -862,8 +866,7 @@ public class MainActivity extends Activity implements DisplayManager.DisplayList
     labels.add("Niet toegewezen");
     int index = 0;
     for (int i = 0; i < ds.size(); i++) {
-      android.util.DisplayMetrics m = new android.util.DisplayMetrics();
-      ds.get(i).getRealMetrics(m);
+      android.util.DisplayMetrics m = Store.displayMetrics(this, ds.get(i));
       labels.add("ID " + ds.get(i).getDisplayId() + " · " + m.widthPixels + " × " + m.heightPixels);
       if (ds.get(i).getDisplayId() == selected) index = i + 1;
     }
@@ -964,8 +967,16 @@ public class MainActivity extends Activity implements DisplayManager.DisplayList
   @Override
   protected void onActivityResult(int req, int result, Intent data) {
     super.onActivityResult(req, result, data);
+    if (req == 47) {
+      GuideTools.onExportResult(this, result, data);
+      return;
+    }
     if (result != RESULT_OK || data == null || data.getData() == null) return;
     Uri uri = data.getData();
+    if (req == 48 || req == 49) {
+      ExperimentTools.export(this, uri, req);
+      return;
+    }
     if (req == 46) {
       AutoBackup.choose(this, uri, data.getFlags());
       return;

@@ -13,6 +13,8 @@ import org.json.*;
 
 public class SmokeInstrumentation extends Instrumentation {
   boolean v5Only;
+  boolean v6Only;
+  boolean captureOnly;
   int passed;
   StringBuilder report = new StringBuilder();
 
@@ -20,6 +22,8 @@ public class SmokeInstrumentation extends Instrumentation {
   public void onCreate(Bundle args) {
     super.onCreate(args);
     v5Only = args != null && "true".equals(args.getString("v5"));
+    v6Only = args != null && "true".equals(args.getString("v6"));
+    captureOnly = args != null && "true".equals(args.getString("capture"));
     start();
   }
 
@@ -31,6 +35,14 @@ public class SmokeInstrumentation extends Instrumentation {
 
   @Override
   public void onStart() {
+    if (captureOnly) {
+      capture();
+      return;
+    }
+    if (v6Only) {
+      v6();
+      return;
+    }
     if (v5Only) {
       v5();
       return;
@@ -492,6 +504,80 @@ public class SmokeInstrumentation extends Instrumentation {
       no = true;
     }
     check(no, "Reject malformed " + key);
+  }
+
+  void capture() {
+    Bundle result = new Bundle();
+    Context c = getTargetContext();
+    MainActivity a = null;
+    int code = 0;
+    try {
+      a =
+          (MainActivity)
+              startActivitySync(
+                  new Intent(c, MainActivity.class).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
+      ScreenCaptureRuntimeChecks.run(this, c, a);
+      result.putString("result", "PASS " + passed + " capture checks\n" + report);
+    } catch (Throwable e) {
+      code = 1;
+      result.putString(
+          "result",
+          "FAIL after "
+              + passed
+              + " checks\n"
+              + report
+              + "\n"
+              + android.util.Log.getStackTraceString(e));
+    } finally {
+      if (a != null) {
+        MainActivity done = a;
+        runOnMainSync(done::finish);
+      }
+    }
+    finish(code, result);
+  }
+
+  void v6() {
+    Bundle result = new Bundle();
+    Context c = getTargetContext();
+    String before = null;
+    MainActivity a = null;
+    int code = 0;
+    try {
+      before = Store.backup(c).toString();
+      Store.prefs(c).edit().putString("language", "en").commit();
+      a =
+          (MainActivity)
+              startActivitySync(
+                  new Intent(c, MainActivity.class).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
+      ControlLabChecks.run(this, c, a);
+      ScreenLabChecks.run(this, c, a);
+      GuideToolsChecks.run(this, c, a);
+      ExperimentToolsChecks.run(this, c, a);
+      result.putString("result", "PASS " + passed + " checks\n" + report);
+    } catch (Throwable e) {
+      result.putString(
+          "result",
+          "FAIL after "
+              + passed
+              + " checks\n"
+              + report
+              + "\n"
+              + android.util.Log.getStackTraceString(e));
+      code = 1;
+    } finally {
+      ControlLab.stop();
+      if (before != null)
+        try {
+          Store.restore(c, before);
+        } catch (Exception ignored) {
+        }
+      if (a != null) {
+        MainActivity done = a;
+        runOnMainSync(done::finish);
+      }
+    }
+    finish(code, result);
   }
 
   void v5() {

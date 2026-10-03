@@ -34,6 +34,15 @@ final class DeviceControl {
       if (op.equals("key")) {
         return sendKey(runner, q).toString();
       }
+      if (op.equals("inputStatus")) {
+        String help = runner.run("input help");
+        return new JSONObject()
+            .put("holds", help.contains("--duration"))
+            .put("mouse", help.contains("mouse") && help.contains("roll"))
+            .put("message", "Invoermogelijkheden gecontroleerd")
+            .toString();
+      }
+      if (op.equals("pointer")) return sendPointer(runner, q).toString();
       if (op.equals("status")) return status(runner, model).toString();
       if (op.equals("capture")) return capture(runner, q.getJSONObject("values")).toString();
       if (op.equals("apply")) return apply(runner, q.getJSONObject("values")).toString();
@@ -46,13 +55,69 @@ final class DeviceControl {
   }
 
   static JSONObject sendKey(Runner runner, JSONObject q) throws Exception {
-    int code = q.getInt("code"), display = q.getInt("display");
-    boolean allowed = false;
-    for (int k : TouchControls.CODES) if (k == code) allowed = true;
-    if (!allowed || display < 0 || display > 1000) throw new IOException("Invalid key action");
+    String command = keyCommand(q);
+    int duration = q.optInt("duration", 0);
+    if (duration > 0 && !runner.run("input help").contains("--duration"))
+      throw new IOException(
+          "Deze firmware ondersteunt geen begrensde knopdruk. Gebruik tikacties.");
+    inputResult(runner.run(command));
+    return new JSONObject()
+        .put("message", duration > 0 ? "Begrensde knopdruk verstuurd" : "Key sent");
+  }
+
+  static String keyCommand(JSONObject q) throws Exception {
+    int code = inputInt(q, "code", 0, 255), display = inputInt(q, "display", 0, 1000);
+    if (!TouchControls.allowed(code)) throw new IOException("Invalid key action");
+    int duration = q.has("duration") ? inputInt(q, "duration", 0, 1500) : 0;
+    if (duration > 0 && duration < 50) throw new IOException("Invalid key duration");
     String source = code >= 96 && code <= 110 ? "gamepad" : "keyboard";
-    runner.run("input " + source + " -d " + display + " keyevent " + code);
-    return new JSONObject().put("message", "Key sent");
+    return "input "
+        + source
+        + " -d "
+        + display
+        + " keyevent "
+        + (duration == 0 ? "" : "--duration " + duration + " ")
+        + code;
+  }
+
+  static int inputInt(JSONObject q, String key, int min, int max) throws Exception {
+    Object raw = q.get(key);
+    if (!(raw instanceof Number)) throw new IOException("Invalid numeric input");
+    double d = ((Number) raw).doubleValue();
+    if (!Double.isFinite(d) || d != Math.rint(d) || d < min || d > max)
+      throw new IOException("Invalid numeric input");
+    return (int) d;
+  }
+
+  static void inputResult(String result) throws Exception {
+    if (result.contains("Exception")
+        || result.contains("Error:")
+        || result.contains("Unknown command")
+        || result.contains("Invalid arguments")
+        || result.contains("Usage:"))
+      throw new IOException("Firmware heeft deze invoeractie geweigerd");
+  }
+
+  static JSONObject sendPointer(Runner runner, JSONObject q) throws Exception {
+    inputResult(runner.run(pointerCommand(q)));
+    return new JSONObject().put("message", "Aanwijzeractie verstuurd");
+  }
+
+  /** A complete bounded gesture, never an independently held DOWN or an arbitrary shell string. */
+  static String pointerCommand(JSONObject q) throws Exception {
+    int display = inputInt(q, "display", 0, 1000);
+    int width = inputInt(q, "width", 1, 8192), height = inputInt(q, "height", 1, 8192);
+    int x = inputInt(q, "x", 0, width - 1), y = inputInt(q, "y", 0, height - 1);
+    String mode = q.getString("mode"), action = q.getString("action");
+    if (!mode.equals("touch") && !mode.equals("mouse"))
+      throw new IOException("Invalid pointer source");
+    String prefix = "input " + (mode.equals("mouse") ? "mouse" : "touchscreen") + " -d " + display;
+    if (action.equals("move") && mode.equals("mouse")) return prefix + " roll " + x + " " + y;
+    if (action.equals("tap")) return prefix + " tap " + x + " " + y;
+    if (!action.equals("swipe")) throw new IOException("Invalid pointer action");
+    int x2 = inputInt(q, "x2", 0, width - 1), y2 = inputInt(q, "y2", 0, height - 1);
+    int duration = inputInt(q, "duration", 80, 1500);
+    return prefix + " swipe " + x + " " + y + " " + x2 + " " + y2 + " " + duration;
   }
 
   static Runner root() throws Exception {

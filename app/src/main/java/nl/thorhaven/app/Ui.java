@@ -20,13 +20,13 @@ final class Ui {
 
   static LinearLayout col(Context c) {
     LinearLayout l = new LinearLayout(c);
-    l.setOrientation(1);
+    l.setOrientation(LinearLayout.VERTICAL);
     return l;
   }
 
   static LinearLayout row(Context c) {
     LinearLayout l = new LinearLayout(c);
-    l.setOrientation(0);
+    l.setOrientation(LinearLayout.HORIZONTAL);
     l.setGravity(Gravity.CENTER_VERTICAL);
     return l;
   }
@@ -54,7 +54,14 @@ final class Ui {
   }
 
   static Button button(Context c, String s, Runnable action) {
-    Button b = new Action(c);
+    return styledButton(c, new Action(c), s, action);
+  }
+
+  static Button rawButton(Context c, String s, Runnable action) {
+    return styledButton(c, new Button(c), s, action);
+  }
+
+  private static Button styledButton(Context c, Button b, String s, Runnable action) {
     b.setText(s);
     b.setTextSize(13);
     b.setAllCaps(false);

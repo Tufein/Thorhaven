@@ -1,0 +1,288 @@
+Thorhaven 0.6 Preview — verification report
+Date: 2026-10-03
+
+242 automated checks passed:
+- 102 existing Android integration checks, rerun against the final signed release.
+- 43 previous tool regression checks.
+- 75 new tool, validation, backup, UI and cross-display checks.
+- 12 real Android-consent, projection, PNG and silent-MP4 runtime checks against the final signed release.
+- 10 native controller-helper self-tests.
+
+Environment: dedicated Android 15 / API 35 ARM64 emulator. Main logical display 0: 1920x1080 at 240 dpi. Secondary public display 2: 1240x1080 at 240 dpi. Root Shizuku and a Linux uinput test fixture support the integration tests. A debug-only document provider is used for feature export/backup tests and is absent from the release APK.
+
+New tool checks cover sequential macro validation and cancellation, finite turbo and runtime hold-capability probing, exact user macro names, typed key/pointer commands, actual top-screen pointer bounds from a lower context, separate display dimensions, cropped preview allocation, padded image buffers, original-document export, guide rename/reader/bookmark/marker backup, status privacy and sampled-session CSV exports.
+
+Real capture checks use Android's actual screen-sharing prompts. A generated primary-screen color pattern is captured into a live frame and cropped PNG. Recording remains active until its lab is closed, produces a playable 1280x720 MP4 with a measured duration of approximately 3.7 seconds, has no audio track and releases projection/reader/recorder resources. A cross-display compatibility-bounds bug found during this test was fixed; the complete final suites were rerun. No capture-consent bypass is used.
+
+A released signed 0.5 baseline and the final signed 0.6 APK both actually read and render the same Unicode note and original guide. The forward installation keeps the app UID, English language, app volume setting and exact original file bytes. The certificate matches all prior previews; Android version code is 6. Release build and release lint complete successfully. APK inspection confirms there is no Internet/microphone permission and no debug provider or instrumentation class.
+
+Limits: no physical AYN Thor was attached. Actual Thor input acceptance, fan/CPU/RGB behavior, encoder availability and capture performance still need device testing. Hardware transitions and duration/pointer command execution use recording transports or hardware fixtures; these are not evidence of physical firmware support. The daily backup scheduler is tested for configuration/execution/retention, not a multi-day scheduling soak. Silent recording is limited to the main/default display, 3 minutes or 96 MB; its crop is not applied to MP4. Secure content may be black.
+
+Detailed results follow. Diagnostic status values in raw test output preserve the app's internal wording.
+
+=== Existing Android integration ===
+PASS Stack parser excludes the home task
+PASS Bridge rejects malformed package names before execution
+PASS Two public displays discovered
+PASS Independent display IDs selected
+PASS Installed launchable apps discovered
+PASS Backup round-trip preserves Unicode notes
+PASS Backup round-trip preserves profile values
+PASS Malformed import is rejected atomically
+PASS Unknown backup schema is rejected
+PASS Unassigned secondary display stays disabled
+PASS Quick panel builds in secondary-display context
+PASS Dashboard starts successfully
+PASS All ten pages render without exception
+PASS Shizuku user service connects with authorized shell privileges
+PASS An existing settings task moves live to the secondary display: App live verplaatst naar scherm 2.
+PASS Two existing app tasks swap displays with Shizuku: Apps op beide schermen gewisseld.
+PASS Repeated move to the same screen is a safe no-op
+PASS Current app-pair capture reflects both real screen tasks
+PASS Hardware transaction applies and reads back multiple settings
+PASS Hardware snapshot restores original settings
+PASS Partial hardware failure rolls back earlier writes
+PASS High performance with quiet fan is rejected before writes
+PASS Restore preserves settings changed outside Thorhaven
+PASS CPU cap selects a published frequency
+PASS CPU cap restores previous frequency
+PASS Unavailable CPU frequencies rejected before writes
+PASS Unknown hardware command is rejected
+PASS Backup preserves validated mapping profiles
+PASS Invalid mapping import is rejected atomically
+PASS Hardware controls refuse non-Thor hardware
+PASS Native helper starts through root Shizuku with verified hash
+PASS Real Linux uinput fixture discovered as gamepad
+PASS Authenticated app connects and grabs a real gamepad: {"message":"Remapping actief. Select + Start drie seconden vasthouden is de noodstop."}
+PASS A maps to B and shared target stays held until both sources release
+PASS Shared target releases without stuck button
+PASS Native stick inversion transforms actual kernel events
+PASS Hat D-pad mapping emits keyboard Enter and releases it
+PASS Raw Select plus Start emergency stop releases original device
+PASS Remapping can be restarted after emergency stop
+PASS Foreground app selects its own mapping profile
+PASS Per-app identity mapping produces its own kernel events
+PASS Connection loss watchdog releases the physical gamepad without app assistance
+PASS Authentication test helper launches
+PASS Incorrect session token is rejected before device access
+PASS Missing heartbeat closes the session and destroys the virtual controller
+PASS RGB color, enable and brightness round-trip through typed backend
+PASS RGB snapshot restores the original values
+PASS All supported system controls render with fixture capabilities
+PASS Nintendo preset swaps both face-button pairs
+PASS PC-menu preset uses arrows and Enter
+PASS WASD preset uses Linux keyboard targets
+PASS Drift recommendation includes a three-point rest margin
+PASS Moving or invalid sticks do not produce a calibration recommendation
+PASS Recent list is bounded and moves repeated apps to the front
+PASS Recent apps round-trip through backup without launching them
+PASS Touch-only panel explicitly leaves controller focus to the game
+PASS Controller panel can take focus when requested
+PASS Uncharged four-hour screen-off session records measured battery loss
+PASS Standby average uses elapsed time and percentage-point loss
+PASS Short sleep sessions do not distort the long-session average
+PASS A charger connected during screen-off excludes the whole measurement
+PASS A reboot invalidates an unfinished elapsed-time sleep measurement
+PASS Active app-time pauses while Thorhaven is foreground
+PASS UTF-8 guide is copied into private local storage
+PASS Rejected binary import preserves the earlier offline guide
+PASS Guide identifiers cannot traverse storage paths
+PASS Oversized text import preserves existing guide metadata
+PASS Real PDF is parsed and counted before local installation
+PASS PDF page bookmark survives reader creation
+PASS Local text reader loads without network access
+PASS PDF reader renders the bookmarked second page
+PASS L1 wraps from first page to the final page
+PASS R1 wraps through the full ten-page navigation
+PASS Real accessibility service binds for second-display overlays
+PASS Black OLED curtain attaches only to the assigned bottom display
+PASS Black curtain restores the underlying screen without power commands
+PASS Real touch-only quick panel keeps its window non-focusable
+PASS PDF guide attaches as an accessibility overlay over the second display
+PASS Real guide overlay renders its PDF page
+PASS PDF page dialog opens above a real accessibility overlay
+PASS Closing guide overlay releases the reader and window
+PASS Controller B closes a focusable panel even with combos disabled
+PASS Removing a guide clears only its private copy
+PASS English catalog translates navigation and guide actions
+PASS Dynamic status labels use the selected language
+PASS User guide content is not translated
+PASS Custom shortcuts and language survive settings backup
+PASS Shortcut editor cannot intercept Home or arbitrary keys
+PASS Shortcut package targets are validated before execution
+PASS Custom Select+A binding opens the real quick panel instead of the default guide action
+PASS Executed custom shortcuts consume the matching key release
+PASS A disabled custom action passes its second button through to the game
+PASS Complete ZIP backup restores guide bytes and reading position
+PASS Complete ZIP backup restores notes and typed app-time values
+PASS Completed restore excludes unfinished sleep state and clears its recovery journal
+PASS A late transaction failure restores prior guide files and preference values
+PASS Unsafe ZIP paths are rejected without replacing existing guides
+PASS Imported battery averages cannot include charging sessions
+PASS Side-by-side guide editor saves notes for the correct app
+PASS Symbol keyboard includes angle brackets and currency characters
+PASS Keyboard commits symbols and sends paired cursor key events
+PASS Keyboard size preference and every-row navigation stay within bounds
+
+102 checks passed
+
+
+=== Previous feature regressions ===
+PASS Multiple guides preserve original document and selected guide
+PASS PNG import validates dimensions and recognizes map
+PASS Map marker outside normalized coordinates rejected
+PASS Named PDF bookmark rejects page outside document
+PASS Named game profile applies stored app settings
+PASS Reject malformed gameProfiles:qa.game
+PASS Reject malformed hardwareProfile:qa.game
+PASS Reject malformed guideActive:qa.game
+PASS Reject malformed touchTiles
+PASS Reject malformed panelOrder
+PASS Touch action uses fixed gamepad command and target display
+PASS Touch command rejects Home before privileged execution
+PASS Reject malformed hardwareProfile:qa.game
+PASS Hardware automation serializes rapid foreground changes
+PASS Hardware automation restores prior profile before switching
+PASS Hardware automation applies latest requested profile after restore
+PASS Disabling automation requests original hardware restoration
+PASS Unsupported firmware disables automation without retry loop
+PASS Text search locates first match
+PASS Find next advances within guide
+PASS Unicode search keeps source offsets valid
+PASS Map reader decodes image asynchronously
+PASS Map zoom resizes image with aspect ratio
+PASS Quick panel honors reordered card list
+PASS Session timer saves bounded battery history
+PASS Settings backup preserves checklists and Unicode
+PASS Complete ZIP restores multiple guides and map markers
+PASS Complete backup preserves named PDF bookmarks
+PASS Android accepts persisted automatic backup job
+PASS Backup job requires charging, idle state and daily period
+PASS Automatic backup archive 1 is validated: Backup completed · 2026-10-03 13:27
+PASS Automatic backup archive 2 is validated: Backup completed · 2026-10-03 13:27
+PASS Automatic backup archive 3 is validated: Backup completed · 2026-10-03 13:27
+PASS Automatic backup archive 4 is validated: Backup completed · 2026-10-03 13:27
+PASS Automatic backup archive 5 is validated: Backup completed · 2026-10-03 13:27
+PASS Automatic backup archive 6 is validated: Backup completed · 2026-10-03 13:27
+PASS Automatic backup archive 7 is validated: Backup completed · 2026-10-03 13:27
+PASS Automatic backup archive 8 is validated: Backup completed · 2026-10-03 13:27
+PASS Automatic backup archive 9 is validated: Backup completed · 2026-10-03 13:27
+PASS Automatic backup retention keeps seven archives
+PASS Invalid generated backup is rejected before retention pruning
+PASS Failed backup removes partial archive and preserves previous seven
+PASS All pages and expanded guide tools render
+
+43 checks passed
+
+
+=== New 0.6 tools ===
+INSTRUMENTATION_RESULT: result=PASS 75 checks
+PASS Control lab starts with turbo disabled and no automatic macros
+PASS Input macro settings preserve Unicode names
+PASS Input macro settings and explicit turbo choice survive the settings backup round-trip
+PASS Input settings reject arbitrary operations before execution
+PASS Turbo requires an actual opt-in flag and finite bounded count and interval
+PASS Macros reject system Home and out-of-range key holds
+PASS Macros enforce twenty-step and ten-second declared budgets
+PASS Macro executor sends validated ordered keys to the selected display with explicit delays
+PASS Stop cancels subsequent macro actions and pending delay after the current key completes
+PASS Macro executor stops sending further actions after its wall-clock deadline
+PASS Entire macro validates before its first privileged action
+PASS Injection errors stop the macro instead of continuing silently
+PASS A turbo tile cannot run while turbo is disabled
+PASS Turbo is exactly the requested finite number of taps with no repeat loop
+PASS Bounded holds probe runtime support and emit the actual --duration command
+PASS Unsupported firmware refuses holds without sending a misleading short tap
+PASS Typed key backend rejects fractional and command-shaped numeric values
+PASS Mouse pad uses a fixed typed position command on the selected display
+PASS Touch pad clicks and scrolling emit complete bounded gestures
+PASS Pointer backend rejects out-of-display positions, persistent down events and arbitrary sources
+PASS Touch tiles accept finite hold/turbo modes and reject an indefinite mode
+PASS Emergency stop clears queued pointer state and the lab settings render on the UI thread
+PASS User macro names stay exact in English settings and input overlays while interface labels translate
+PASS Pad hosted on the bottom display targets the actual 1920x1080 top display instead of inheriting bottom bounds
+PASS Display metrics from the lower context retain the fixture's distinct 1920×1080 and 1240×1080 screens; actual top=1920x1080, bottom=1240x1080, lowerId=2
+PASS Screen Lab rejects non-finite crop coordinates with a full-screen fallback
+PASS Screen Lab normalizes reversed and out-of-range crop boundaries
+PASS Normalized Screen Lab crop maps to the expected pixels
+PASS Screen Lab crops retain at least one in-bounds pixel
+PASS Screen Lab rejects empty capture dimensions
+PASS Preview and recorder allocations are bounded for portrait and large displays
+PASS ImageReader final-row padding is completed without changing source data or its cursor
+PASS Screen Lab rejects a buffer missing real pixels instead of exporting partial images
+PASS Experimental silent recording has explicit duration and file-size limits
+PASS Capture export rejects traversal and unfinished recordings
+PASS Private capture files retain a valid PNG and appear in the export list
+PASS Screen Lab preview safely renders an idle capture without permission or a service
+PASS Document rename retains owner, reading position and individual bookmarks
+PASS Document rename preserves the original PDF bytes
+PASS Blank, control-character and oversized names leave existing document metadata intact
+PASS Library filtering combines case-insensitive document/app search with document type
+PASS Reader settings reject out-of-range values and unknown keys without losing prior settings
+PASS Backup metadata validation rejects reader sizes encoded as strings
+PASS Backup metadata validation rejects fractional text sizes
+PASS Editing one PDF bookmark preserves the remaining entries
+PASS Invalid bookmark page cannot replace existing bookmark metadata
+PASS Individual bookmark deletion preserves the selected bookmark
+PASS Marker rename retains its original normalized map coordinates
+PASS Individual marker deletion keeps unrelated markers and rejects stale indices
+PASS Individual export copies original UTF-8 document bytes exactly
+PASS Failed export does not alter the original document
+PASS Original export uses Android's file picker with matching names and MIME types
+PASS Canceling the export picker clears the pending document without writing a file
+PASS Export result handler writes the selected destination asynchronously
+PASS Complete ZIP backup restores reader preferences, document names and edited markers
+PASS Rendered text reader restores document size and keeps user content untranslated
+PASS Search highlighting preserves the original document text after scale restoration
+PASS Rendered PDF reader restores preferred zoom and reading page
+PASS Bookmark chooser leaves user names untranslated in English UI
+PASS Map reader restores preferred zoom and leaves marker names untranslated
+PASS Searchable library renders matching document names as raw user text
+PASS Diagnostic report has a versioned format
+PASS Diagnostic report identifies the actual installed version
+PASS Diagnostic report includes real dual-display discovery and assignment
+PASS Diagnostic export excludes note content, preference dumps and tokens
+PASS Diagnostic report excludes backup-folder URIs
+PASS Media actions accept only previous, next and play/pause
+PASS Invalid media action is rejected before dispatch
+PASS Session CSV preserves UTC time, sampled battery and empty sessions
+PASS CSV has one row per recorded sample plus an empty-session row
+PASS Session CSV refuses invalid battery data
+PASS Diagnostic JSON writes through a real document provider
+PASS CSV export replaces destination contents without stale JSON bytes
+PASS Unknown report export is rejected
+PASS Experimental launcher and media card construct in English
+
+INSTRUMENTATION_CODE: 0
+
+=== Actual screen-capture runtime ===
+INSTRUMENTATION_RESULT: result=PASS 12 capture checks
+PASS Capture runtime fixture has a primary source screen and a separate bottom screen
+PASS Real Screen Lab activity opens on the assigned bottom display
+PASS Live preview starts through the real Android screen-sharing consent dialog
+PASS Real MediaProjection/ImageReader frames contain primary-screen test pixels
+PASS Real screenshot PNG uses the selected crop dimensions
+PASS Exported crop contains valid PNG bytes and the actual captured screen pixels
+PASS Stopping a real preview releases projection, virtual display, reader and frame
+PASS Recording obtains fresh Android consent after the previous projection was stopped
+PASS Closing active recording produces a playable MP4 with correct primary-screen video dimensions [1280, 720]; mode=record, status=Opname actief · zonder geluid · maximaal 3 minuten, recorder=1280x720, primaryMetrics=1240x1080, explicitPrimaryBounds=1920x1080, rotation=0
+PASS Recorded MP4 contains the expected short real video duration; actual=3668 ms; mode=record, status=Opname actief · zonder geluid · maximaal 3 minuten, recorder=1280x720, primaryMetrics=1240x1080, explicitPrimaryBounds=1920x1080, rotation=0; final=mode=idle, status=Schermdeling gestopt, recorder=1280x720, primaryMetrics=1920x1080, explicitPrimaryBounds=1920x1080, rotation=0
+PASS Silent recording has a video track and no audio track
+PASS Closing Screen Lab stops active recording and leaves no projection/recorder/frame resources
+
+INSTRUMENTATION_CODE: 0
+
+=== Native helper ===
+PASS 10 native checks
+
+=== Signed forward update ===
+PASS Released signed 0.5 actually reads and renders the baseline note and original guide
+PASS Signed 0.5 → final signed 0.6 forward install succeeds with unchanged app UID
+PASS Final signed 0.6 actually renders the preserved Unicode note and original guide
+PASS Language, app volume setting and exact original guide bytes remain intact
+
+=== APK identity ===
+Signer #1 certificate DN: CN=Thorhaven Personal Build
+Signer #1 certificate SHA-256 digest: 680d5d686445db61ab80bcb39a33bc87d357f31b90f0ee5382a4f28ef62df633
+Signer #1 certificate SHA-1 digest: 6468f1fd8daf8642e6f5a5164c027fc4357e0067
+Signer #1 certificate MD5 digest: e8c3f8d7c07c9a6915e14941407dc540

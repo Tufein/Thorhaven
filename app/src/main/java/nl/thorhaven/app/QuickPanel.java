@@ -18,7 +18,23 @@ final class QuickPanel {
       header.addView(Ui.button(c, "Sluiten", close), new LinearLayout.LayoutParams(-2, -2));
     l.addView(header);
     l.addView(Ui.text(c, Store.battery(c), 13, Ui.MUTED));
-    l.addView(Ui.button(c, "Controller noodstop", () -> Controls.stop(c)));
+    l.addView(
+        Ui.button(
+            c,
+            "Controller noodstop",
+            () -> {
+              Controls.stop(c);
+              ControlLab.stop();
+            }));
+    l.addView(
+        Ui.button(
+            c,
+            "Experimentele werkplaats",
+            () -> {
+              if (close != null) close.run();
+              ExperimentTools.open(c);
+            }));
+    ExperimentTools.media(c, l);
     l.addView(
         Ui.button(
             c,

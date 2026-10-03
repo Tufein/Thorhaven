@@ -64,7 +64,7 @@ For the extended suite, use a dedicated root-enabled ARM64 emulator and start th
 
 The suite exercises stack filtering and argument validation, display enumeration, app discovery, Unicode backup round trips, atomic invalid-import rejection, unknown schema handling, disabled screen assignment, secondary-context panel creation, all ten UI pages, Shizuku connection, live moves, two-app swaps and repeated-move behavior. It restores its preference changes after success. Accessibility service may need toggling after instrumentation force-stops the target process.
 
-See [the English guide](Thorhaven-0.5.0-guide.md) for installation and limitations. Third-party licenses are in `THIRD_PARTY_NOTICES.txt` and bundled in `app/src/main/assets/licenses.txt`.
+See [the English guide](Thorhaven-0.6.0-guide.md) for installation and limitations. Third-party licenses are in `THIRD_PARTY_NOTICES.txt` and bundled in `app/src/main/assets/licenses.txt`.
 
 ## 0.3 validation
 
@@ -93,3 +93,30 @@ adb shell am instrument -w -e v5 true nl.thorhaven.app.test/nl.thorhaven.app.Smo
 ```
 
 This suite exercises Unicode search, PNG decoding, named PDF bookmark bounds, complete multi-document/map backup, named profiles, checklists, panel order, restricted touch commands, hardware state transitions, daily job constraints, seven-archive retention and preservation after a failed backup. Use a dedicated emulator: tests modify temporary preferences and launch apps. The regular instrumentation mode runs the existing 0.1–0.4 regression suite.
+
+
+## 0.6 architecture and validation
+
+`ControlLab` validates bounded portable input settings, serializes sequences and coalesces pointer work. All privileged input passes through `DeviceControl`'s typed allowlist. Cancellation suppresses queued steps; a dispatched bounded system action must finish. Capability probing checks the connected Android `input` command before duration-based holds.
+
+`ScreenLabActivity` opens on the selected lower display in its own single task. `ScreenLabService` creates one consented MediaProjection virtual display per session, has a foreground notification, and cleans up projection, readers, recorder and frames on stop. Preview frames and H.264 recording are bounded; private captures are exported individually through SAF and never added to settings backups.
+
+`GuideTools` manages search, rename, original-file export, reader metadata and individual bookmarks/markers. Metadata validation is reused by complete backup imports. The pending document identifier stays in a separate, non-portable preference file; destination grants are not stored there. `ExperimentTools` exports an explicit status allowlist and validated sampled-session CSV; it does not dump preferences or personal document contents.
+
+Run the 0.6 feature suite with matching debug/test APKs:
+
+```
+adb shell am instrument -w -e v6 true nl.thorhaven.app.test/nl.thorhaven.app.SmokeInstrumentation
+```
+
+`ControlLabChecks`, `ScreenLabChecks`, `GuideToolsChecks` and `ExperimentToolsChecks` cover limits, cancellation, validated commands, cropping, private retention, original-byte export, edited metadata backup, local reports and UI construction. The v5 and regular modes retain prior integration checks. Runtime MediaProjection consent and actual PNG/MP4 output are checked separately on the emulator; helper/crop tests alone do not establish capture support on physical Thor firmware.
+
+Display sizing uses `Store.displayMetrics` with a bounded cache of application-owned display/window contexts and `WindowManager.getMaximumWindowMetrics`. Calling `Display.getRealMetrics` from a lower-screen context can apply that context's compatibility bounds on recent Android, even when the Display object names the main display; this caused early recorder shutdown and incorrect pointer bounds during runtime validation.
+
+For real consent/capture QA on the dedicated dual-display fixture, install a matching test APK and run:
+
+```
+adb shell am instrument -w -e capture true nl.thorhaven.app.test/nl.thorhaven.app.SmokeInstrumentation
+```
+
+`ScreenCaptureRuntimeChecks` accepts actual Android sharing prompts, checks generated source pixels and cropped PNG data, requires the recorder to remain active until lab close, and verifies MP4 dimensions/duration and absence of audio. Use isolated capture storage with a free screenshot/recording slot; existing captures are preserved.

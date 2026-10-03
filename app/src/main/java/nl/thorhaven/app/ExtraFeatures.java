@@ -14,7 +14,8 @@ final class ExtraFeatures {
   };
 
   static boolean key(String k) {
-    return k.equals("sessions")
+    return k.equals("controlLab")
+        || k.equals("sessions")
         || k.equals("touchTiles")
         || k.equals("panelOrder")
         || k.startsWith("checklist:")
@@ -26,6 +27,10 @@ final class ExtraFeatures {
   static void validate(String k, Object v) throws Exception {
     if (!(v instanceof String) || ((String) v).length() > (k.equals("sessions") ? 750000 : 100000))
       throw new Exception("Invalid tool data");
+    if (k.equals("controlLab")) {
+      ControlLab.validate((String) v);
+      return;
+    }
     if (k.equals("sessions")) {
       SessionStats.validate((String) v);
       return;
@@ -86,6 +91,7 @@ final class ExtraFeatures {
   }
 
   static void validateGuide(JSONObject m) throws Exception {
+    GuideTools.validateMeta(m);
     if (m.has("owner")) OfflineGuides.valid(m.getString("owner"));
     JSONArray b = m.optJSONArray("bookmarks");
     if (b != null) {
@@ -395,6 +401,7 @@ final class ExtraFeatures {
                 + " vasthouden, analoge sticks of macro's.");
     TouchControls.configure(a, touch);
     touch.addView(Ui.button(a, "Aanraakknoppen openen", () -> TouchControls.show(a)));
+    ControlLab.settings(a, a.content);
     AutoBackup.page(a);
     LinearLayout hw =
         Ui.card(

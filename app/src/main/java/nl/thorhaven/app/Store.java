@@ -7,7 +7,7 @@ import android.hardware.display.DisplayManager;
 import android.media.AudioManager;
 import android.os.*;
 import android.provider.Settings;
-import android.view.Display;
+import android.view.*;
 import java.util.*;
 import org.json.*;
 
@@ -50,6 +50,39 @@ final class Store {
       if (d.isValid() && (d.getFlags() & Display.FLAG_PRIVATE) == 0) out.add(d);
     out.sort(Comparator.comparingInt(Display::getDisplayId));
     return out;
+  }
+
+  static final Map<Integer, Context> measurementContexts = new LinkedHashMap<>();
+
+  /**
+   * Measure an actual display area, independently of the caller's activity compatibility bounds.
+   */
+  static synchronized android.util.DisplayMetrics displayMetrics(Context c, Display display) {
+    if (!display.isValid()) throw new IllegalStateException("Display unavailable");
+    measurementContexts.entrySet().removeIf(e -> !e.getValue().getDisplay().isValid());
+    Context visual = measurementContexts.get(display.getDisplayId());
+    if (visual == null) {
+      // A display context alone is not a UI context. No window is attached and no overlay
+      // permission is needed just to measure the display area's configuration.
+      visual =
+          c.getApplicationContext()
+              .createDisplayContext(display)
+              .createWindowContext(WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY, null);
+      if (measurementContexts.size() >= 4)
+        measurementContexts.remove(measurementContexts.keySet().iterator().next());
+      measurementContexts.put(display.getDisplayId(), visual);
+    }
+    android.util.DisplayMetrics result = new android.util.DisplayMetrics();
+    result.setTo(visual.getResources().getDisplayMetrics());
+    result.densityDpi = Math.max(72, visual.getResources().getConfiguration().densityDpi);
+    result.density = result.densityDpi / 160f;
+    android.graphics.Rect bounds =
+        visual.getSystemService(WindowManager.class).getMaximumWindowMetrics().getBounds();
+    if (bounds.width() < 1 || bounds.height() < 1)
+      throw new IllegalStateException("Display bounds unavailable");
+    result.widthPixels = bounds.width();
+    result.heightPixels = bounds.height();
+    return result;
   }
 
   static int screen(Context c, boolean bottom) {

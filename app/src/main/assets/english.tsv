@@ -16,7 +16,7 @@ Activeren	Activate
 Controleren	Check
 Favoriet	Favorite
 Favorieten	Favorites
-Standaard	Default
+Standaard	Standard
 Profiel	Profile
 Schermen	Displays
 Snelpaneel	Quick panel
@@ -78,8 +78,8 @@ Een app-paar heeft twee verschillende schermen nodig.	An app pair requires two d
 Geen tweede scherm gevonden. Kijk bij Instellen → Schermen.	No second display found. Check Settings → Displays.
 Deze app is niet meer geïnstalleerd.	This app is no longer installed.
 Android geeft geen toegang tot dit scherm voor deze app.	Android does not allow this app on that display.
-Openen op scherm 	Opening on display 
- geweigerd: 	 refused: 
+Openen op scherm	Opening on display
+ geweigerd:	 refused:
 Gidsen & notities	Guides & notes
 Je voortgang, tips en gidslinks blijven lokaal op dit apparaat.	Your progress, tips and guide links stay on this device.
 Schrijf je notities…	Write your notes…
@@ -113,12 +113,12 @@ PDF maximaal 16 MB; UTF-8 tekst of Markdown maximaal 2 MB. PDF-bladwijzers en	PD
  leespositie worden lokaal onthouden.	 reading position are saved locally.
 Gids laden…	Loading guide…
 Offline tekst · je leespositie blijft bewaard	Offline text · your reading position is saved
-Kies een pagina van 1 tot 	Choose a page from 1 to 
- van 	 of 
-Gids niet leesbaar: 	Cannot read guide: 
-PDF niet leesbaar: 	Cannot read PDF: 
-Offline opgeslagen: 	Saved offline: 
-Gids niet opgeslagen: 	Guide not saved: 
+Kies een pagina van 1 tot	Choose a page from 1 to
+ van	 of
+Gids niet leesbaar:	Cannot read guide:
+PDF niet leesbaar:	Cannot read PDF:
+Offline opgeslagen:	Saved offline:
+Gids niet opgeslagen:	Guide not saved:
 Accu & speeltijd	Battery & play time
 Accu onbekend	Battery unavailable
 laden	charging
@@ -154,14 +154,14 @@ Meet stickdrift · 5 seconden	Measure stick drift · 5 seconds
 Beweeg beide sticks, laat los en meet daarna hun ruststand.	Move both sticks, release them, then measure at rest.
 Beweeg beide sticks even, laat los en start daarna de meting.	Move both sticks briefly, release them, then start measuring.
 Stop remapping voordat je de fysieke ruststand meet.	Stop remapping before measuring physical stick rest.
-Laat beide sticks los · 	Release both sticks · 
-Advies: links 	Recommendation: left 
-%, rechts 	%, right 
+Laat beide sticks los ·	Release both sticks ·
+Advies: links	Recommendation: left
+%, rechts	%, right
 % · gemeten piek + 3 procentpunt marge	% · measured peak + 3 percentage-point margin
 %. Dit is een rustmeting, geen hardwarediagnose.	%. This is a rest measurement, not a hardware diagnosis.
 Dode zone opslaan	Save dead zone
 Dode zone voor…	Dead zone for…
-Dode zones opgeslagen voor 	Dead zones saved for 
+Dode zones opgeslagen voor	Dead zones saved for
 alle apps	all apps
 Dode zone links (%)	Left dead zone (%)
 Dode zone rechts (%)	Right dead zone (%)
@@ -414,7 +414,7 @@ Open op beide schermen een verschillende app; startschermen tellen niet mee.	Ope
 Geen instellingen om te herstellen	No settings to restore
 Instelling niet beschikbaar.	Setting unavailable.
 Instellingen toegepast en teruggelezen	Settings applied and read back
- instellingen hersteld; 	 settings restored; 
+ instellingen hersteld;	 settings restored;
  elders gewijzigde instellingen overgeslagen	 settings changed elsewhere skipped
 Roottoegang nodig: koppel Shizuku in rootmodus, of gebruik firmware met AYN PServer.	Root access required: connect root-mode Shizuku or use firmware with AYN PServer.
 Geen AYN-rootservice. Koppel Shizuku in rootmodus bij Instellen.	No AYN root service. Connect root-mode Shizuku in Settings.
@@ -511,9 +511,6 @@ Gamechecklist	Game checklist
 Taken en verzamelobjecten worden lokaal voor deze app opgeslagen.	Tasks and collectibles are stored locally for this app.
 Taak toevoegen	Add task
 Taak of verzamelobject	Task or collectible
-Opslaan	Save
-Annuleren	Cancel
-Verwijderen	Delete
 Gameprofiel verwijderen?	Delete game profile?
 Gameprofielen met naam	Named game profiles
 Bewaar het volume, de helderheid, het scherm en de controllerinstellingen van deze app. Kies handmatig een profiel wanneer je in een emulator van game wisselt.	Save this app's current volume, brightness, display and controller settings. Select a profile manually when changing games in an emulator.
@@ -524,16 +521,11 @@ Sla eerst de appinstellingen op voordat je een gameprofiel met naam maakt.	Save 
 Automatisch ventilator- / prestatieprofiel	Automatic fan / performance profile
 Automatisch hardwareprofiel	Automatic hardware profile
 Vereist de toegankelijkheidsservice en Thor-firmware met root-Shizuku of AYN PServer. Wordt toegepast wanneer deze app actief is en hersteld bij wisselen naar een andere app. Niet-ondersteunde firmware geeft een fout. Na herstart moet je dit opnieuw inschakelen.	Requires the accessibility service and Thor firmware with root Shizuku or AYN PServer. Applied when this app gains focus; restored when leaving it. Changes are verified, unsupported firmware reports an error. Disabled after restart until you enable it again.
-Verwijderen	Remove
-Standaard	Standard
-Prestaties	Performance
-Hoge prestaties	High performance
 Uit	Off
-Stil	Quiet
 Smart	Balanced
 Volgorde van paneelkaarten	Panel card order
 Verplaats een kaart naar voren in het snelpaneel. Belangrijke systeemregelaars blijven bovenaan.	Move a card earlier in the quick panel. Important system controls stay at the top.
-Aanraakknoppen	Touch control tiles
+Aanraakknoppen	Touch controls
 Zes instelbare tikknoppen op het onderste scherm. Vereist systeemtoegang. Geen vasthouden, analoge sticks of macro's.	Six configurable tap buttons on the lower screen. Requires privileged system access. No hold, analog sticks or macros.
 Aanraakknoppen openen	Open touch controls
 Automatische hardwareprofielen	Automatic hardware profiles
@@ -551,11 +543,8 @@ Sessie stoppen en bewaren	Stop and save session
 Sessie starten	Start session
 Opgeslagen sessies wissen	Clear saved sessions
 Sessiegeschiedenis wissen?	Clear session history?
-Wissen	Clear
-Aanraakknoppen	Touch controls
 Tikacties voor de app op het bovenste scherm.	Tap actions for the app on the upper display.
 Tikactie kiezen	Choose tap action
-Sluiten	Close
 Aanraakknoppen · tikacties	Touch controls · tap actions
 Root-Shizuku / AYN PServer nodig. Kies de doelapp op het bovenste scherm. Ondersteuning verschilt per emulator. De knoppen geven een korte druk, geen vastgehouden gamepadknop.	Root Shizuku / AYN PServer required. Select the target app on the top display. Emulator key handling varies. These tiles send a short press, not a held gamepad button.
 PDF / tekst / afbeelding toevoegen	Add PDF / text / image
@@ -571,16 +560,179 @@ Zoeken in deze gids	Search in this guide
 Volgende zoeken	Find next
 Kaartmarkering	Map marker
 Naam van de markering	Marker name
-
 Extra hulpmiddelen	Extra tools
 Paneelvolgorde, aanraakknoppen, automatische back-ups en hardwareprofielen.	Panel order, touch controls, automatic backups and hardware profiles.
 Opties sluiten	Close options
 Extra opties openen	Open extra options
 kaart / afbeelding	map / image
-
 Je eigen gidsen en kaarten op het onderste scherm, ook bovenop een game voor beide schermen.	Your own guides and maps on the bottom screen, including overlays above a dual-screen game.
 PDF / afbeelding maximaal 16 MB; UTF-8 tekst of Markdown maximaal 2 MB. Bladwijzers en leespositie worden lokaal onthouden.	PDF / image up to 16 MB; UTF-8 text or Markdown up to 2 MB. Bookmarks and reading positions stay local.
-
 Thorhaven 0.5.0 · eigen implementatie, geïnspireerd op Wayfinder.	Thorhaven 0.5.0 · independent implementation, inspired by Wayfinder.
 Nieuw: gidsbibliotheken, zoeken, bladwijzers, kaarten, checklists, gameprofielen, paneelvolgorde, batterijgrafieken en automatische lokale back-ups.	New: guide libraries, search, bookmarks, maps, checklists, game profiles, panel order, battery graphs and automatic local backups.
 Experimenteel nieuw: aanraakknoppen en automatische hardwareprofielen.	New experimental tools: touch controls and automatic hardware profiles.
+Experimentele werkplaats	Experimental workshop
+Schermspiegeling, opname, macro's, trackpad en rapporten voor jouw apparaattests.	Screen mirroring, recording, macros, trackpad and reports for your device tests.
+Werkplaats openen	Open workshop
+De experimentele functies zijn bedoeld voor tests op je Thor. Start één hulpmiddel tegelijk. Android vraagt zelf toestemming voor schermopname; root-invoer vereist Shizuku of AYN PServer.	These experimental features are intended for tests on your Thor. Start one tool at a time. Android asks for screen capture consent; root input requires Shizuku or AYN PServer.
+Schermspiegeling en opname	Screen mirroring and recording
+Macro's en trackpad	Macros and trackpad
+Rapporten exporteren	Export reports
+Diagnostiek bevat app- en Androidversies, schermgegevens en toegang/status. Geen notities, gidsen, macro-inhoud, tokens of toetsgeschiedenis. Controleer het bestand voordat je het deelt.	Diagnostics include app and Android versions, display information and access/status. They exclude notes, guides, macro content, tokens and key history. Review the file before sharing it.
+Diagnostiek als JSON exporteren	Export diagnostics as JSON
+Speelsessies als CSV exporteren	Export play sessions as CSV
+Mediabediening	Media controls
+Vorige, afspelen/pauze en volgende voor de actieve mediasessie. De muziekapp bepaalt welke acties worden ondersteund.	Previous, play/pause and next for the active media session. The music app determines which actions are supported.
+Vorige track	Previous track
+Afspelen / pauze	Play / pause
+Volgende track	Next track
+Mediabediening niet beschikbaar:	Media controls unavailable:
+Rapport opgeslagen.	Report saved.
+Export mislukt:	Export failed:
+Thorhaven 0.6.0 · eigen implementatie, geïnspireerd op Wayfinder.	Thorhaven 0.6.0 · independent implementation, inspired by Wayfinder.
+Nieuw: gidsbeheer, leesinstellingen, originele gids-export, mediaknoppen en diagnostiek/CSV-export.	New: guide management, reading settings, original-guide export, media buttons and diagnostic/CSV exports.
+Experimenteel nieuw: schermspiegeling, uitsnedes, screenshots, stille MP4-opname, macro's, begrensde turbo en trackpad.	New experimental tools: screen mirroring, crops, screenshots, silent MP4 recording, macros, bounded turbo and trackpad.
+Nog niet beschikbaar: gyro-mapping, analoge aanraaksticks en fysieke schermuitschakeling. Test de nieuwe hulpmiddelen op je eigen Thor.	Not available yet: gyro mapping, analog touch sticks and physical display power-off. Test the new tools on your own Thor.
+Zoek op documentnaam of app	Search by document name or app
+Alle documenten	All documents
+Kaarten / afbeeldingen	Maps / images
+ documenten	 documents
+Geen documenten gevonden.	No documents found.
+Documentopties	Document options
+Naam wijzigen	Rename
+Origineel exporteren	Export original
+Naam van het document	Document name
+Gebruik 1 tot	Use 1 to
+ tekens.	 characters.
+De naam bevat ongeldige tekens.	The name contains invalid characters.
+Document bestaat niet meer.	This document no longer exists.
+Documentgegevens konden niet worden opgeslagen.	Could not save document details.
+Ongeldige leesinstelling.	Invalid reader setting.
+Tekstgrootte moet tussen 12 en 30 liggen.	Text size must be between 12 and 30.
+Kies zoom 100, 150 of 200%.	Choose 100, 150 or 200% zoom.
+Ongeldige documentoptie.	Invalid document option.
+Deze vermelding bestaat niet meer.	This entry no longer exists.
+Export kon niet worden gestart.	Could not start export.
+Ongeldige documentgrootte.	Invalid document size.
+Document te groot.	Document is too large.
+Document veranderde tijdens export.	The document changed during export.
+Bestand niet schrijfbaar.	Cannot write to the selected file.
+Origineel document geëxporteerd.	Original document exported.
+Tekstgrootte	Text size
+Deze grootte wordt voor dit document onthouden.	This size is remembered for this document.
+Nog geen bladwijzers.	No bookmarks yet.
+Bladwijzeropties	Bookmark options
+Naam / pagina wijzigen	Edit name / page
+Bladwijzer wijzigen	Edit bookmark
+Bladwijzer opgeslagen.	Bookmark saved.
+Markering verwijderen?	Delete marker?
+Bladwijzer verwijderen?	Delete bookmark?
+Nog geen markeringen. Houd de kaart ingedrukt om er een toe te voegen.	No markers yet. Long press the map to add one.
+Markeringen	Markers
+Markeringopties	Marker options
+Tonen op kaart	Show on map
+Markering wijzigen	Edit marker
+Markering opgeslagen.	Marker saved.
+Screen Lab · experimenteel	Screen Lab · experimental
+Klaar voor schermdeling	Ready to share the screen
+Live schermvoorbeeld met uitsnede	Live screen preview with crop
+Groot voorbeeld	Large preview
+Deel het hoofdscherm via Android. Beveiligde inhoud kan zwart blijven. Het live voorbeeld is vertraagd en stuurt geen aanrakingen door.	Share the main screen through Android. Protected content may stay black. The live preview is delayed and does not forward touches.
+Live voorbeeld starten	Start live preview
+Stille schermopname starten	Start silent screen recording
+Opnames bevatten het volledige hoofdscherm, zonder geluid of uitsnede. Maximaal 3 minuten of 96 MB. Een formaatwijziging stopt de opname. Sluiten stopt alle schermdeling.	Recordings contain the entire main screen, without sound or crop. Up to 3 minutes or 96 MB. A size change stops recording. Closing the lab stops all capture.
+Uitsnede voor voorbeeld en schermafbeelding	Crop for preview and screenshot
+Grenzen zijn percentages van het gedeelde scherm.	Boundaries are percentages of the shared screen.
+Uitsnede herstellen	Reset crop
+Schermafbeelding van uitsnede	Screenshot of crop
+Opgeslagen beelden	Saved captures
+De laatste 6 schermafbeeldingen en 3 opnames blijven lokaal. Exporteer wat je wilt bewaren. Deze bestanden zitten niet in de instellingenback-up.	The latest 6 screenshots and 3 recordings stay local. Export what you want to keep. These files are excluded from settings backups.
+Opgeslagen beeld verwijderen?	Delete saved capture?
+Dit bestand wordt uit Screen Lab verwijderd.	This file will be removed from Screen Lab.
+Screen Lab kan niet worden geopend	Screen Lab could not be opened
+Screen Lab wordt nog gestart	Screen Lab is still starting
+Export is nog bezig	An export is still in progress
+Wachten op toestemming voor schermdeling	Waiting for screen-sharing consent
+Schermdeling is niet beschikbaar op dit apparaat	Screen sharing is unavailable on this device
+Geen toestemming voor schermdeling	Screen sharing was not approved
+Schermdeling kon niet starten	Screen sharing could not start
+Beeld geëxporteerd	Capture exported
+Geen live beeld	No live capture
+Schermdeling gestopt	Screen sharing stopped
+Schermdeling gestopt door Android	Screen sharing stopped by Android
+Schermdeling kan niet worden aangepast	Screen sharing could not be resized
+Opname opgeslagen na formaatwijziging	Recording saved after a size change
+Schermdeling starten	Starting screen sharing
+Schermdeling mislukt:	Screen sharing failed:
+Schermopname actief	Screen recording active
+Schermdeling actief	Screen sharing active
+Tik om te openen of stop de schermdeling	Tap to open or stop sharing
+Live voorbeeld · maximaal 5 beelden per seconde	Live preview · up to 5 frames per second
+Opname actief · zonder geluid · maximaal 3 minuten	Recording active · silent · up to 3 minutes
+Opnamelimiet bereikt	Recording limit reached
+Opname gestopt na encoderfout	Recording stopped after an encoder error
+Start eerst het live voorbeeld voor een schermafbeelding	Start live preview before taking a screenshot
+Schermafbeelding opgeslagen · kies Exporteren om deze te bewaren	Screenshot saved · choose Export to keep it
+Schermafbeelding opslaan mislukt	Screenshot could not be saved
+Opname opgeslagen · kies Exporteren om deze te bewaren	Recording saved · choose Export to keep it
+Opname bevatte nog geen bruikbare beelden	Recording had no usable frames yet
+Invoerlaboratorium klaar	Input lab ready
+Invoerlaboratorium · experimenteel	Input lab · experimental
+Korte macro's, begrensde knopdrukken, turbo en een aanraak-/muispad. Root-Shizuku of AYN PServer nodig. Ondersteuning verschilt per app.	Short macros, bounded key holds, turbo and a touch/mouse pad. Root-mode Shizuku or AYN PServer required. Support varies by app.
+Een macro heeft maximaal 20 stappen en 10 seconden. Stop blokkeert volgende acties; de lopende systeemactie wordt eerst afgerond. Een knopdruk duurt maximaal 1,5 seconde. Geen onbeperkt vasthouden of achtergrondturbo.	A macro allows up to 20 steps and 10 seconds. Stop blocks subsequent actions; the current system action finishes first. A key hold lasts up to 1.5 seconds. No indefinite holds or background turbo.
+Knopduur	Key duration
+Turbo-aantal	Turbo count
+Turbo-pauze	Turbo interval
+Turbo bewust inschakelen · alleen eindige reeksen	Enable turbo explicitly · finite bursts only
+Padmodus	Pad mode
+Muis	Mouse
+Aanraking	Touch
+Padgevoeligheid	Pad sensitivity
+Firmware-ondersteuning controleren	Check firmware support
+Invoermogelijkheden	Input capabilities
+Begrensde knopdruk:	Bounded key hold:
+Muiscommando's:	Mouse commands:
+Ondersteund	Supported
+Niet ondersteund	Not supported
+Beschikbaar	Available
+Niet bevestigd	Not confirmed
+Een beschikbare opdracht bevestigt geen ondersteuning in je game.	An available command does not confirm support in your game.
+Testen	Test
+Macro toevoegen	Add macro
+Laboratorium openen op onderste scherm	Open lab on bottom screen
+Alle invoeracties stoppen	Stop all input actions
+Naam van macro	Macro name
+Elke stap geeft één knopdruk. Kies duur 0 voor een tik. Pas pauze na de stap aan. Geen gelijktijdige knopcombinaties.	Each step sends one key press. Choose duration 0 for a tap. Set the delay after the step. Simultaneous key combinations are not supported.
+Stap toevoegen	Add step
+Maximaal 20 stappen	Maximum 20 steps
+Knop kiezen	Choose key
+Laatste stap verwijderen	Remove last step
+Nieuwe macro	New macro
+Macro bewerken	Edit macro
+Stap bewerken	Edit step
+Pauze na stap	Delay after step
+Stop beëindigt volgende acties. Lopende acties duren maximaal 1,5 seconde plus systeemvertraging. Turbo stopt vanzelf. Knopduur werkt alleen als firmware --duration ondersteunt.	Stop cancels subsequent actions. Current actions take up to 1.5 seconds plus system delay. Turbo stops automatically. Key duration requires firmware support for --duration.
+Pad · sleep om te richten · tik voor klik	Pad · drag to position · tap to click
+Aanraak-/muispad · experimenteel	Touch/mouse pad · experimental
+Klik	Click
+Omhoog scrollen	Scroll up
+Omlaag scrollen	Scroll down
+Aanraakactie kiezen	Choose touch action
+Tik	Tap
+Begrensde knopdruk	Bounded key hold
+Turbo · eindige reeks	Turbo · finite burst
+Actie ·	Action ·
+Pad en macro's openen	Open pad and macros
+Root-Shizuku / AYN PServer nodig. Kies de doelapp op het bovenste scherm. Ondersteuning verschilt per emulator. Tik, begrensde knopdruk of eindige turbo volgens je instellingen. Geen onbeperkt vasthouden.	Root-mode Shizuku / AYN PServer required. Choose the target app on the top screen. Support varies by emulator. Tap, bounded key hold or finite turbo according to your settings. No indefinite holds.
+Invoer gestopt	Input stopped
+Invoer bezig	Input running
+Invoer afgerond ·	Input complete ·
+ stappen	 steps
+Invoer geweigerd:	Input refused:
+Schakel turbo bewust in bij Invoerlaboratorium	Enable turbo explicitly in Input lab
+Instellingen konden niet worden opgeslagen	Could not save settings
+Deze firmware ondersteunt geen begrensde knopdruk. Gebruik tikacties.	This firmware does not support bounded key holds. Use tap actions.
+Begrensde knopdruk verstuurd	Bounded key hold sent
+Invoermogelijkheden gecontroleerd	Input capabilities checked
+Firmware heeft deze invoeractie geweigerd	Firmware refused this input action
+Aanwijzeractie verstuurd	Pointer action sent
+De Android-bestandskiezer is niet beschikbaar.	The Android file picker is unavailable.

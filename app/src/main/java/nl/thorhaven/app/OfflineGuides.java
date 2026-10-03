@@ -198,11 +198,16 @@ final class OfflineGuides {
         });
   }
 
-  static void remember(Context c, String pkg, String key, int value) {
+  static synchronized void remember(Context c, String pkg, String key, int value) {
+    if (!key.equals("page") && !key.equals("scroll")) return;
     JSONObject m = meta(c, pkg);
     if (!m.has("kind")) return;
     try {
-      m.put(key, Math.max(0, value));
+      int bounded =
+          key.equals("page")
+              ? Math.min(Math.max(0, value), Math.max(1, m.optInt("pages", 1)) - 1)
+              : Math.min(Math.max(0, value), 10000000);
+      m.put(key, bounded);
       prefs(c).edit().putString(pkg, m.toString()).apply();
     } catch (Exception ignored) {
     }
@@ -247,10 +252,13 @@ final class OfflineGuides {
     }
   }
 
-  static void remove(Context c, String pkg) {
+  static synchronized void remove(Context c, String pkg) {
     try {
       file(c, pkg).delete();
+      String owner = owner(c, pkg);
       prefs(c).edit().remove(pkg).commit();
+      if (Store.prefs(c).getString("guideActive:" + owner, "").equals(pkg))
+        Store.prefs(c).edit().remove("guideActive:" + owner).apply();
     } catch (Exception ignored) {
     }
   }
