@@ -39,7 +39,7 @@ The prebuilt helper is included for app-only builds. The root process checks its
 - `Controls` / `PadProfile` / `ControlPages`: asynchronous root control, authenticated native sessions, validated per-app mappings and firmware capability UI.
 - `DeviceControl`: fixed key/path allowlists, available-frequency caps, readback, rollback and conditional restore. PServer parcel protocol is adapted with MIT attribution from OdinTools.
 - `native/thorpad.cpp`: original Linux evdev/uinput helper; releases outputs before destroying the virtual pad and ungrabbing the source.
-- `MainActivity`: responsive ten-page Android Views interface, profile editing and Android document-picker backup/import.
+- `MainActivity`: responsive Android Views pages, profile editing and Android document-picker backup/import.
 - `Store`: local preferences, public display enumeration, display-targeted launch, app discovery, profile application, notes and validated backups. Import is validated before any preference commit.
 - `ThorService`: optional accessibility service with window-state events and key filtering; it does not retrieve view content. Panel is attached to an accessible target display using an accessibility overlay.
 - `QuickPanel`: volume/brightness, foreground-app actions, favorites and app pairs.
@@ -62,9 +62,9 @@ adb shell am instrument -w nl.thorhaven.app.test/nl.thorhaven.app.SmokeInstrumen
 
 For the extended suite, use a dedicated root-enabled ARM64 emulator and start the test-only `native/test-fixture.cpp` binary as root. It creates a virtual source gamepad and a command FIFO, and observes physical and remapped output. This fixture is not packaged in the application. Shizuku must run as root for native integration tests. The hardware tests use an in-memory runner; fan/CPU/RGB physical behavior remains untested.
 
-The suite exercises stack filtering and argument validation, display enumeration, app discovery, Unicode backup round trips, atomic invalid-import rejection, unknown schema handling, disabled screen assignment, secondary-context panel creation, all ten UI pages, Shizuku connection, live moves, two-app swaps and repeated-move behavior. It restores its preference changes after success. Accessibility service may need toggling after instrumentation force-stops the target process.
+The suite exercises stack filtering and argument validation, display enumeration, app discovery, Unicode backup round trips, atomic invalid-import rejection, unknown schema handling, disabled screen assignment, secondary-context panel creation, dashboard pages, Shizuku connection, live moves, two-app swaps and repeated-move behavior. It restores its preference changes after success. Accessibility service may need toggling after instrumentation force-stops the target process.
 
-See [the English guide](Thorhaven-0.6.0-guide.md) for installation and limitations. Third-party licenses are in `THIRD_PARTY_NOTICES.txt` and bundled in `app/src/main/assets/licenses.txt`.
+See [the English guide](Thorhaven-1.0.0-guide.md) for installation and limitations. Third-party licenses are in `THIRD_PARTY_NOTICES.txt` and bundled in `app/src/main/assets/licenses.txt`. The versioned sections below retain historical architecture and test evidence; the 1.0 section describes the current candidate.
 
 ## 0.3 validation
 
@@ -76,7 +76,7 @@ Offline guides and measurements are not part of the JSON settings backup; copy t
 
 `V4FeatureChecks` covers UI language, unchanged user text, validated custom bindings, actual custom shortcut execution and release consumption, complete guide/settings/usage backup round trips, rejection of unsafe ZIP paths and invalid charging-session eligibility, rollback after a late transaction failure, side-by-side note saving, symbol input, paired cursor events and keyboard row/size bounds. The extended suite remains in `SmokeInstrumentation`; test fixtures are not packaged into the APK.
 
-Complete ZIP backups include guide files and usage history, unlike the legacy settings-only JSON export. Both formats include the new language, shortcut and keyboard preferences. ZIP imports merge matching guide/settings entries and replace usage history. Limits: 64 guides, 128 MB guide data and 1 MB metadata. No Internet permission or new third-party dependency was added.
+Complete ZIP backups include guide files and usage history, unlike the legacy settings-only JSON export. Both formats include the new language, shortcut and keyboard preferences. ZIP imports merge matching guide/settings entries and replace usage history. The 0.4 limits were 64 guides, 128 MB guide data and 1 MB metadata; 1.0 raises the metadata bound to 2 MB. No Internet permission or new third-party dependency was added.
 
 ## 0.5 architecture and validation
 
@@ -161,3 +161,48 @@ The frame transport now supports distinct zone 1/2 values for each stick. Its fo
 `RgbDiagnostics` offers fixed, low-intensity patterns through `RgbService` and `RgbSession`. One-zone and sequential-zone tests last eight seconds; RGB channel tests last 24. They share the foreground-service deadline, serialized output, stock baseline and journal. Screen-off or timeout ends a diagnostic and restores stock output. No background resume, app-driven pattern changes, raw command input or arbitrary hardware path is introduced. The Shizuku user-service version is advanced so a previously cached process cannot retain an older frame parser.
 
 Run `adb shell am instrument -w -e v8 true nl.thorhaven.app.test/nl.thorhaven.app.SmokeInstrumentation` for `RgbToolsChecks`. The old `v7` RGB mode remains available. All hardware tests use recording fixtures; actual LED output needs physical Thor validation. See [the 0.8 verification report](Thorhaven-0.8.0-test-results.txt) for final counts and signed-update evidence.
+
+## 1.0 candidate architecture and validation
+
+`GameLibrary` stores the schema-1 `gameLibrary` preference. It contains manual game cards, optional Android app/original-guide links, status, favorites, labels, timestamped journal entries and independent tasks. Mutations reread the current collection before validation and commit, so editing card fields does not overwrite a journal entry added since the editor opened. Unknown fields, coercible types, duplicate IDs and invalid references are rejected. Bounds are 300,000 UTF-8 bytes, 200 games, 100 journal entries and 100 tasks per game, and 2,000 entries of each kind across the library. It launches the selected Android app through `Store`; it never discovers or launches a ROM.
+
+`SketchPad` stores the schema-1 `sketchBook` preference: named pages, drawing tools and normalized integer stroke points. The complete book, including Redo, is limited to 250,000 UTF-8 bytes, 20 pages, 500 strokes and 6,000 points, with 512 points per stroke. A completed stroke is saved; cancellation, pointer loss and view detachment discard the unfinished stroke. The View and 1,200 × 800 PNG both use a 3:2 canvas. PNG rendering validates the saved model, closes the provider stream and recycles its bitmap on a worker using application context. Exports accept only `content://` destinations.
+
+PNG file-picker state is separate from portable settings. A pending immutable page snapshot has an ownership token; `MainActivity` saves its token and current request code through recreation. Requests use distinct codes in the range 2,000–32,760 for that Activity's lifetime, and a result must match both the owning request and pending token. Cancelling an old request cannot consume another dashboard's export or a newer request. A visible cancellation action clears a stranded pending snapshot after interruption. Request-code exhaustion requires reopening the dashboard rather than reusing an outstanding code.
+
+`StorageTools` scans one user-selected SAF tree on a worker. It bounds depth to 12, entries to 10,000, metadata to 2,000,000 characters and elapsed time to two minutes. Unknown sizes and inaccessible branches remain explicit. Cancellation preserves the previous completed report; a provider can finish its current request before observing cancellation. Scan reports, tree grants and pending operations are local rather than portable preferences. CSV is a metadata report and may contain private filenames.
+
+`PlaylistTools` previews and checks ordered, supported plain filenames from one folder. Creation requires a separate write grant to that exact folder and rechecks the selected document names and identifiers before creating a distinct new document. It never modifies or converts an original disc. The format allows up to 32 disc references and 65,536 UTF-8 bytes. Provider failures can leave an incomplete newly created M3U, which is reported to the user.
+
+`SetupTools` exposes current screen roles and optional capabilities. `DisplayPracticeActivity` is a non-exported, bounded test window that preserves its original target display through recreation. Removal or migration to a different display closes it, including when Android recreates the removed-display task on the primary display. `LaunchShortcuts` creates app, pair and guide shortcut requests; the launcher owns pin support and confirmation. `ShortcutActivity` validates incoming targets and resolves current screen roles when invoked. Guide shortcuts prefer an available Bottom role, with Top as a fallback. Stop Thorhaven actions cancels current tools and every owner's delayed pair request, disables automatic app/control actions and preserves recovery records; it does not close unrelated apps.
+
+`StrictJson` checks UTF-8 size, JSON syntax, duplicate keys, trailing data, depth and value count before Android's JSON parser is used. Portable models use a 30,000-value limit; complete ZIP manifests use a bounded 100,000-value limit to accommodate their guide metadata. `SettingsBackup` bounds settings input to 2,000,000 UTF-8 bytes and performs document I/O off the UI thread. `Store.restore` validates all included settings before committing. Import replaces an included `gameLibrary` or `sketchBook` value as a whole; it does not merge its inner IDs.
+
+`CompleteBackup` permits 64 original guides and 128 MB of guide content, with a 2,000,000-byte metadata limit. It checks ZIP directory consistency, CRCs, names, sizes and truncation before applying the staged transaction. Guide metadata is checked without string/fractional integer coercion. Restoration runs away from the UI thread and retains the existing recovery mechanism. Captures, ROMs, folder grants, in-flight sessions and hardware recovery records remain excluded.
+
+`MainActivity` retains unsaved app-note drafts through saved instance state and guards each note dialog's dismissal by ownership. The note entry point rejects finishing/destroyed Activities and handles expired window tokens without creating a replacement dialog. `Store` checks app/display availability before applying launch profiles; delayed pair launches are owned by a dashboard and cancelled by newer pair requests or its destruction. Global stop iterates all pending pair owners rather than only the window that requested it. Screen Lab uses a capture-start generation so emergency stop also cancels an outstanding consent prompt or queued start; an old result cannot restart capture.
+
+`RgbDiagnostics` cleans up synchronously in its dialog's `onStop`: it marks the chooser closed and cancels its owned diagnostic. Button actions check that closed state and Activity ownership before starting a session. This prevents a delayed control callback from starting lighting after the chooser closes. Hardware restoration still runs through the serialized service and retains its recovery record on failure.
+
+### Run the new candidate checks
+
+Use matching app and test APKs on a dedicated Android test environment with two public displays, Android Settings and a second launchable app. This mode does not need a physical AYN Thor or a working RGB/root backend. For compatibility coverage, run it separately on API 30 and a recent Android API. The default regression mode, `v5`, `v6`, `v7`, `v8` and `capture` remain separate entry points with the prerequisites documented above.
+
+```
+adb shell am instrument -w -e v1 true nl.thorhaven.app.test/nl.thorhaven.app.SmokeInstrumentation
+```
+
+The `v1` entry point renders the candidate navigation pages and runs:
+
+| Suite | Coverage |
+| --- | --- |
+| `GameWorkspaceChecks` | Strict game/sketch schemas and byte limits, current-snapshot mutations, independent game journals/tasks, raw Unicode preservation, visible Dutch/English CRUD, cancelled touch strokes, Undo/Redo, canvas proportions, actual PNG pixels and file-picker ownership. |
+| `SetupLaunchChecks` | Distinct display roles, actual display practice and removed-display recreation, unavailable app/display handling, profile application after valid launch, current shortcut targets, pair cancellation and lifecycle, global stop across dashboard owners, setup actions and developer-display fallback. |
+| `StorageToolsChecks` | Actual SAF grants/revocation, unknown sizes, partial/error reports, provider cancellation, CSV bytes, M3U order and strict parsing, exact-folder write access, changed-document rejection and unchanged original disc data. |
+| `V1ReadinessChecks` | Strict settings and UTF-8 rejection without replacing notes, ZIP directory/checksum/truncation validation, guide metadata types, note-dialog ownership, destroyed-owner rejection and actual Activity recreation of unsaved Unicode drafts. |
+
+The instrumentation APK supplies `StorageTestProvider` at `nl.thorhaven.storage.test`, a test DocumentsProvider protected by `MANAGE_DOCUMENTS`. Fixture data and error/cancellation modes are controlled through `StorageFixtureControlProvider` at `nl.thorhaven.storage.control.test`, protected by `DUMP`. Tests temporarily adopt the shell's `DUMP` permission for fixture control and drop it afterward. The application still accesses documents through real `ContentResolver` calls and explicit URI grants. Neither provider is declared in the production APK.
+
+These suites modify temporary preferences, provider documents, URI grants and activities. Use a disposable environment; tests restore the preferences and device settings they change. A test provider or recording hardware backend is evidence about Android I/O and lifecycle, not physical Thor firmware. Real capture-consent checks remain under `-e capture true`, and the native helper has its separate self-tests and root fixture. Signed-update verification must use the previously released APK and final candidate APK with the same signing certificate, checking the retained UID and the actual seeded data rather than only an install exit code.
+
+Final counts, results, APK identity and tested environments belong in [the candidate verification report](Thorhaven-1.0.0-test-results.txt). Public asset hashes and download verification are recorded after publication. This developer guide does not certify physical LED output, emulator disc switching, launcher confirmation or firmware performance; use [the physical-device checklist](Thorhaven-1.0.0-device-checklist.md) for those observations.

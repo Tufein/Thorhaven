@@ -12,6 +12,9 @@ import org.json.*;
 /** Bounded ZIP backup with validated staging and crash-recoverable rollback. */
 final class CompleteBackup {
   static final long LIMIT = 128L * 1024 * 1024;
+  // ZIP headers and DEFLATE can expand incompressible data. This allowance applies only to
+  // the input archive; extracted guide and metadata limits remain unchanged.
+  static final long ARCHIVE_LIMIT = LIMIT + SettingsBackup.MAX_BYTES + 1024 * 1024;
   static final String[] PREFS = {"thorhaven", "thorhaven-guides", "thorhaven-stats"};
 
   static void page(MainActivity a, LinearLayout parent) {
@@ -64,24 +67,22 @@ final class CompleteBackup {
       if (k.startsWith("time:")) {
         OfflineGuides.valid(k.substring(5));
         Object v = data.get(k);
-        if (!(v instanceof Number)
-            || data.getLong(k) < 0
-            || data.getLong(k) > 10L * 365 * 24 * 3600 * 1000)
-          throw new IOException("Invalid app time");
+        StrictJson.integer(data, k, 0, 10L * 365 * 24 * 3600 * 1000);
       } else if (k.equals("sleeps")) {
-        JSONArray rows = new JSONArray(data.getString(k));
+        JSONArray rows = StrictJson.array(RgbSettings.string(data, k), 100000);
         if (rows.length() > 30) throw new IOException("Too many sessions");
         for (int i = 0; i < rows.length(); i++) {
           JSONObject r = rows.getJSONObject(i);
-          long duration = r.getLong("duration");
-          int drop = r.getInt("drop");
-          boolean charged = r.getBoolean("charged");
+          RgbSettings.keys(r, "duration", "drop", "charged", "ended", "eligible");
+          long duration = StrictJson.integer(r, "duration", 300000, 7L * 24 * 3600 * 1000);
+          int drop = RgbSettings.integer(r, "drop", -100, 100);
+          boolean charged = RgbSettings.bool(r, "charged");
           if (duration < 300000
               || duration > 7L * 24 * 3600 * 1000
               || drop < -100
               || drop > 100
-              || r.getLong("ended") < 0
-              || r.getBoolean("eligible")
+              || StrictJson.integer(r, "ended", 0, Long.MAX_VALUE) < 0
+              || RgbSettings.bool(r, "eligible")
                   != (!charged && drop >= 0 && duration >= 3L * 3600 * 1000))
             throw new IOException("Invalid battery session");
         }
@@ -91,11 +92,13 @@ final class CompleteBackup {
 
   static synchronized void write(Context c, OutputStream output) throws Exception {
     synchronized (OfflineGuides.class) {
+      JSONObject settings = Store.backup(c);
+      Store.restore(c, settings.toString(), false);
       JSONObject manifest =
           new JSONObject()
               .put("format", "thorhaven-complete")
               .put("schema", 1)
-              .put("settings", Store.backup(c))
+              .put("settings", settings)
               .put("stats", stats(c));
       JSONArray guides = new JSONArray();
       List<File> files = new ArrayList<>();
@@ -106,6 +109,7 @@ final class CompleteBackup {
           File f = OfflineGuides.file(c, pkg);
           total += f.length();
           if (total > LIMIT) throw new IOException("Complete backup exceeds 128 MB");
+          ExtraFeatures.validateGuide(OfflineGuides.meta(c, pkg));
           guides.put(
               new JSONObject()
                   .put("pkg", pkg)
@@ -114,8 +118,9 @@ final class CompleteBackup {
           files.add(f);
         }
       manifest.put("guides", guides);
+      StrictJson.object(manifest.toString(), SettingsBackup.MAX_BYTES, 100000);
       byte[] json = manifest.toString().getBytes(StandardCharsets.UTF_8);
-      if (json.length > 1000000) throw new IOException("Metadata exceeds 1 MB");
+      if (json.length > SettingsBackup.MAX_BYTES) throw new IOException("Metadata exceeds 2 MB");
       try (ZipOutputStream zip = new ZipOutputStream(output)) {
         zip.putNextEntry(new ZipEntry("manifest.json"));
         zip.write(json);
@@ -169,7 +174,12 @@ final class CompleteBackup {
     try {
       Set<String> names = new HashSet<>();
       long total = 0;
-      try (ZipInputStream zip = new ZipInputStream(input)) {
+      File archive = new File(dir, "archive.zip");
+      try (InputStream source = input;
+          OutputStream out = new FileOutputStream(archive)) {
+        copy(source, out, ARCHIVE_LIMIT);
+      }
+      try (ZipInputStream zip = new ZipInputStream(new FileInputStream(archive))) {
         ZipEntry e;
         while ((e = zip.getNextEntry()) != null) {
           String n = e.getName();
@@ -180,16 +190,46 @@ final class CompleteBackup {
           File file = new File(dir, n);
           file.getParentFile().mkdirs();
           try (OutputStream out = new FileOutputStream(file)) {
-            total += copy(zip, out, n.equals("manifest.json") ? 1000000 : 16L * 1024 * 1024);
+            total +=
+                copy(
+                    zip,
+                    out,
+                    n.equals("manifest.json") ? SettingsBackup.MAX_BYTES : 16L * 1024 * 1024);
           }
-          if (total > LIMIT + 1000000) throw new IOException("Backup exceeds 128 MB");
+          if (total > LIMIT + SettingsBackup.MAX_BYTES)
+            throw new IOException("Backup exceeds 128 MB");
           zip.closeEntry();
         }
       }
+      // A local-entry stream alone can accept a ZIP truncated before its central directory.
+      try (ZipFile central = new ZipFile(archive)) {
+        Set<String> directoryNames = new HashSet<>();
+        Enumeration<? extends ZipEntry> entries = central.entries();
+        while (entries.hasMoreElements()) {
+          ZipEntry entry = entries.nextElement();
+          if (!directoryNames.add(entry.getName()) || !names.contains(entry.getName()))
+            throw new IOException("Inconsistent ZIP directory");
+          File staged = new File(dir, entry.getName());
+          if (entry.getSize() != staged.length()) throw new IOException("Inconsistent ZIP size");
+          CRC32 crc = new CRC32();
+          try (InputStream in = new FileInputStream(staged)) {
+            byte[] bytes = new byte[8192];
+            int n;
+            while ((n = in.read(bytes)) != -1) crc.update(bytes, 0, n);
+          }
+          if (crc.getValue() != entry.getCrc()) throw new IOException("Inconsistent ZIP checksum");
+        }
+        if (!directoryNames.equals(names)) throw new IOException("Missing ZIP directory entries");
+      }
       File mf = new File(dir, "manifest.json");
       if (!mf.isFile()) throw new IOException("Missing backup manifest");
-      JSONObject m = new JSONObject(new String(OfflineGuides.read(mf), StandardCharsets.UTF_8));
-      if (!m.getString("format").equals("thorhaven-complete") || m.getInt("schema") != 1)
+      JSONObject m;
+      try (InputStream manifestInput = new FileInputStream(mf)) {
+        m = StrictJson.object(SettingsBackup.read(manifestInput), SettingsBackup.MAX_BYTES, 100000);
+      }
+      RgbSettings.keys(m, "format", "schema", "settings", "stats", "guides");
+      if (!RgbSettings.string(m, "format").equals("thorhaven-complete")
+          || RgbSettings.integer(m, "schema", 1, 1) != 1)
         throw new IOException("Unknown complete backup format");
       Store.restore(c, m.getJSONObject("settings").toString(), false);
       validateStats(m.getJSONObject("stats"));
@@ -365,32 +405,34 @@ final class CompleteBackup {
 
   static void importUri(MainActivity a, Uri uri) {
     Ui.toast(a, "Bezig met back-up…");
+    if (ThorService.instance != null) {
+      ThorService.instance.hidePanel();
+      if (ThorService.instance.stats != null) ThorService.instance.stats.flush();
+    }
+    Context app = a.getApplicationContext();
+    java.lang.ref.WeakReference<MainActivity> owner = new java.lang.ref.WeakReference<>(a);
+    android.os.Handler main = new android.os.Handler(android.os.Looper.getMainLooper());
     OfflineGuides.worker.execute(
         () -> {
+          String result;
           try {
-            InputStream in = a.getContentResolver().openInputStream(uri);
+            InputStream in = app.getContentResolver().openInputStream(uri);
             if (in == null) throw new IOException("Cannot read backup");
-            Prepared p = prepare(a, in);
-            a.handler.post(
-                () -> {
-                  try {
-                    if (a.isDestroyed()) return;
-                    if (ThorService.instance != null) {
-                      ThorService.instance.hidePanel();
-                      if (ThorService.instance.stats != null) ThorService.instance.stats.flush();
-                    }
-                    restore(a, p);
-                    a.render();
-                    Ui.toast(a, "Back-up geïmporteerd.");
-                  } catch (Exception e) {
-                    Ui.toast(a, "Backup failed: " + e.getMessage());
-                  } finally {
-                    p.close();
-                  }
-                });
+            try (Prepared prepared = prepare(app, in)) {
+              restore(app, prepared);
+            }
+            result = "Back-up geïmporteerd.";
           } catch (Exception e) {
-            a.handler.post(() -> Ui.toast(a, "Backup failed: " + e.getMessage()));
+            result = "Backup failed: " + e.getMessage();
           }
+          String message = result;
+          main.post(
+              () -> {
+                MainActivity activity = owner.get();
+                if (activity == null || activity.isFinishing() || activity.isDestroyed()) return;
+                activity.render();
+                Ui.toast(activity, message);
+              });
         });
   }
 }

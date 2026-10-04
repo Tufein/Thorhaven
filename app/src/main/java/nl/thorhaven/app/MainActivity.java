@@ -11,7 +11,6 @@ import android.view.*;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.*;
 import java.io.*;
-import java.nio.charset.StandardCharsets;
 import java.util.*;
 import org.json.*;
 
@@ -26,12 +25,21 @@ public class MainActivity extends Activity implements DisplayManager.DisplayList
   int backupMode;
   String guideImportOwner = "";
   String guideImportPackage = "";
+  String noteDraftPackage = "", noteDraft = "";
+  String sketchExportToken = "";
+  int sketchExportRequest = 1999;
+  AlertDialog noteDialog;
+  EditText noteEditor;
   static final String[] PAGES = {
     "Overzicht",
     "Apps",
     "Paren",
     "Notities",
     "Gidsen",
+    "Games",
+    "Schetsblok",
+    "Opslag",
+    "Setup",
     "Accu",
     "Controller",
     "Mapping",
@@ -51,6 +59,10 @@ public class MainActivity extends Activity implements DisplayManager.DisplayList
       query = b.getString("query", "");
       guideImportPackage = b.getString("guideImportPackage", "");
       guideImportOwner = b.getString("guideImportOwner", "");
+      noteDraftPackage = b.getString("noteDraftPackage", "");
+      noteDraft = b.getString("noteDraft", "");
+      sketchExportToken = b.getString("sketchExportToken", "");
+      sketchExportRequest = b.getInt("sketchExportRequest", 1999);
     }
     getSystemService(DisplayManager.class).registerDisplayListener(this, handler);
     if ("notes".equals(getIntent().getStringExtra("page"))) page = "Notities";
@@ -59,12 +71,25 @@ public class MainActivity extends Activity implements DisplayManager.DisplayList
       page = getIntent().getStringExtra("pageKey");
     render();
     initialized = true;
+    if (!noteDraftPackage.isEmpty())
+      handler.post(
+          () -> {
+            if (!isFinishing() && !isDestroyed()) notes(noteDraftPackage);
+          });
     if (getIntent().getBooleanExtra("experiments", false))
-      handler.post(() -> ExperimentTools.dialog(this));
+      handler.post(
+          () -> {
+            if (!isFinishing() && !isDestroyed()) ExperimentTools.dialog(this);
+          });
   }
 
   @Override
   protected void onSaveInstanceState(Bundle b) {
+    if (noteEditor != null) noteDraft = noteEditor.getText().toString();
+    b.putString("noteDraftPackage", noteDraftPackage);
+    b.putString("noteDraft", noteDraft);
+    b.putString("sketchExportToken", sketchExportToken);
+    b.putInt("sketchExportRequest", sketchExportRequest);
     super.onSaveInstanceState(b);
     b.putString("page", page);
     b.putString("query", query);
@@ -81,7 +106,11 @@ public class MainActivity extends Activity implements DisplayManager.DisplayList
     if ("notes".equals(i.getStringExtra("page"))) page = "Notities";
     if ("system".equals(i.getStringExtra("page"))) page = "Systeem";
     render();
-    if (i.getBooleanExtra("experiments", false)) handler.post(() -> ExperimentTools.dialog(this));
+    if (i.getBooleanExtra("experiments", false))
+      handler.post(
+          () -> {
+            if (!isFinishing() && !isDestroyed()) ExperimentTools.dialog(this);
+          });
   }
 
   @Override
@@ -96,6 +125,12 @@ public class MainActivity extends Activity implements DisplayManager.DisplayList
   @Override
   protected void onDestroy() {
     getSystemService(DisplayManager.class).unregisterDisplayListener(this);
+    handler.removeCallbacksAndMessages(null);
+    Store.cancelPendingPair(this);
+    SettingsBackup.cancel(this);
+    StorageTools.lifecyclecancel(this);
+    if (noteDialog != null) noteDialog.dismiss();
+    if (profileDialog != null) profileDialog.dismiss();
     super.onDestroy();
   }
 
@@ -116,6 +151,7 @@ public class MainActivity extends Activity implements DisplayManager.DisplayList
   }
 
   void render() {
+    if (isFinishing() || isDestroyed()) return;
     testText = null;
     controller = null;
     lastControllerMotion = 0;
@@ -179,6 +215,19 @@ public class MainActivity extends Activity implements DisplayManager.DisplayList
         break;
       case "Gidsen":
         GuidePages.page(this);
+        break;
+      case "Games":
+        GameLibrary.page(this, content);
+        break;
+      case "Schetsblok":
+        SketchPad.page(this, content);
+        break;
+      case "Opslag":
+        StorageTools.page(this, content);
+        break;
+      case "Setup":
+        SetupTools.page(this, content);
+        LaunchShortcuts.page(this, content);
         break;
       case "Accu":
         PlayStats.page(this);
@@ -257,6 +306,16 @@ public class MainActivity extends Activity implements DisplayManager.DisplayList
             }));
     actions.addView(Ui.button(this, "Schermen live wisselen (Shizuku)", () -> Bridge.swap(this)));
     actions.addView(Ui.button(this, "Apps & profielen", () -> go("Apps")));
+    actions.addView(
+        Ui.rawButton(
+            this,
+            Language.isEnglish(this) ? "Playing now & game journal" : "Nu spelen & gamedagboek",
+            () -> go("Games")));
+    actions.addView(
+        Ui.rawButton(
+            this,
+            Language.isEnglish(this) ? "Setup & screen practice" : "Setup & schermtest",
+            () -> go("Setup")));
     actions.addView(
         Ui.button(
             this,
@@ -348,7 +407,8 @@ public class MainActivity extends Activity implements DisplayManager.DisplayList
     list.removeAllViews();
     int count = 0;
     for (Store.App a : apps) {
-      if (!a.name.toLowerCase(Locale.ROOT).contains(query.toLowerCase(Locale.ROOT))) continue;
+      if (!a.name.toLowerCase(Locale.ROOT).contains(query.toLowerCase(Locale.ROOT))
+          && !a.pkg.toLowerCase(Locale.ROOT).contains(query.toLowerCase(Locale.ROOT))) continue;
       count++;
       LinearLayout outer = Ui.card(this, list, null, null);
       LinearLayout r = Ui.row(this);
@@ -597,24 +657,60 @@ public class MainActivity extends Activity implements DisplayManager.DisplayList
   }
 
   void notes(String pkg) {
+    if (isFinishing() || isDestroyed()) return;
+    if (noteDialog != null) noteDialog.dismiss();
     EditText e = Ui.input(this, "Schrijf je notities…");
     e.setSingleLine(false);
     e.setMinLines(4);
     e.setMaxLines(10);
+    e.setFilters(new android.text.InputFilter[] {new android.text.InputFilter.LengthFilter(50000)});
     e.setGravity(Gravity.TOP);
-    e.setText(Store.prefs(this).getString("notes:" + pkg, ""));
-    new Ui.Dialog(this)
-        .setTitle(Store.name(this, pkg) + " · notities")
-        .setView(e)
-        .setPositiveButton(
-            "Opslaan",
-            (d, w) -> {
-              Store.prefs(this).edit().putString("notes:" + pkg, e.getText().toString()).apply();
-              render();
-            })
-        .setNeutralButton("Gids openen", (d, w) -> Store.guide(this, pkg))
-        .setNegativeButton("Sluiten", null)
-        .show();
+    e.setText(
+        pkg.equals(noteDraftPackage) ? noteDraft : Store.prefs(this).getString("notes:" + pkg, ""));
+    noteDraftPackage = pkg;
+    noteDraft = e.getText().toString();
+    noteEditor = e;
+    noteDialog =
+        new AlertDialog.Builder(this)
+            .setTitle(
+                Store.name(this, pkg) + (Language.isEnglish(this) ? " · notes" : " · notities"))
+            .setView(e)
+            .setPositiveButton(
+                Language.text(this, "Opslaan"),
+                (d, w) -> {
+                  Store.prefs(this)
+                      .edit()
+                      .putString("notes:" + pkg, e.getText().toString())
+                      .apply();
+                  render();
+                })
+            .setNeutralButton(
+                Language.text(this, "Gids openen"),
+                (d, w) -> {
+                  Store.guide(this, pkg);
+                })
+            .setNegativeButton(Language.text(this, "Sluiten"), null)
+            .create();
+    AlertDialog ownedDialog = noteDialog;
+    noteDialog.setOnDismissListener(
+        d -> {
+          if (noteDialog != ownedDialog) return;
+          if (isChangingConfigurations()) noteDraft = e.getText().toString();
+          else {
+            noteDraftPackage = "";
+            noteDraft = "";
+          }
+          noteEditor = null;
+          noteDialog = null;
+        });
+    try {
+      noteDialog.show();
+    } catch (WindowManager.BadTokenException expiredWindow) {
+      // Android may retire a window token while a deferred action still owns this Activity.
+      // Keep the draft in memory, but never attach a dialog to a retired window.
+      noteDialog = null;
+      noteEditor = null;
+    }
   }
 
   void controllerPage() {
@@ -823,23 +919,31 @@ public class MainActivity extends Activity implements DisplayManager.DisplayList
             }));
     c =
         card(
-            "Over deze preview",
-            "Thorhaven 0.7.0 · eigen implementatie, geïnspireerd op Wayfinder.");
+            "Over Thorhaven",
+            "Thorhaven "
+                + BuildConfig.VERSION_NAME
+                + " · eigen implementatie, geïnspireerd op Wayfinder.");
     c.addView(
-        Ui.text(
+        Ui.rawText(
             this,
-            "Beschikbaar: schermkeuze, app-profielen, app-paren, favorieten, gidsen, notities,"
-                + " snelpaneel, systeemvolume/helderheid, controller-test, combinaties en"
-                + " toetsenbord.\n\n"
-                + "Nieuw: gidsbeheer, leesinstellingen, originele gids-export, mediaknoppen en"
-                + " diagnostiek/CSV-export.\n"
-                + "Experimenteel nieuw: schermspiegeling, uitsnedes, screenshots, stille"
-                + " MP4-opname, macro's, begrensde turbo en trackpad.\n"
-                + "Experimenteel: live schermwissels, root-remapping en fan/CPU/RGB-bediening.\n"
-                + "Nog niet beschikbaar: gyro-mapping, analoge aanraaksticks en fysieke"
-                + " schermuitschakeling. Test de nieuwe hulpmiddelen op je eigen Thor.\n\n"
-                + "Geen advertenties, trackers of netwerkpermissie. Gidslinks openen in je eigen"
-                + " browser. Schermkeuze kan door een app of firmware geweigerd worden.",
+            Language.isEnglish(this)
+                ? "A local companion for both screens: apps and pairs, per-game journals and tasks,"
+                    + " offline guides, sketches, folder inventories and M3U playlists, launcher"
+                    + " shortcuts, controller tools, play statistics and backups.\n\n"
+                    + "Optional RGB, privileged input, live app moves and Screen Lab need their"
+                    + " own setup. Firmware behavior and physical hardware still need testing on"
+                    + " a Thor. This is a release candidate for feedback.\n\n"
+                    + "No ads, trackers or Internet permission. Online guides open in your"
+                    + " browser. Android or another app may refuse a display launch."
+                : "Een lokale hulp voor beide schermen: apps en paren, gamedagboeken en taken,"
+                    + " offline gidsen, schetsen, mapoverzichten en M3U-afspeellijsten,"
+                    + " launcher-snelkoppelingen, controller-tools, speelstatistieken en"
+                    + " back-ups.\n\n"
+                    + "Optionele RGB, root-invoer, live appwissels en Screen Lab vragen eigen"
+                    + " instellingen. Firmware en fysieke hardware moeten nog op een Thor worden"
+                    + " getest. Dit is een releasekandidaat voor feedback.\n\n"
+                    + "Geen advertenties, trackers of internettoegang. Online gidsen openen in je"
+                    + " browser. Android of een andere app kan een schermstart weigeren.",
             13,
             Ui.MUTED));
     c.addView(Ui.button(this, "Licenties bekijken", this::licenses));
@@ -973,12 +1077,21 @@ public class MainActivity extends Activity implements DisplayManager.DisplayList
   @Override
   protected void onActivityResult(int req, int result, Intent data) {
     super.onActivityResult(req, result, data);
+    if (StorageTools.handlesResult(this, req, result, data)) return;
+    if (SketchPad.handlesRequest(req)) {
+      SketchPad.onActivityResult(this, req, result, data);
+      return;
+    }
     if (req == 47) {
       GuideTools.onExportResult(this, result, data);
       return;
     }
     if (result != RESULT_OK || data == null || data.getData() == null) return;
     Uri uri = data.getData();
+    if (!"content".equals(uri.getScheme())) {
+      Ui.toast(this, "Kies een document met de Android-bestandskiezer.");
+      return;
+    }
     if (req == RgbPresetBundle.EXPORT || req == RgbPresetBundle.IMPORT) {
       RgbPresetBundle.result(this, req, uri);
       return;
@@ -1005,45 +1118,8 @@ public class MainActivity extends Activity implements DisplayManager.DisplayList
           .show();
     } else if (req == 43) {
       if (!guideImportPackage.isEmpty()) OfflineGuides.importUri(this, guideImportPackage, uri);
-    } else if (req == 41) {
-      try (OutputStream out = getContentResolver().openOutputStream(uri)) {
-        if (out == null) throw new IOException();
-        out.write(Store.backup(this).toString(2).getBytes(StandardCharsets.UTF_8));
-        Ui.toast(this, "Back-up opgeslagen.");
-      } catch (Exception e) {
-        Ui.toast(this, "Export mislukt.");
-      }
-    } else if (req == 42) {
-      try (InputStream in = getContentResolver().openInputStream(uri)) {
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
-        byte[] buf = new byte[4096];
-        int n;
-        while ((n = in.read(buf)) != -1) {
-          out.write(buf, 0, n);
-          if (out.size() > 1_000_000) throw new IOException("Te groot");
-        }
-        String json = out.toString("UTF-8");
-        new Ui.Dialog(this)
-            .setTitle("Back-up importeren?")
-            .setMessage(
-                "Instellingen in deze back-up overschrijven overeenkomstige instellingen. Je andere"
-                    + " gegevens blijven staan.")
-            .setPositiveButton(
-                "Importeren",
-                (d, w) -> {
-                  try {
-                    Store.restore(this, json);
-                    render();
-                    Ui.toast(this, "Back-up geïmporteerd.");
-                  } catch (Exception e) {
-                    Ui.toast(this, "Ongeldige back-up: " + e.getMessage());
-                  }
-                })
-            .setNegativeButton("Annuleren", null)
-            .show();
-      } catch (Exception e) {
-        Ui.toast(this, "Back-up kan niet worden gelezen (maximaal 1 MB).");
-      }
+    } else if (req == 41 || req == 42) {
+      SettingsBackup.result(this, req, uri);
     }
   }
 

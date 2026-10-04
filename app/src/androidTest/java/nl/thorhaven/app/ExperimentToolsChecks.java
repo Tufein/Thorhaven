@@ -17,8 +17,10 @@ final class ExperimentToolsChecks {
         "Diagnostic report has a versioned format");
     t.check(
         report.getJSONObject("app").getLong("versionCode")
-            == c.getPackageManager().getPackageInfo(c.getPackageName(), 0).getLongVersionCode()
-            && report.getJSONObject("app").getString("version")
+                == c.getPackageManager().getPackageInfo(c.getPackageName(), 0).getLongVersionCode()
+            && report
+                .getJSONObject("app")
+                .getString("version")
                 .equals(c.getPackageManager().getPackageInfo(c.getPackageName(), 0).versionName),
         "Diagnostic report identifies the actual installed version");
     t.check(

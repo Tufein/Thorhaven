@@ -973,18 +973,38 @@ final class RgbToolsChecks {
       RgbStudioChecks.FakeBackend dialogCancelled = new RgbStudioChecks.FakeBackend(c);
       RgbService.backend = dialogCancelled;
       AtomicBoolean clicked = new AtomicBoolean();
+      AtomicBoolean queuedFromDialog = new AtomicBoolean();
+      AtomicBoolean cancelledSynchronously = new AtomicBoolean();
+      AtomicBoolean staleClickIgnored = new AtomicBoolean();
       t.runOnMainSync(
           () -> {
             AlertDialog dialog = RgbDiagnostics.open(a);
+            Button selected = null;
             for (Button button :
                 RgbStudioChecks.find(dialog.getWindow().getDecorView(), Button.class)) {
               if (button.getText().toString().equals(RgbDiagnostics.name(a, "left1"))) {
                 clicked.set(button.performClick());
+                selected = button;
                 break;
               }
             }
+            queuedFromDialog.set(
+                RgbService.requested && "left1".equals(RgbService.requestedDiagnostic));
             dialog.dismiss();
+            cancelledSynchronously.set(
+                !RgbService.requested && RgbService.requestedDiagnostic.isEmpty());
+            long stoppedGeneration = RgbService.requestGeneration;
+            if (selected != null) selected.performClick();
+            staleClickIgnored.set(
+                !RgbService.requested && RgbService.requestGeneration == stoppedGeneration);
           });
+      t.check(
+          queuedFromDialog.get() && cancelledSynchronously.get(),
+          "Closing a just-created chooser cancels its accepted diagnostic synchronously before"
+              + " service creation");
+      t.check(
+          staleClickIgnored.get(),
+          "A retained button from a closed diagnostic chooser cannot queue a new lighting session");
       Thread.sleep(700);
       await(
           () -> RgbService.instance == null && !RgbService.cancellationPending,

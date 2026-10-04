@@ -14,7 +14,9 @@ final class ExtraFeatures {
   };
 
   static boolean key(String k) {
-    return k.equals("rgbStudio")
+    return k.equals(GameLibrary.KEY)
+        || k.equals(SketchPad.KEY)
+        || k.equals("rgbStudio")
         || k.equals("controlLab")
         || k.equals("sessions")
         || k.equals("touchTiles")
@@ -26,6 +28,12 @@ final class ExtraFeatures {
   }
 
   static void validate(String k, Object v) throws Exception {
+    if (k.equals(GameLibrary.KEY) || k.equals(SketchPad.KEY)) {
+      if (!(v instanceof String)) throw new Exception("Invalid tool data");
+      if (k.equals(GameLibrary.KEY)) GameLibrary.validate((String) v);
+      else SketchPad.validate((String) v);
+      return;
+    }
     if (!(v instanceof String) || ((String) v).length() > (k.equals("sessions") ? 750000 : 100000))
       throw new Exception("Invalid tool data");
     if (k.equals("rgbStudio")) {
@@ -97,16 +105,18 @@ final class ExtraFeatures {
 
   static void validateGuide(JSONObject m) throws Exception {
     GuideTools.validateMeta(m);
-    if (m.has("owner")) OfflineGuides.valid(m.getString("owner"));
+    if (m.has("owner")) OfflineGuides.valid(RgbSettings.string(m, "owner"));
+    for (String field : new String[] {"pages", "page", "scroll"})
+      if (m.has(field))
+        RgbSettings.integer(m, field, 0, field.equals("scroll") ? 10000000 : Integer.MAX_VALUE);
     JSONArray b = m.optJSONArray("bookmarks");
     if (b != null) {
       if (b.length() > 100) throw new Exception("Maximum 100 bookmarks");
       for (int i = 0; i < b.length(); i++) {
         JSONObject x = b.getJSONObject(i);
-        if (x.getString("name").length() > 100
-            || x.getInt("page") < 0
-            || x.getInt("page") >= Math.max(1, m.optInt("pages", 1)))
-          throw new Exception("Invalid bookmark");
+        if (RgbSettings.string(x, "name").length() > 100
+            || RgbSettings.integer(x, "page", 0, Integer.MAX_VALUE)
+                >= Math.max(1, m.optInt("pages", 1))) throw new Exception("Invalid bookmark");
       }
     }
     JSONArray markers = m.optJSONArray("markers");

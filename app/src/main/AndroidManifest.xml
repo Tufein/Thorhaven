@@ -18,6 +18,8 @@
    <property android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE" android:value="User-started local AYN Thor joystick RGB effects"/>
   </service>
   <service android:name=".ScreenLabService" android:exported="false" android:foregroundServiceType="mediaProjection"/>
+  <activity android:name=".DisplayPracticeActivity" android:exported="false" android:resizeableActivity="true"/>
+  <activity android:name=".ShortcutActivity" android:exported="true" android:excludeFromRecents="true" android:noHistory="true"/>
   <activity android:name=".GuideActivity" android:exported="false" android:resizeableActivity="true"/>
   <service android:name=".ThorService" android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE" android:exported="true" android:label="Thorhaven · controller &amp; snelpaneel">
    <intent-filter><action android:name="android.accessibilityservice.AccessibilityService"/></intent-filter>

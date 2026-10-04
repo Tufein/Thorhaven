@@ -1,0 +1,6 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+ <application>
+  <provider android:name="nl.thorhaven.app.StorageTestProvider" android:authorities="nl.thorhaven.storage.test" android:exported="true" android:grantUriPermissions="true" android:permission="android.permission.MANAGE_DOCUMENTS" />
+  <provider android:name="nl.thorhaven.app.StorageFixtureControlProvider" android:authorities="nl.thorhaven.storage.control.test" android:exported="true" android:permission="android.permission.DUMP" />
+ </application>
+</manifest>

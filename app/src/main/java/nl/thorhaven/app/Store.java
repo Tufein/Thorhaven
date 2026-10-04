@@ -117,29 +117,53 @@ final class Store {
         + (b.getIntExtra(BatteryManager.EXTRA_PLUGGED, 0) != 0 ? "  ·  laden" : "");
   }
 
+  static Intent launchIntent(Context c, String pkg, int display) {
+    if (pkg == null || !pkg.matches("[A-Za-z0-9_.]{1,200}") || display < 0) return null;
+    Display target = c.getSystemService(DisplayManager.class).getDisplay(display);
+    if (target == null || !target.isValid() || (target.getFlags() & Display.FLAG_PRIVATE) != 0)
+      return null;
+    Intent intent = c.getPackageManager().getLaunchIntentForPackage(pkg);
+    if (intent == null) return null;
+    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+    try {
+      return c.getSystemService(ActivityManager.class)
+              .isActivityStartAllowedOnDisplay(c, display, intent)
+          ? intent
+          : null;
+    } catch (RuntimeException e) {
+      return null;
+    }
+  }
+
   static void launch(Context c, String pkg, int display) {
-    if (display < 0) {
-      Ui.toast(c, "Geen tweede scherm gevonden. Kijk bij Instellen → Schermen.");
-      return;
+    launchChecked(c, pkg, display);
+  }
+
+  static boolean launchChecked(Context c, String pkg, int display) {
+    Intent intent = launchIntent(c, pkg, display);
+    if (intent == null) {
+      Ui.toast(
+          c,
+          display < 0
+              ? "Geen tweede scherm gevonden. Kijk bij Instellen → Schermen."
+              : "App of scherm niet beschikbaar. Controleer je schermkeuze en geïnstalleerde"
+                  + " apps.");
+      return false;
     }
-    Intent i = c.getPackageManager().getLaunchIntentForPackage(pkg);
-    if (i == null) {
-      Ui.toast(c, "Deze app is niet meer geïnstalleerd.");
-      return;
-    }
-    i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-    if (!c.getSystemService(ActivityManager.class).isActivityStartAllowedOnDisplay(c, display, i)) {
-      Ui.toast(c, "Android geeft geen toegang tot dit scherm voor deze app.");
-      return;
+    try {
+      c.startActivity(intent, ActivityOptions.makeBasic().setLaunchDisplayId(display).toBundle());
+    } catch (RuntimeException e) {
+      Ui.toast(c, "Openen op scherm " + display + " geweigerd: " + e.getClass().getSimpleName());
+      return false;
     }
     try {
       apply(c, pkg);
-      c.startActivity(i, ActivityOptions.makeBasic().setLaunchDisplayId(display).toBundle());
-      recordRecent(c, pkg);
-      prefs(c).edit().putString("last", pkg).putInt("lastScreen", display).apply();
-    } catch (Exception e) {
-      Ui.toast(c, "Openen op scherm " + display + " geweigerd: " + e.getClass().getSimpleName());
+    } catch (RuntimeException e) {
+      Ui.toast(c, "App geopend; volume of helderheid kon niet worden toegepast.");
     }
+    recordRecent(c, pkg);
+    prefs(c).edit().putString("last", pkg).putInt("lastScreen", display).apply();
+    return true;
   }
 
   static void apply(Context c, String pkg) {
@@ -208,15 +232,20 @@ final class Store {
   }
 
   static void restore(Context c, String s, boolean commit) throws Exception {
-    JSONObject root = new JSONObject(s);
-    if (root.getInt("schema") != 1) throw new Exception("Onbekende backupversie");
+    JSONObject root = StrictJson.object(s, SettingsBackup.MAX_BYTES);
+    RgbSettings.keys(root, "schema", "data");
+    RgbSettings.integer(root, "schema", 1, 1);
     JSONObject data = root.getJSONObject("data");
     if (data.length() > 3000) throw new Exception("Te veel instellingen");
     android.content.SharedPreferences.Editor ed = prefs(c).edit();
     for (Iterator<String> it = data.keys(); it.hasNext(); ) {
       String k = it.next();
       Object v = data.get(k);
-      if (!validKey(k)) throw new Exception("Onbekende instelling");
+      if (!validKey(k) || k.length() > 220) throw new Exception("Onbekende instelling");
+      for (String prefix :
+          new String[] {"screen:", "volume:", "brightness:", "favorite:", "notes:", "guide:"})
+        if (k.startsWith(prefix) && !k.substring(prefix.length()).matches("[A-Za-z0-9_.]{1,200}"))
+          throw new Exception("Ongeldig pakket");
       if (ExtraFeatures.key(k)) {
         ExtraFeatures.validate(k, v);
         ed.putString(k, (String) v);
@@ -229,16 +258,14 @@ final class Store {
         Shortcuts.validate((String) v);
         ed.putString(k, (String) v);
       } else if (k.equals("keyboardSize")) {
-        if (!(v instanceof Number) || ((Number) v).intValue() < 40 || ((Number) v).intValue() > 64)
-          throw new Exception("Invalid keyboard size");
-        ed.putInt(k, ((Number) v).intValue());
+        ed.putInt(k, RgbSettings.integer(data, k, 40, 64));
       } else if (k.startsWith("mapping:")) {
         if (!(v instanceof String)) throw new Exception("Ongeldig controllerprofiel");
         PadProfile.parse((String) v);
         ed.putString(k, (String) v);
       } else if (k.equals("recent")) {
         if (!(v instanceof String)) throw new Exception("Ongeldige recente apps");
-        JSONArray list = new JSONArray((String) v);
+        JSONArray list = StrictJson.array((String) v, 100000);
         if (list.length() > 12) throw new Exception("Te veel recente apps");
         for (int n = 0; n < list.length(); n++)
           if (!(list.get(n) instanceof String)
@@ -247,24 +274,22 @@ final class Store {
         ed.putString(k, (String) v);
       } else if (k.equals("pairs")) {
         if (!(v instanceof String)) throw new Exception("Ongeldige app-paren");
-        JSONArray arr = new JSONArray((String) v);
+        JSONArray arr = StrictJson.array((String) v, 100000);
         if (arr.length() > 100) throw new Exception("Te veel app-paren");
         for (int n = 0; n < arr.length(); n++) {
           JSONObject pair = arr.getJSONObject(n);
-          if (!pair.getString("top").matches("[A-Za-z0-9_.]+")
-              || !pair.getString("bottom").matches("[A-Za-z0-9_.]+"))
+          RgbSettings.keys(pair, "top", "bottom", "name");
+          if (!RgbSettings.string(pair, "top").matches("[A-Za-z0-9_.]{1,200}")
+              || !RgbSettings.string(pair, "bottom").matches("[A-Za-z0-9_.]{1,200}"))
             throw new Exception("Ongeldig pakket");
-          pair.getString("name");
+          if (RgbSettings.string(pair, "name").length() > 500)
+            throw new Exception("App-paarnaam te lang");
         }
         ed.putString(k, (String) v);
       } else if (k.equals("top") || k.equals("bottom") || k.startsWith("screen:")) {
-        if (!(v instanceof Number) || ((Number) v).intValue() < -1)
-          throw new Exception("Ongeldig scherm");
-        ed.putInt(k, ((Number) v).intValue());
+        ed.putInt(k, RgbSettings.integer(data, k, -1, Integer.MAX_VALUE));
       } else if (k.startsWith("volume:") || k.startsWith("brightness:")) {
-        if (!(v instanceof Number) || ((Number) v).intValue() < -1 || ((Number) v).intValue() > 100)
-          throw new Exception("Ongeldig percentage");
-        ed.putInt(k, ((Number) v).intValue());
+        ed.putInt(k, RgbSettings.integer(data, k, -1, 100));
       } else if (k.startsWith("notes:") || k.startsWith("guide:")) {
         if (!(v instanceof String) || ((String) v).length() > 50000)
           throw new Exception("Ongeldige tekst");
@@ -308,19 +333,66 @@ final class Store {
   static void pair(Context c, JSONObject pair) {
     JSONArray a = pairs(c);
     a.put(pair);
-    prefs(c).edit().putString("pairs", a.toString()).apply();
+    try {
+      restore(
+          c,
+          new JSONObject()
+              .put("schema", 1)
+              .put("data", new JSONObject().put("pairs", a.toString()))
+              .toString(),
+          false);
+      if (!prefs(c).edit().putString("pairs", a.toString()).commit())
+        throw new Exception("Could not save pair");
+    } catch (Exception e) {
+      Ui.toast(c, "App-paar niet opgeslagen: " + e.getMessage());
+    }
+  }
+
+  private static final Handler pairHandler = new Handler(Looper.getMainLooper());
+  private static long pairGeneration;
+  private static java.lang.ref.WeakReference<Context> pairOwner =
+      new java.lang.ref.WeakReference<>(null);
+
+  static void cancelPendingPair(Context owner) {
+    if (pairOwner.get() == owner) {
+      cancelAllPendingPairs();
+    }
+  }
+
+  /** Explicit global Stop; destroying one window still cancels only that window's pair. */
+  static void cancelAllPendingPairs() {
+    pairGeneration++;
+    pairHandler.removeCallbacksAndMessages(null);
+    pairOwner.clear();
   }
 
   static void openPair(Context c, JSONObject p) {
-    if (screen(c, true) < 0 || screen(c, true) == screen(c, false)) {
+    pairGeneration++;
+    pairHandler.removeCallbacksAndMessages(null);
+    pairOwner.clear();
+    int bottom = screen(c, true), top = screen(c, false);
+    if (bottom < 0 || top < 0 || bottom == top) {
       Ui.toast(c, "Een app-paar heeft twee verschillende schermen nodig.");
       return;
     }
     try {
       String lower = p.getString("bottom"), upper = p.getString("top");
-      launch(c, lower, screen(c, true));
-      new Handler(Looper.getMainLooper())
-          .postDelayed(() -> launch(c, upper, screen(c, false)), 350);
+      if (launchIntent(c, lower, bottom) == null || launchIntent(c, upper, top) == null) {
+        Ui.toast(c, "App-paar niet beschikbaar. Controleer beide apps en schermen.");
+        return;
+      }
+      if (!launchChecked(c, lower, bottom)) return;
+      Context app = c.getApplicationContext();
+      long generation = pairGeneration;
+      pairOwner = new java.lang.ref.WeakReference<>(c);
+      pairHandler.postDelayed(
+          () -> {
+            if (generation != pairGeneration) return;
+            pairOwner.clear();
+            if (top != screen(app, false) || bottom != screen(app, true)) return;
+            launchChecked(app, upper, top);
+          },
+          350);
     } catch (Exception e) {
       Ui.toast(c, "Ongeldig app-paar.");
     }

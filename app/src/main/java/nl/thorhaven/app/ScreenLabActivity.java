@@ -21,6 +21,7 @@ public class ScreenLabActivity extends Activity {
   boolean bound, bindingRegistered, recordRequested, choosingCapture, exporting, fullPreview;
   static final AtomicBoolean exportBusy = new AtomicBoolean();
   String exportName;
+  String consentEpoch = "", notificationEpoch = "";
   RectF crop = new RectF(0, 0, 1, 1);
   TextView status;
   Preview preview;
@@ -69,6 +70,8 @@ public class ScreenLabActivity extends Activity {
               b.getFloat("right", 1),
               b.getFloat("bottom", 1));
       choosingCapture = b.getBoolean("choosing");
+      consentEpoch = b.getString("consentEpoch", "");
+      notificationEpoch = b.getString("notificationEpoch", "");
       recordRequested = b.getBoolean("record");
       exportName = b.getString("exportName");
       exporting = b.getBoolean("exporting");
@@ -221,6 +224,7 @@ public class ScreenLabActivity extends Activity {
           .edit()
           .putBoolean("notificationAsked", true)
           .apply();
+      notificationEpoch = ScreenLabService.requestEpoch;
       requestPermissions(new String[] {Manifest.permission.POST_NOTIFICATIONS}, NOTIFICATION);
       return;
     }
@@ -233,6 +237,7 @@ public class ScreenLabActivity extends Activity {
                   MediaProjectionConfig.createConfigForDefaultDisplay())
               : manager.createScreenCaptureIntent();
       choosingCapture = true;
+      consentEpoch = ScreenLabService.requestEpoch;
       startActivityForResult(permission, CONSENT);
     } catch (Exception e) {
       choosingCapture = false;
@@ -243,7 +248,8 @@ public class ScreenLabActivity extends Activity {
   @Override
   public void onRequestPermissionsResult(int request, String[] permissions, int[] results) {
     super.onRequestPermissionsResult(request, permissions, results);
-    if (request == NOTIFICATION) requestCapture(recordRequested);
+    if (request == NOTIFICATION && notificationEpoch.equals(ScreenLabService.requestEpoch))
+      requestCapture(recordRequested);
   }
 
   void refresh() {
@@ -309,6 +315,14 @@ public class ScreenLabActivity extends Activity {
     super.onActivityResult(request, result, data);
     if (request == CONSENT) {
       choosingCapture = false;
+      if (!consentEpoch.equals(ScreenLabService.requestEpoch)) {
+        Ui.toast(
+            this,
+            Language.isEnglish(this)
+                ? "Capture request cancelled. Start again for fresh consent."
+                : "Schermdeelverzoek geannuleerd. Start opnieuw voor nieuwe toestemming.");
+        return;
+      }
       if (result != RESULT_OK || data == null) {
         Ui.toast(this, "Geen toestemming voor schermdeling");
         return;
@@ -318,6 +332,7 @@ public class ScreenLabActivity extends Activity {
             new Intent(this, ScreenLabService.class)
                 .setAction(ScreenLabService.START)
                 .putExtra("consent", data)
+                .putExtra("epoch", consentEpoch)
                 .putExtra("result", result)
                 .putExtra("record", recordRequested));
       } catch (Exception e) {
@@ -373,6 +388,8 @@ public class ScreenLabActivity extends Activity {
     out.putFloat("right", crop.right);
     out.putFloat("bottom", crop.bottom);
     out.putBoolean("choosing", choosingCapture);
+    out.putString("consentEpoch", consentEpoch);
+    out.putString("notificationEpoch", notificationEpoch);
     out.putBoolean("record", recordRequested);
     out.putBoolean("exporting", exporting);
     out.putString("exportName", exportName);

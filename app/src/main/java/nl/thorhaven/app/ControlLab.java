@@ -321,25 +321,27 @@ final class ControlLab {
                 Controls.async(
                     a,
                     () -> Controls.device(new JSONObject().put("op", "inputStatus")),
-                    result ->
-                        new Ui.Dialog(a)
-                            .setTitle("Invoermogelijkheden")
-                            .setMessage(
-                                result.has("error")
-                                    ? result.optString("error")
-                                    : "Begrensde knopdruk: "
-                                        + (result.optBoolean("holds")
-                                            ? "Ondersteund"
-                                            : "Niet ondersteund")
-                                        + "\nMuiscommando's: "
-                                        + (result.optBoolean("mouse")
-                                            ? "Beschikbaar"
-                                            : "Niet bevestigd")
-                                        + "\n"
-                                        + "Een beschikbare opdracht bevestigt geen ondersteuning in"
-                                        + " je game.")
-                            .setPositiveButton("OK", null)
-                            .show())));
+                    result -> {
+                      if (a.isFinishing() || a.isDestroyed()) return;
+                      new Ui.Dialog(a)
+                          .setTitle("Invoermogelijkheden")
+                          .setMessage(
+                              result.has("error")
+                                  ? result.optString("error")
+                                  : "Begrensde knopdruk: "
+                                      + (result.optBoolean("holds")
+                                          ? "Ondersteund"
+                                          : "Niet ondersteund")
+                                      + "\nMuiscommando's: "
+                                      + (result.optBoolean("mouse")
+                                          ? "Beschikbaar"
+                                          : "Niet bevestigd")
+                                      + "\n"
+                                      + "Een beschikbare opdracht bevestigt geen ondersteuning in"
+                                      + " je game.")
+                          .setPositiveButton("OK", null)
+                          .show();
+                    })));
     JSONArray macros = q.optJSONArray("macros");
     for (int i = 0; i < macros.length(); i++) {
       final int index = i;

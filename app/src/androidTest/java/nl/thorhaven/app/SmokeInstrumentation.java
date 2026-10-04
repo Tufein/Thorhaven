@@ -16,6 +16,7 @@ public class SmokeInstrumentation extends Instrumentation {
   boolean v6Only;
   boolean v7Only;
   boolean v8Only;
+  boolean v1Only;
   boolean captureOnly;
   int passed;
   StringBuilder report = new StringBuilder();
@@ -26,6 +27,7 @@ public class SmokeInstrumentation extends Instrumentation {
     v5Only = args != null && "true".equals(args.getString("v5"));
     v6Only = args != null && "true".equals(args.getString("v6"));
     v7Only = args != null && "true".equals(args.getString("v7"));
+    v1Only = args != null && "true".equals(args.getString("v1"));
     v8Only = args != null && "true".equals(args.getString("v8"));
     captureOnly = args != null && "true".equals(args.getString("capture"));
     start();
@@ -39,6 +41,10 @@ public class SmokeInstrumentation extends Instrumentation {
 
   @Override
   public void onStart() {
+    if (v1Only) {
+      v1();
+      return;
+    }
     if (v8Only) {
       v8();
       return;
@@ -587,6 +593,62 @@ public class SmokeInstrumentation extends Instrumentation {
       if (a != null) {
         MainActivity done = a;
         runOnMainSync(done::finish);
+      }
+    }
+    finish(code, result);
+  }
+
+  void v1() {
+    Bundle result = new Bundle();
+    Context c = getTargetContext();
+    String before = null;
+    MainActivity activity = null;
+    int code = 0;
+    try {
+      before = Store.backup(c).toString();
+      activity =
+          (MainActivity)
+              startActivitySync(
+                  new Intent(c, MainActivity.class)
+                      .addFlags(
+                          Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_MULTIPLE_TASK));
+      final MainActivity owner = activity;
+      runOnMainSync(
+          () -> {
+            for (String page : MainActivity.PAGES) owner.go(page);
+          });
+      check(true, "All candidate navigation pages render");
+      GameWorkspaceChecks.run(this, c, owner);
+      SetupLaunchChecks.run(this, c, owner);
+      StorageToolsChecks.run(this, c, owner);
+      new V1ReadinessChecks(this, c).run(owner);
+      result.putString(
+          "result",
+          "PASS "
+              + passed
+              + " 1.0 candidate checks on API "
+              + android.os.Build.VERSION.SDK_INT
+              + "\n"
+              + report);
+    } catch (Throwable error) {
+      code = 1;
+      result.putString(
+          "result",
+          "FAIL after "
+              + passed
+              + " candidate checks\n"
+              + report
+              + "\n"
+              + android.util.Log.getStackTraceString(error));
+    } finally {
+      if (before != null)
+        try {
+          Store.restore(c, before);
+        } catch (Exception ignored) {
+        }
+      if (activity != null && !activity.isDestroyed()) {
+        MainActivity owner = activity;
+        runOnMainSync(owner::finish);
       }
     }
     finish(code, result);

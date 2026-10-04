@@ -140,6 +140,7 @@ final class RgbDiagnostics {
               a,
               name(a, mode),
               () -> {
+                if (cleaned[0]) return;
                 if (RgbService.startDiagnostic(a, mode))
                   ownedGeneration[0] = RgbService.requestGeneration;
               }));
@@ -164,11 +165,20 @@ final class RgbDiagnostics {
     ScrollView scroll = new ScrollView(a);
     scroll.addView(content);
     android.app.AlertDialog dialog =
-        new Ui.Dialog(a)
-            .setTitle(text(a, "RGB-zones testen · experimenteel", "Test RGB zones · experimental"))
-            .setView(scroll)
-            .setPositiveButton(text(a, "Sluiten", "Close"), null)
-            .create();
+        new android.app.AlertDialog(a) {
+          @Override
+          protected void onStop() {
+            // onDismiss is queued; cancel synchronously even before the first view attachment.
+            cleanup.run();
+            super.onStop();
+          }
+        };
+    dialog.setTitle(text(a, "RGB-zones testen · experimenteel", "Test RGB zones · experimental"));
+    dialog.setView(scroll);
+    dialog.setButton(
+        android.content.DialogInterface.BUTTON_POSITIVE,
+        text(a, "Sluiten", "Close"),
+        (android.content.DialogInterface.OnClickListener) null);
     dialog.setOnShowListener(
         d -> {
           if (!cleaned[0]) handler.post(update);

@@ -71,6 +71,23 @@ final class ScreenCaptureRuntimeChecks {
       service = lab.service;
       final ScreenLabService capture = service;
       t.runOnMainSync(() -> screen.requestCapture(false));
+      consent(automation, "denied preview", false);
+      awaitMain(
+          t,
+          5000,
+          () -> !screen.choosingCapture && released(capture),
+          "Denied consent left capture resources active");
+      t.check(true, "Cancelling real Android capture consent leaves no projection resources");
+      t.runOnMainSync(() -> screen.requestCapture(false));
+      t.runOnMainSync(() -> ScreenLabService.stopActive(c));
+      consent(automation, "cancelled pending consent");
+      awaitMain(
+          t,
+          5000,
+          () -> !screen.choosingCapture && released(capture),
+          "Late approval restarted an emergency-cancelled request");
+      t.check(true, "Late Android consent cannot restart a request cancelled by emergency stop");
+      t.runOnMainSync(() -> screen.requestCapture(false));
       consent(automation, "live preview");
       t.check(true, "Live preview starts through the real Android screen-sharing consent dialog");
       awaitMain(
@@ -84,6 +101,36 @@ final class ScreenCaptureRuntimeChecks {
                   && capture.frame != null,
           "Projection produced no live frame; inspect Screen Lab status and device capture"
               + " support");
+      t.runOnMainSync(() -> ScreenLabService.stopActive(c));
+      awaitMain(
+          t,
+          5000,
+          () -> released(capture),
+          "Emergency stop failed while Screen Lab remained bound");
+      t.check(
+          screen.bound && !screen.isDestroyed(),
+          "Emergency stop releases projection while the Screen Lab activity stays bound");
+      t.runOnMainSync(() -> screen.requestCapture(false));
+      consent(automation, "preview after emergency stop");
+      awaitMain(
+          t,
+          12000,
+          () -> capture.frame != null && capture.projection != null,
+          "Fresh consent did not restart preview after emergency stop");
+      t.check(true, "Fresh consent can restart a bound preview after emergency stop");
+      t.runOnMainSync(
+          () ->
+              capture.onStartCommand(
+                  new Intent(c, ScreenLabService.class)
+                      .setAction(ScreenLabService.START)
+                      .putExtra("epoch", "cancelled-old-request")
+                      .putExtra("consent", new Intent())
+                      .putExtra("result", Activity.RESULT_OK),
+                  0,
+                  9901));
+      t.check(
+          capture.projection != null && "mirror".equals(capture.mode),
+          "An already queued obsolete capture start cannot interrupt a newer active preview");
       t.runOnMainSync(() -> a.setContentView(scene));
       awaitMain(
           t,
@@ -120,11 +167,13 @@ final class ScreenCaptureRuntimeChecks {
         if (image != null) image.recycle();
       }
       awaitMain(t, 5000, () -> !capture.saving, "Screenshot worker did not finish");
-      t.runOnMainSync(() -> capture.stopCapture("Runtime QA stopped preview"));
+      t.runOnMainSync(() -> capture.projection.stop());
       awaitMain(
           t, 5000, () -> released(capture), "Preview stop did not release projection resources");
       t.check(
-          true, "Stopping a real preview releases projection, virtual display, reader and frame");
+          true,
+          "Android projection stop callback releases projection, virtual display, reader and"
+              + " frame");
       t.runOnMainSync(() -> screen.requestCapture(true));
       consent(automation, "silent recording");
       t.check(
@@ -383,6 +432,10 @@ final class ScreenCaptureRuntimeChecks {
   }
 
   static void consent(UiAutomation automation, String phase) throws Exception {
+    consent(automation, phase, true);
+  }
+
+  static void consent(UiAutomation automation, String phase, boolean approve) throws Exception {
     long until = SystemClock.elapsedRealtime() + 20000;
     String last = "No interactive windows";
     while (SystemClock.elapsedRealtime() < until) {
@@ -404,13 +457,15 @@ final class ScreenCaptureRuntimeChecks {
                 && click(
                     root,
                     new HashSet<>(
-                        Arrays.asList(
-                            "start now",
-                            "nu starten",
-                            "start",
-                            "start recording",
-                            "start sharing",
-                            "nu opnemen")),
+                        approve
+                            ? Arrays.asList(
+                                "start now",
+                                "nu starten",
+                                "start",
+                                "start recording",
+                                "start sharing",
+                                "nu opnemen")
+                            : Arrays.asList("cancel", "annuleren", "not now", "niet nu")),
                     0)) return;
             if (pkg.contains("permissioncontroller"))
               click(root, new HashSet<>(Arrays.asList("allow", "toestaan")), 0);

@@ -19,6 +19,24 @@ public class ScreenLabService extends Service {
   static final String START = "nl.thorhaven.app.SCREEN_LAB_START";
   static final String STOP = "nl.thorhaven.app.SCREEN_LAB_STOP";
   static final int NOTICE = 601;
+  static ScreenLabService instance;
+  static volatile String requestEpoch = java.util.UUID.randomUUID().toString();
+
+  static void stopActive(Context context) {
+    String cancelledEpoch = java.util.UUID.randomUUID().toString();
+    requestEpoch = cancelledEpoch;
+    Context app = context.getApplicationContext();
+    Runnable stop =
+        () -> {
+          if (!cancelledEpoch.equals(requestEpoch)) return;
+          ScreenLabService active = instance;
+          if (active != null) active.endCapture("Schermdeling gestopt", true);
+          app.stopService(new Intent(app, ScreenLabService.class));
+        };
+    if (Looper.myLooper() == Looper.getMainLooper()) stop.run();
+    else new Handler(Looper.getMainLooper()).post(stop);
+  }
+
   final Handler main = new Handler(Looper.getMainLooper());
   final IBinder binder = new LocalBinder();
   HandlerThread thread;
@@ -83,6 +101,7 @@ public class ScreenLabService extends Service {
   @Override
   public void onCreate() {
     super.onCreate();
+    instance = this;
     thread = new HandlerThread("Thorhaven capture", android.os.Process.THREAD_PRIORITY_BACKGROUND);
     thread.start();
     worker = new Handler(thread.getLooper());
@@ -115,6 +134,21 @@ public class ScreenLabService extends Service {
     if (consent == null
         || i.getIntExtra("result", Activity.RESULT_CANCELED) != Activity.RESULT_OK) {
       stopCapture("Geen toestemming voor schermdeling");
+      return START_NOT_STICKY;
+    }
+    if (!requestEpoch.equals(i.getStringExtra("epoch"))) {
+      // A cancelled, already queued foreground start must discharge its notification obligation
+      // without acquiring projection or stopping a newer active session.
+      if (projection == null) {
+        try {
+          startForeground(
+              NOTICE, notice(record), ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PROJECTION);
+        } catch (RuntimeException unavailable) {
+          /* No capture is acquired. */
+        }
+        stopForeground(STOP_FOREGROUND_REMOVE);
+        stopSelf(startId);
+      }
       return START_NOT_STICKY;
     }
     endCapture("Schermdeling starten", false);
@@ -363,6 +397,7 @@ public class ScreenLabService extends Service {
   }
 
   void stopCapture(String message) {
+    requestEpoch = java.util.UUID.randomUUID().toString();
     endCapture(message, true);
   }
 
@@ -445,6 +480,7 @@ public class ScreenLabService extends Service {
 
   @Override
   public void onDestroy() {
+    if (instance == this) instance = null;
     changed = null;
     stopCapture("Schermdeling gestopt");
     if (thread != null) thread.quitSafely();

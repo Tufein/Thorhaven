@@ -2,8 +2,8 @@ plugins { id 'com.android.application' }
 android {
  namespace 'nl.thorhaven.app'
  compileSdk 36
- buildFeatures { aidl true }
- defaultConfig { applicationId 'nl.thorhaven.app'; minSdk 30; targetSdk 33; versionCode 8; versionName '0.8.0-preview'; testInstrumentationRunner 'nl.thorhaven.app.SmokeInstrumentation' }
+ buildFeatures { aidl true; buildConfig true }
+ defaultConfig { applicationId 'nl.thorhaven.app'; minSdk 30; targetSdk 33; versionCode 9; versionName '1.0.0-rc1'; testInstrumentationRunner 'nl.thorhaven.app.SmokeInstrumentation' }
  compileOptions { sourceCompatibility JavaVersion.VERSION_11; targetCompatibility JavaVersion.VERSION_11 }
  signingConfigs {
   if (System.getenv('THORHAVEN_KEYSTORE')) {
